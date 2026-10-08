@@ -634,6 +634,91 @@ summary:focus-visible{
   }
 }
 
+
+/* =========================================================
+   V3.10 DESKTOP COLUMN ALIGNMENT
+   ========================================================= */
+
+/* On desktop, the thin progress bar occupies its own top row.
+   Flight Setup, Current Stage, and Radio Exchange then begin
+   together on the same grid row. */
+@media(min-width:1051px){
+  .trainer-shell{
+    grid-template-areas:
+      ". progress progress"
+      "setup stage transcript";
+  }
+
+  .setup-summary h2#routeHeading{
+    font-size:17px;
+    line-height:1.22;
+    margin-top:5px;
+  }
+
+  .setup-bottom-toggle{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    min-height:38px;
+    border:1px solid #c7d7e6;
+    border-radius:9px;
+    background:#f4f8fc;
+    color:#173a5e;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .setup-bottom-toggle:hover{
+    background:#eaf2f9;
+  }
+}
+
+/* Tablet: keep the same top-alignment principle with two columns. */
+@media(min-width:701px) and (max-width:1050px){
+  .trainer-shell{
+    grid-template-areas:
+      ". progress"
+      "setup stage"
+      "transcript transcript";
+  }
+
+  .setup-summary h2#routeHeading{
+    font-size:17px;
+    line-height:1.22;
+  }
+
+  .setup-bottom-toggle{
+    display:block;
+    width:100%;
+    margin-top:12px;
+    min-height:38px;
+    border:1px solid #c7d7e6;
+    border-radius:9px;
+    background:#f4f8fc;
+    color:#173a5e;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+  }
+}
+
+/* User requested the duplicate bottom control for desktop/tablet only. */
+@media(max-width:700px){
+  .setup-bottom-toggle{
+    display:none;
+  }
+}
+
+
+/* V3.12 ATIS fields are system-generated and read-only */
+#atis[readonly],
+#arrivalAtis[readonly]{
+  background:#eef2f6;
+  color:#5f6f7f;
+  border-color:#d3dde6;
+  cursor:not-allowed;
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -703,11 +788,11 @@ summary:focus-visible{
       </label>
 
       <label>Departure ATIS (random)
-        <input id="atis" value="" readonly>
+        <input id="atis" value="" readonly readonly aria-readonly="true">
       </label>
 
       <label>Arrival ATIS (random)
-        <input id="arrivalAtis" value="" readonly>
+        <input id="arrivalAtis" value="" readonly readonly aria-readonly="true">
       </label>
 
       <label>Destination Runway
@@ -718,7 +803,7 @@ summary:focus-visible{
         </select>
       </label>
 
-      <label>Expected Runway
+      <label>Expected Takeoff Runway
         <select id="runway">
           <option>26L</option>
           <option>26R</option>
@@ -760,6 +845,9 @@ summary:focus-visible{
       APPLY SETUP
     </button>
     <div class="small setup-note">Airport frequencies in this trainer are training defaults. Verify current FAA/airport information before flight.</div>
+    <button type="button" class="setup-bottom-toggle" onclick="this.closest('details').open=false;">
+      Tap to Collapse ▲
+    </button>
   </div>
 </details>
 
