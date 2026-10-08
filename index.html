@@ -542,6 +542,98 @@ summary:focus-visible{
   }
 }
 
+
+/* =========================================================
+   V3.9 MULTI-AIRPORT + RESPONSIVE 3-COLUMN LAYOUT
+   ========================================================= */
+.trainer-shell{
+  display:grid;
+  grid-template-columns:minmax(230px,.72fr) minmax(420px,1.35fr) minmax(300px,.93fr);
+  grid-template-areas:
+    "setup progress progress"
+    "setup stage transcript";
+  gap:14px;
+  align-items:start;
+}
+.trainer-shell>.setup{
+  grid-area:setup;
+  margin:0;
+  position:sticky;
+  top:10px;
+}
+.trainer-shell>.progress{
+  grid-area:progress;
+  margin:0;
+}
+.trainer-shell>.main-grid{
+  display:contents;
+}
+.trainer-shell>.main-grid>section:first-child{
+  grid-area:stage;
+}
+.trainer-shell>.main-grid>section:last-child{
+  grid-area:transcript;
+}
+.setup-grid{
+  grid-template-columns:1fr;
+  gap:9px;
+}
+.setup-note{
+  margin-top:8px;
+  line-height:1.35;
+}
+.ptt{
+  width:min(100%,320px);
+  min-height:48px;
+  padding:10px 14px;
+  margin:9px auto;
+  border-radius:12px;
+  font-size:14px;
+  display:block;
+}
+.ptt .mic{
+  display:inline;
+  font-size:18px;
+  margin:0 7px 0 0;
+}
+@media(max-width:1050px){
+  .trainer-shell{
+    grid-template-columns:minmax(230px,.8fr) minmax(0,1.5fr);
+    grid-template-areas:
+      "setup progress"
+      "setup stage"
+      "transcript transcript";
+  }
+  .trainer-shell>.setup{
+    position:static;
+  }
+}
+@media(max-width:700px){
+  .trainer-shell{
+    display:grid;
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "setup"
+      "progress"
+      "stage"
+      "transcript";
+    gap:8px;
+  }
+  .trainer-shell>.setup{
+    position:static;
+  }
+  .ptt{
+    width:min(82%,300px);
+    min-height:46px;
+    padding:9px 12px;
+    font-size:13px;
+    bottom:calc(6px + env(safe-area-inset-bottom));
+  }
+  .ptt .mic{
+    font-size:17px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -556,17 +648,48 @@ summary:focus-visible{
 
 
 
+<div class="trainer-shell">
 <details class="card setup">
   <summary class="setup-summary">
     <div>
       <div class="eyebrow">FLIGHT SETUP</div>
-      <h2>KLGB → KCRQ Training Flight</h2>
+      <h2 id="routeHeading">KLGB → KCRQ Training Flight</h2>
     </div>
     <span class="setup-summary-hint"></span>
   </summary>
 
   <div class="setup-content">
     <div class="setup-grid">
+      <label>Departure Airport
+        <select id="departureAirport">
+          <option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KCRQ">KCRQ — McClellan-Palomar</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KRNM">KRNM — Ramona</option>
+        </select>
+      </label>
+
+      <label>Destination Airport
+        <select id="destinationAirport">
+          <option value="KLGB">KLGB — Long Beach</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KCRQ" selected>KCRQ — McClellan-Palomar</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KRNM">KRNM — Ramona</option>
+        </select>
+      </label>
+
       <label>Aircraft<input id="aircraft" value="Cessna 724SP"></label>
 
       <label>Starting Location
@@ -636,6 +759,7 @@ summary:focus-visible{
     <button id="applySetup" class="btn primary" style="margin-top:12px;width:100%;">
       APPLY SETUP
     </button>
+    <div class="small setup-note">Airport frequencies in this trainer are training defaults. Verify current FAA/airport information before flight.</div>
   </div>
 </details>
 
@@ -690,7 +814,7 @@ summary:focus-visible{
         <button id="sendTyped" class="btn primary">SEND TYPED</button>
         <button id="clearText" class="btn">CLEAR</button>
       </div>
-      <div class="small" style="margin-top:8px">PTT automatically evaluates the transmission when you release the button.</div>
+      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission.</div>
     </div>
 
     <div class="scorebar">
@@ -710,6 +834,7 @@ summary:focus-visible{
     <div id="transcript" class="transcript"></div>
   </section>
 </div>
+</div>
 
 <p class="small" style="text-align:center;margin:16px 0 0">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
 </div>
@@ -722,17 +847,70 @@ const $ = id => document.getElementById(id);
 const DIGIT = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"niner"};
 const PHONETIC = {A:"Alpha",B:"Bravo",C:"Charlie",D:"Delta",E:"Echo",F:"Foxtrot",G:"Golf",H:"Hotel",I:"India",J:"Juliet",K:"Kilo",L:"Lima",M:"Mike",N:"November",O:"Oscar",P:"Papa",Q:"Quebec",R:"Romeo",S:"Sierra",T:"Tango",U:"Uniform",V:"Victor",W:"Whiskey",X:"X-ray",Y:"Yankee",Z:"Zulu"};
 
-const STAGES = [
-  {id:"atis", title:"DEPARTURE ATIS", facility:"Long Beach ATIS", freq:"127.750", type:"atis"},
-  {id:"clearance", title:"CLEARANCE DELIVERY", facility:"Long Beach Clearance", freq:"118.150", type:"comm"},
-  {id:"ground", title:"GROUND", facility:"Long Beach Ground", freq:"133.000", type:"comm"},
-  {id:"tower", title:"TOWER", facility:"Long Beach Tower", freq:"119.400", type:"comm"},
-  {id:"departure", title:"DEPARTURE", facility:"SoCal Departure", freq:"127.200", type:"comm"},
-  {id:"arrival", title:"ARRIVAL / APPROACH", facility:"SoCal Approach", freq:"127.300", type:"comm"},
-  {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:"Palomar ATIS", freq:"120.150", type:"atis"},
-  {id:"destTower", title:"DESTINATION TOWER", facility:"Palomar Tower", freq:"118.600", type:"comm"},
-  {id:"destGround", title:"DESTINATION GROUND", facility:"Palomar Ground", freq:"121.800", type:"comm"}
-];
+
+const AIRPORTS = {"KLGB":{"name":"Long Beach","atis":"127.750","clearance":"118.150","ground":"133.000","tower":"119.400","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["26L","26R","30","12","8L","8R"],"taxiway":"Foxtrot","locations":["Long Beach Flying Club","Signature Ramp","Atlantic Ramp","West Ramp","South Ramp"]},"KFUL":{"name":"Fullerton","atis":"119.575","clearance":"121.800","ground":"121.800","tower":"119.100","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["24","6"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]},"KTOA":{"name":"Torrance","atis":"125.600","clearance":"121.600","ground":"121.600","tower":"124.000","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["29R","29L","11R","11L"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]},"KHHR":{"name":"Hawthorne","atis":"118.350","clearance":"121.100","ground":"121.100","tower":"121.100","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["25","7"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]},"KSNA":{"name":"John Wayne","atis":"126.000","clearance":"118.000","ground":"120.800","tower":"126.800","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["20R","20L","2R","2L"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","General Aviation Ramp"]},"KCRQ":{"name":"McClellan-Palomar","atis":"120.150","clearance":"121.800","ground":"121.800","tower":"118.600","departure":"127.300","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["24","6"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]},"KONT":{"name":"Ontario","atis":"124.250","clearance":"118.100","ground":"121.900","tower":"120.600","departure":"127.200","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["26L","26R","8L","8R"],"taxiway":"Alpha","locations":["General Aviation Ramp","FBO / Ramp","Transient Parking"]},"KPSP":{"name":"Palm Springs","atis":"118.250","clearance":"121.650","ground":"121.900","tower":"119.700","departure":"126.700","approach":"126.700","depFacility":"Palm Springs Departure","appFacility":"Palm Springs Approach","runways":["31L","31R","13L","13R"],"taxiway":"Alpha","locations":["General Aviation Ramp","FBO / Ramp","Transient Parking"]},"KSBA":{"name":"Santa Barbara","atis":"132.650","clearance":"121.700","ground":"121.700","tower":"119.700","departure":"125.400","approach":"125.400","depFacility":"Santa Barbara Departure","appFacility":"Santa Barbara Approach","runways":["25","7","15L","15R","33L","33R"],"taxiway":"Alpha","locations":["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]},"KRNM":{"name":"Ramona","atis":"118.675","clearance":"121.650","ground":"121.650","tower":"119.870","departure":"127.300","approach":"127.300","depFacility":"SoCal Departure","appFacility":"SoCal Approach","runways":["27","9"],"taxiway":"Alpha","locations":["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]}};
+
+function airportData(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
+function depAirport(){ return airportData(app.config.departureAirport); }
+function destAirport(){ return airportData(app.config.destinationAirport); }
+
+function buildStages(depCode,destCode){
+  const dep=airportData(depCode);
+  const dest=airportData(destCode);
+  return [
+    {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.name} ATIS`, freq:dep.atis, type:"atis"},
+    {id:"clearance", title:"CLEARANCE DELIVERY", facility:`${dep.name} Clearance`, freq:dep.clearance, type:"comm"},
+    {id:"ground", title:"GROUND", facility:`${dep.name} Ground`, freq:dep.ground, type:"comm"},
+    {id:"tower", title:"TOWER", facility:`${dep.name} Tower`, freq:dep.tower, type:"comm"},
+    {id:"departure", title:"DEPARTURE", facility:dep.depFacility, freq:dep.departure, type:"comm"},
+    {id:"arrival", title:"ARRIVAL / APPROACH", facility:dest.appFacility, freq:dest.approach, type:"comm"},
+    {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.name} ATIS`, freq:dest.atis, type:"atis"},
+    {id:"destTower", title:"DESTINATION TOWER", facility:`${dest.name} Tower`, freq:dest.tower, type:"comm"},
+    {id:"destGround", title:"DESTINATION GROUND", facility:`${dest.name} Ground`, freq:dest.ground, type:"comm"}
+  ];
+}
+
+function setOptions(id,values,preferred){
+  const el=$(id);
+  if(!el) return;
+  el.innerHTML=values.map(v=>`<option value="${v}">${v}</option>`).join("");
+  el.value=values.includes(preferred) ? preferred : values[0];
+}
+
+function updateDepartureChoices(preserve=true){
+  const code=$("departureAirport").value;
+  const ap=airportData(code);
+  const oldRunway=preserve ? $("runway").value : "";
+  const oldLoc=preserve ? $("location").value : "";
+  setOptions("runway",ap.runways,oldRunway);
+  setOptions("location",ap.locations,oldLoc);
+  updateRouteHeading();
+}
+
+function updateDestinationChoices(preserve=true){
+  const code=$("destinationAirport").value;
+  const ap=airportData(code);
+  const oldRunway=preserve ? $("destRunway").value : "";
+  setOptions("destRunway",ap.runways,oldRunway);
+  updateRouteHeading();
+}
+
+function updateRouteHeading(){
+  const dep=$("departureAirport")?.value || "KLGB";
+  const dest=$("destinationAirport")?.value || "KCRQ";
+  if($("routeHeading")) $("routeHeading").textContent=`${dep} → ${dest} Training Flight`;
+}
+
+function airportMentioned(text,code){
+  const n=norm(text);
+  const ap=airportData(code);
+  const code3=code.replace(/^K/,"").toLowerCase();
+  const name=ap.name.toLowerCase();
+  const simple=name.replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+  return n.includes(code.toLowerCase()) || n.includes(code3) || n.includes(name) || (simple && n.includes(simple));
+}
+
+let STAGES = buildStages("KLGB","KCRQ");
 
 const app = {
   stageIndex: 0,
@@ -744,6 +922,8 @@ const app = {
   stageComplete: false,
   squawk:"4721",
   config: {
+    departureAirport:"KLGB",
+    destinationAirport:"KCRQ",
     aircraft:"Cessna 724SP",
     location:"Long Beach Flying Club",
     atis:"",
@@ -761,6 +941,9 @@ function norm(s){return (s||"").toLowerCase().replace(/[.,!?]/g," ").replace(/\s
 function compact(s){return norm(s).replace(/\s+/g,"")}
 function clampFreq(v){return Math.min(136.975,Math.max(118,Math.round(v*1000)/1000))}
 function formatFreq(v){return Number(v).toFixed(3)}
+function frequencySpoken(freq){
+  return String(freq).replace(/0+$/,"").split("").map(ch=>ch==="."?"point":(DIGIT[ch]||ch)).join(" ");
+}
 function supportedMicContext(){
   return (
     location.hostname==="localhost" ||
@@ -803,6 +986,9 @@ function speak(text){
 }
 
 function readSetup(generateCodes=true){
+  const depCode=$("departureAirport").value || "KLGB";
+  const destCode=$("destinationAirport").value || "KCRQ";
+
   if(generateCodes){
     app.config.atis=randomAtisCode();
     app.config.arrivalAtis=randomAtisCode(app.config.atis);
@@ -811,6 +997,8 @@ function readSetup(generateCodes=true){
   }
 
   app.config={
+    departureAirport:depCode,
+    destinationAirport:destCode,
     aircraft:$("aircraft").value.trim()||"Cessna 724SP",
     location:$("location").value,
     atis:$("atis").value || app.config.atis || randomAtisCode(),
@@ -822,49 +1010,32 @@ function readSetup(generateCodes=true){
     level:$("level").value
   };
 
+  STAGES=buildStages(depCode,destCode);
   app.stageIndex=0;
   $("next").classList.remove("hidden");
   $("reset").classList.add("hidden");
-  const nextBtn=$("next");
-  if(stage.type==="atis"){
-    $("atisActions").appendChild(nextBtn);
-  }else{
-    $("navRow").insertBefore(nextBtn,$("reset"));
-  }
-
+  updateRouteHeading();
   renderStage(true);
 }
 
 function renderNav(){
-  $("stageNav").innerHTML="";
-
-  const current=STAGES[app.stageIndex];
-  const currentChip=document.createElement("div");
-  currentChip.className="stage-chip active";
-  currentChip.textContent=current.title;
-  $("stageNav").appendChild(currentChip);
-
-  if(app.stageIndex<STAGES.length-1){
-    const nextStage=STAGES[app.stageIndex+1];
-    const nextChip=document.createElement("div");
-    nextChip.className="stage-chip";
-    nextChip.textContent=`NEXT: ${nextStage.title}`;
-    $("stageNav").appendChild(nextChip);
-  }
+  /* Stage tabs intentionally removed for compact mobile layout. */
 }
 
 function instructionFor(stage){
   const c=app.config;
+  const dep=depAirport();
+  const dest=destAirport();
   const beginner={
-    atis:`Tune ${stage.freq} and monitor Long Beach ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
-    clearance:`Contact Long Beach Clearance before Ground. Include callsign, information ${c.atis}, destination Palomar, VFR request, and ${c.direction.toLowerCase()} departure.`,
-    ground:`Call Long Beach Ground from ${c.location}. Include your callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
-    tower:`After reaching runway ${c.runway}, call Long Beach Tower and report ready for departure.`,
-    departure:`After tower handoff, check in with SoCal Departure. Include callsign and altitude.`,
-    arrival:`Contact SoCal Approach for Palomar. Include callsign, destination, and request.`,
-    arrivalAtis:`Before calling Palomar Tower, monitor Palomar ATIS and note information ${c.arrivalAtis}.`,
-    destTower:`Call Palomar Tower with callsign, position, inbound request, information ${c.arrivalAtis}, and destination runway ${c.destRunway}.`,
-    destGround:`After clearing the runway, contact Palomar Ground and request taxi to parking.`
+    atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
+    clearance:`Contact ${dep.name} Clearance. Include callsign, information ${c.atis}, destination ${dest.name}, VFR request, and ${c.direction.toLowerCase()} departure.`,
+    ground:`Call ${dep.name} Ground from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
+    tower:`At runway ${c.runway}, call ${dep.name} Tower and report ready for departure.`,
+    departure:`After tower handoff, check in with ${dep.depFacility}. Include callsign and altitude.`,
+    arrival:`Contact ${dest.appFacility} for ${dest.name}. Include callsign, destination, and request.`,
+    arrivalAtis:`Before calling ${dest.name} Tower, monitor ${dest.name} ATIS and note information ${c.arrivalAtis}.`,
+    destTower:`Call ${dest.name} Tower with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
+    destGround:`After clearing the runway, contact ${dest.name} Ground and request taxi to parking.`
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
@@ -925,9 +1096,7 @@ function renderStage(resetFrequency=true){
   if(resetFrequency) $("frequency").value="121.500";
 
   $("flightChips").innerHTML=[
-    "KLGB → KCRQ",
     app.config.aircraft,
-    app.config.location,
     `DEP RWY ${app.config.runway}`,
     `ARR RWY ${app.config.destRunway}`
   ].map(x=>`<span class="flight-chip">${x}</span>`).join("");
@@ -1202,9 +1371,7 @@ function containsDestRunway(text){
   return containsRunway(text,app.config.destRunway);
 }
 
-function departureTaxiway(){
-  return app.config.runway.toUpperCase()==="26L" ? "Foxtrot" : "Delta";
-}
+function departureTaxiway(){ return depAirport().taxiway || "Alpha"; }
 
 function grade(checks){
   const vals=Object.values(checks);
@@ -1226,16 +1393,16 @@ function evaluateTransmission(text){
   if(stage.id==="clearance"){
     if(app.phase==="clearanceInitial"){
       checks={
-        facility:n.includes("clearance")||n.includes("long beach"),
+        facility:n.includes("clearance")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
         atis:n.includes(app.config.atis.toLowerCase()),
-        destination:n.includes("palomar")||n.includes("kcrq")||n.includes("crq"),
+        destination:airportMentioned(text,app.config.destinationAirport),
         request:n.includes("vfr")||n.includes("departure")||n.includes("flight following")
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=60 && checks.callsign && checks.destination){
-        replyVisual=`${app.config.aircraft}, Long Beach Clearance, VFR departure approved. Departure frequency 127.2, squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, Long Beach Clearance, V F R departure approved. Departure frequency one two seven point two, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        replyVisual=`${app.config.aircraft}, ${depAirport().name} Clearance, VFR departure approved. Departure frequency ${depAirport().departure}, squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, ${depAirport().name} Clearance, V F R departure approved. Departure frequency ${frequencySpoken(depAirport().departure)}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         $("feedback").textContent="Clearance received. Read back departure frequency and squawk.";
         app.phase="clearanceReadback";
       }else{
@@ -1245,7 +1412,7 @@ function evaluateTransmission(text){
       }
     }else{
       checks={
-        frequency:containsFrequency(text,"127.2")||n.includes("departure frequency"),
+        frequency:containsFrequency(text,depAirport().departure)||n.includes("departure frequency"),
         squawk:textDigits(text).includes(app.squawk),
         callsign:hasCallsign(text)
       };
@@ -1257,8 +1424,8 @@ function evaluateTransmission(text){
         $("feedback").textContent="Clearance Delivery complete.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify departure frequency 127.2 and squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, verify departure frequency one two seven point two and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        replyVisual=`${app.config.aircraft}, verify departure frequency ${depAirport().departure} and squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, verify departure frequency ${frequencySpoken(depAirport().departure)} and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         $("feedback").textContent="Read back the departure frequency and squawk.";
       }
     }
@@ -1267,9 +1434,9 @@ function evaluateTransmission(text){
   if(stage.id==="ground"){
     if(app.phase==="groundInitial"){
       checks={
-        facility:n.includes("long beach ground")||n.includes("ground"),
+        facility:n.includes("ground")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
-        location:n.includes(app.config.location.toLowerCase())||n.includes("flying club"),
+        location:n.includes(app.config.location.toLowerCase()),
         atis:n.includes(app.config.atis.toLowerCase()),
         request:n.includes("taxi")||n.includes("departure")
       };
@@ -1279,8 +1446,8 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
       }else{
-        replyVisual=`${app.config.aircraft}, Long Beach Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, Long Beach Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+        replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
+        replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
         $("feedback").textContent=`Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
         app.phase="groundReadback";
       }
@@ -1304,7 +1471,7 @@ function evaluateTransmission(text){
   if(stage.id==="tower"){
     if(app.phase==="towerInitial"){
       checks={
-        facility:n.includes("tower")||n.includes("long beach"),
+        facility:n.includes("tower")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
         runway:containsRunway(text),
         ready:n.includes("ready")||n.includes("departure")
@@ -1349,7 +1516,7 @@ function evaluateTransmission(text){
   if(stage.id==="departure"){
     if(app.phase==="departureInitial"){
       checks={
-        facility:n.includes("departure")||n.includes("socal"),
+        facility:n.includes("departure")||norm(depAirport().depFacility).split(" ").some(w=>w.length>4&&n.includes(w)),
         callsign:hasCallsign(text),
         altitude:containsAltitude(text)||n.includes("altitude")
       };
@@ -1384,16 +1551,16 @@ function evaluateTransmission(text){
   if(stage.id==="arrival"){
     if(app.phase==="arrivalInitial"){
       checks={
-        facility:n.includes("approach")||n.includes("socal"),
+        facility:n.includes("approach")||n.includes("arrival"),
         callsign:hasCallsign(text),
-        destination:n.includes("palomar")||n.includes("kcrq")||n.includes("crq"),
+        destination:airportMentioned(text,app.config.destinationAirport),
         request:n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=75){
-        replyVisual=`${app.config.aircraft}, proceed direct Palomar. Expect visual approach.`;
-        replySpoken=`${callsignSpoken()}, proceed direct Palomar. Expect visual approach.`;
-        $("feedback").textContent="Read back direct Palomar and the visual approach.";
+        replyVisual=`${app.config.aircraft}, proceed direct ${destAirport().name}. Expect visual approach.`;
+        replySpoken=`${callsignSpoken()}, proceed direct ${destAirport().name}. Expect visual approach.`;
+        $("feedback").textContent=`Read back direct ${destAirport().name} and the visual approach.`;
         app.phase="arrivalReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say destination and request.`;
@@ -1402,7 +1569,7 @@ function evaluateTransmission(text){
       }
     }else{
       checks={
-        palomar:n.includes("palomar")||n.includes("crq"),
+        destination:airportMentioned(text,app.config.destinationAirport),
         direct:n.includes("direct")||n.includes("proceed"),
         visual:n.includes("visual"),
         callsign:hasCallsign(text)
@@ -1410,13 +1577,13 @@ function evaluateTransmission(text){
       const essential=checks.palomar&&checks.visual;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct. Obtain Palomar ATIS on 120.15.`;
-        replySpoken=`${callsignSpoken()}, readback correct. Obtain Palomar A T I S on one two zero point one five.`;
+        replyVisual=`${app.config.aircraft}, readback correct. Obtain ${destAirport().name} ATIS on ${destAirport().atis}.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Obtain ${destAirport().name} A T I S on ${frequencySpoken(destAirport().atis)}.`;
         $("feedback").textContent="Approach stage complete. Next: Arrival ATIS.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify direct Palomar, expect visual approach.`;
-        replySpoken=`${callsignSpoken()}, verify direct Palomar, expect visual approach.`;
+        replyVisual=`${app.config.aircraft}, verify direct ${destAirport().name}, expect visual approach.`;
+        replySpoken=`${callsignSpoken()}, verify direct ${destAirport().name}, expect visual approach.`;
         $("feedback").textContent="Approach readback not recognized. Try again.";
       }
     }
@@ -1425,7 +1592,7 @@ function evaluateTransmission(text){
   if(stage.id==="destTower"){
     if(app.phase==="destTowerInitial"){
       checks={
-        facility:n.includes("palomar tower")||n.includes("tower"),
+        facility:n.includes("tower")||airportMentioned(text,app.config.destinationAirport),
         callsign:hasCallsign(text),
         atis:n.includes(app.config.arrivalAtis.toLowerCase()),
         inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
@@ -1433,14 +1600,14 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=60 && checks.callsign && checks.inbound){
-        replyVisual=`${app.config.aircraft}, Palomar Tower, enter right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
-        replySpoken=`${callsignSpoken()}, Palomar Tower, enter right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        replyVisual=`${app.config.aircraft}, ${destAirport().name} Tower, enter right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
+        replySpoken=`${callsignSpoken()}, ${destAirport().name} Tower, enter right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
         $("feedback").textContent="Read back the pattern instruction.";
         app.phase="destTowerPatternReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say again callsign, ATIS, position, and landing request.`;
         replySpoken=`${callsignSpoken()}, say again callsign, A T I S, position, and landing request.`;
-        $("feedback").textContent="Initial Palomar Tower call incomplete. Try again.";
+        $("feedback").textContent=`Initial ${destAirport().name} Tower call incomplete. Try again.`;
       }
     }else if(app.phase==="destTowerPatternReadback"){
       checks={
@@ -1492,8 +1659,8 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=67){
-        replyVisual=`${app.config.aircraft}, Palomar Ground, taxi to parking via Alpha.`;
-        replySpoken=`${callsignSpoken()}, Palomar Ground, taxi to parking via Alpha.`;
+        replyVisual=`${app.config.aircraft}, ${destAirport().name} Ground, taxi to parking via Alpha.`;
+        replySpoken=`${callsignSpoken()}, ${destAirport().name} Ground, taxi to parking via Alpha.`;
         $("feedback").textContent="Read back taxi to parking via Alpha.";
         app.phase="destGroundReadback";
       }else{
@@ -1545,18 +1712,20 @@ function monitorAtis(){
 
   const c=app.config;
   const stage=STAGES[app.stageIndex];
+  const dep=depAirport();
+  const dest=destAirport();
   let visual="",spoken="",label="",code="";
 
   if(stage.id==="arrivalAtis"){
     code=c.arrivalAtis;
-    label="Palomar ATIS";
-    visual=`Palomar Airport information ${code}. Wind 240 at 6. Visibility 10. Sky clear. Temperature 24. Dew point 14. Altimeter 30.01. Landing runway ${c.destRunway}. Advise on initial contact you have ${code}.`;
-    spoken=`Palomar Airport information ${code}. Winned two four zero at six. Visibility one zero. Sky clear. Temperature two four. Dew point one four. Altimeter three zero zero one. Landing runway ${runwaySpoken(c.destRunway)}. Advise on initial contact you have ${code}.`;
+    label=`${dest.name} ATIS`;
+    visual=`${dest.name} Airport information ${code}. Wind 240 at 6. Visibility 10. Sky clear. Temperature 24. Dew point 14. Altimeter 30.01. Landing runway ${c.destRunway}. Advise on initial contact you have ${code}.`;
+    spoken=`${dest.name} Airport information ${code}. Winned two four zero at six. Visibility one zero. Sky clear. Temperature two four. Dew point one four. Altimeter three zero zero one. Landing runway ${runwaySpoken(c.destRunway)}. Advise on initial contact you have ${code}.`;
   }else{
     code=c.atis;
-    label="Long Beach ATIS";
-    visual=`Long Beach Airport information ${code}. Wind 260 at 8. Visibility 10. Sky clear. Temperature 22. Dew point 12. Altimeter 30.02. Landing and departing runway ${c.runway}. Advise on initial contact you have ${code}.`;
-    spoken=`Long Beach Airport information ${code}. Winned two six zero at eight. Visibility one zero. Sky clear. Temperature two two. Dew point one two. Altimeter three zero zero two. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
+    label=`${dep.name} ATIS`;
+    visual=`${dep.name} Airport information ${code}. Wind 260 at 8. Visibility 10. Sky clear. Temperature 22. Dew point 12. Altimeter 30.02. Landing and departing runway ${c.runway}. Advise on initial contact you have ${code}.`;
+    spoken=`${dep.name} Airport information ${code}. Winned two six zero at eight. Visibility one zero. Sky clear. Temperature two two. Dew point one two. Altimeter three zero zero two. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
   }
 
   $("atisText").textContent=visual;
@@ -1587,6 +1756,7 @@ function nextStage(){
 
 function resetTraining(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
+  STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport);
   app.stageIndex=0;
   app.phase="idle";
   app.stageComplete=false;
@@ -1606,6 +1776,10 @@ function previousStage(){
   app.stageIndex--;
   renderStage(true);
 }
+
+
+$("departureAirport").addEventListener("change",()=>updateDepartureChoices(false));
+$("destinationAirport").addEventListener("change",()=>updateDestinationChoices(false));
 
 $("applySetup").addEventListener("click",()=>readSetup(true));
 $("monitorAtis").addEventListener("click",monitorAtis);
@@ -1636,6 +1810,10 @@ $("ptt").addEventListener("click",e=>{
   }
 });
 
+updateDepartureChoices(false);
+updateDestinationChoices(false);
+$("runway").value="26L";
+$("destRunway").value="24";
 readSetup(true);
 
 
