@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>FK ATC COM Trainer V3.3</title>
+<title>FK ATC COM Trainer V3.5 Mobile Responsive</title>
 <style>
 :root{
   --navy:#0a2f57; --blue:#1767b1; --blue2:#2d82cf; --bg:#edf4f9; --card:#fff;
@@ -214,6 +214,300 @@ details.setup:not([open]) .setup-summary-hint{
     padding:10px 6px;
     font-size:11px;
   }
+}
+
+
+/* =========================================================
+   V3.5 MOBILE RESPONSIVE
+   Layout/touch improvements only — ATC and microphone logic unchanged.
+   ========================================================= */
+
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+body{
+  min-width:0;
+}
+img,svg,video,canvas{
+  max-width:100%;
+  height:auto;
+}
+.card,.main-grid,.main-grid>*,
+.radio,.freq-grid,.frequency,
+.stage-instruction,.atis-box,
+.scorebar,.feedback,.transcript{
+  min-width:0;
+  max-width:100%;
+}
+button,.btn,.freq-btn,.ptt,
+input,select,textarea{
+  touch-action:manipulation;
+}
+
+/* Tablet */
+@media (max-width:900px){
+  .app{
+    max-width:820px;
+    padding:12px;
+  }
+  .main-grid{
+    grid-template-columns:1fr;
+    gap:12px;
+  }
+  .setup-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .transcript{
+    height:min(380px,42vh);
+  }
+  .stage-nav{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .btn,.freq-btn{
+    min-height:46px;
+  }
+}
+
+/* Phone */
+@media (max-width:600px){
+  body{
+    padding-bottom:calc(12px + env(safe-area-inset-bottom));
+  }
+  .app{
+    width:100%;
+    padding:
+      max(6px,env(safe-area-inset-top))
+      max(6px,env(safe-area-inset-right))
+      max(8px,env(safe-area-inset-bottom))
+      max(6px,env(safe-area-inset-left));
+  }
+
+  header{
+    padding:12px 14px;
+    border-radius:10px;
+  }
+  h1{
+    font-size:19px;
+  }
+
+  .card{
+    padding:12px;
+    border-radius:11px;
+  }
+
+  /* Flight setup stays compact and readable */
+  .setup-grid{
+    grid-template-columns:1fr;
+    gap:9px;
+  }
+  .setup-summary{
+    align-items:center;
+    gap:8px;
+  }
+  .setup-summary h2{
+    font-size:15px;
+    margin:3px 0 0;
+  }
+  .setup-summary-hint{
+    display:inline-block;
+    white-space:nowrap;
+    font-size:10px;
+  }
+  .setup-summary::after{
+    font-size:12px;
+  }
+
+  /* Current phase + next phase */
+  .stage-nav{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    gap:6px;
+    overflow:visible;
+    padding:0;
+  }
+  .stage-chip{
+    min-width:0;
+    width:100%;
+    padding:8px 6px;
+    font-size:9px;
+    line-height:1.2;
+    overflow-wrap:anywhere;
+  }
+
+  .main-grid{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .main-grid>.card{
+    margin:0;
+  }
+
+  .heading{
+    gap:8px;
+  }
+  .heading h2{
+    font-size:18px;
+    margin-bottom:8px;
+  }
+
+  .flight-chips{
+    gap:5px;
+    margin-bottom:8px;
+  }
+  .flight-chip{
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+
+  /* Radio block */
+  .radio{
+    padding:10px;
+    margin:8px 0;
+    border-radius:11px;
+  }
+  .radio-top{
+    margin-bottom:8px;
+  }
+  .freq-grid{
+    grid-template-columns:48px minmax(0,1fr) 48px;
+    gap:6px;
+  }
+  .freq-btn{
+    height:48px;
+    min-height:48px;
+    font-size:23px;
+  }
+  .frequency{
+    font-size:24px;
+    min-height:48px;
+    padding:8px 3px;
+  }
+
+  /* Readability and iOS no-zoom */
+  input,select,textarea{
+    width:100%;
+    min-height:48px;
+    font-size:16px;
+  }
+  textarea{
+    min-height:96px;
+    resize:vertical;
+  }
+
+  .stage-instruction,.atis-box{
+    font-size:13px;
+    line-height:1.42;
+  }
+
+  /* Primary mobile interaction */
+  .ptt{
+    position:sticky;
+    bottom:calc(8px + env(safe-area-inset-bottom));
+    z-index:20;
+    min-height:68px;
+    padding:14px 12px;
+    margin:10px 0;
+    border-radius:14px;
+    box-shadow:0 8px 22px rgba(7,42,79,.24);
+  }
+  .ptt .mic{
+    font-size:25px;
+    margin-bottom:3px;
+  }
+
+  #commPanel>div[style*="display:flex"]{
+    display:grid!important;
+    grid-template-columns:1fr 1fr;
+    gap:7px!important;
+  }
+  #commPanel .btn,
+  .atis-actions .btn{
+    min-height:48px;
+    padding:10px 7px;
+  }
+
+  .scorebar{
+    grid-template-columns:72px minmax(0,1fr);
+    gap:8px;
+  }
+  .score{
+    font-size:26px;
+  }
+  .feedback{
+    font-size:12px;
+  }
+
+  /* Keep transcript useful without making the page excessively tall */
+  .transcript{
+    height:min(300px,34vh);
+    min-height:190px;
+    overflow:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .nav-row{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+  .nav-row .btn{
+    width:100%;
+    min-height:48px;
+    padding:10px 7px;
+  }
+
+  .bubble{
+    font-size:13px;
+    overflow-wrap:anywhere;
+  }
+}
+
+/* Small phones */
+@media (max-width:380px){
+  .app{
+    padding-left:4px;
+    padding-right:4px;
+  }
+  .card{
+    padding:10px;
+  }
+  h1{
+    font-size:17px;
+  }
+  .freq-grid{
+    grid-template-columns:44px minmax(0,1fr) 44px;
+    gap:5px;
+  }
+  .frequency{
+    font-size:21px;
+  }
+  .stage-chip{
+    font-size:8.5px;
+  }
+  .setup-summary-hint{
+    font-size:9px;
+  }
+  .scorebar{
+    grid-template-columns:1fr;
+  }
+}
+
+/* Desktop remains unchanged, but make controls keyboard-visible. */
+@media (hover:hover){
+  .btn:hover,.freq-btn:hover{
+    filter:brightness(.98);
+  }
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible{
+  outline:3px solid #78b9ef;
+  outline-offset:2px;
 }
 
 </style>
