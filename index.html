@@ -741,6 +741,52 @@ details.setup:not([open]) .setup-bottom-toggle{
   background:#eaf2f9;
 }
 
+
+/* =========================================================
+   V3.14 COMPACT SETUP ACTIONS
+   ========================================================= */
+.setup-action-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.setup-action-btn{
+  width:100%;
+  min-height:34px;
+  padding:7px 8px !important;
+  font-size:10px !important;
+  line-height:1.15;
+  border-radius:8px;
+}
+.setup-bottom-toggle{
+  margin-top:0 !important;
+  min-height:34px !important;
+}
+details.setup:not([open]) .setup-bottom-toggle{
+  display:none !important;
+}
+
+/* Keep the compact side-by-side controls on desktop/tablet. */
+@media(min-width:701px){
+  .setup-action-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  }
+}
+
+/* On narrow phones, keep them compact and side-by-side if practical. */
+@media(max-width:700px){
+  .setup-action-row{
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+  }
+  .setup-action-btn{
+    min-height:32px;
+    padding:6px 6px !important;
+    font-size:9px !important;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -863,13 +909,15 @@ details.setup:not([open]) .setup-bottom-toggle{
       </label>
     </div>
 
-    <button id="applySetup" class="btn primary" style="margin-top:12px;width:100%;">
-      APPLY SETUP
-    </button>
+    <div class="setup-action-row">
+      <button id="applySetup" class="btn primary setup-action-btn">
+        APPLY SETUP
+      </button>
+      <button type="button" class="setup-bottom-toggle setup-action-btn" onclick="collapseSetupAndTop(this)">
+        Tap to Collapse ▲
+      </button>
+    </div>
     <div class="small setup-note">Airport frequencies in this trainer are training defaults. Verify current FAA/airport information before flight.</div>
-    <button type="button" class="setup-bottom-toggle" onclick="this.closest('details').open=false;">
-      Tap to Collapse ▲
-    </button>
   </div>
 </details>
 
@@ -1936,6 +1984,17 @@ readSetup(true);
 
 
 
+
+
+function collapseSetupAndTop(button){
+  const details=button.closest("details");
+  if(details) details.open=false;
+
+  /* Return to the top of the FK ATC COM Trainer after collapsing. */
+  requestAnimationFrame(()=>{
+    window.scrollTo({top:0,left:0,behavior:"smooth"});
+  });
+}
 
 </script>
 </body>
