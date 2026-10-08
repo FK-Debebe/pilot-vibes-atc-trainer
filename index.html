@@ -1,0 +1,1305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FK ATC COM Trainer V3.3</title>
+<style>
+:root{
+  --navy:#0a2f57; --blue:#1767b1; --blue2:#2d82cf; --bg:#edf4f9; --card:#fff;
+  --text:#182234; --muted:#6b788b; --line:#d8e2ec; --green:#177f3e;
+  --red:#b42318; --amber:#a35a00; --shadow:0 14px 36px rgba(13,45,78,.10);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(#e8f1f8,#f8fbfd);color:var(--text)}
+.app{max-width:1200px;margin:0 auto;padding:18px}
+header{background:var(--navy);color:white;border-radius:18px;padding:18px 22px;display:flex;justify-content:space-between;gap:20px;align-items:center;box-shadow:var(--shadow)}
+.brand{font-size:11px;letter-spacing:.18em;font-weight:800;opacity:.8}
+h1{margin:3px 0 0;font-size:24px}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.btn{border-radius:10px;padding:10px 14px;font-weight:800;border:1px solid var(--line);background:white;color:var(--navy)}
+.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+.btn.success{background:var(--green);color:white;border-color:var(--green)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.mic-status{font-size:12px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18)}
+.mic-status.ok{background:rgba(54,190,100,.18)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
+.setup{margin-top:16px}
+.setup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+label{display:grid;gap:6px;font-size:12px;color:#506176;font-weight:700}
+input,select,textarea{border:1px solid #cbd7e2;border-radius:10px;padding:10px 11px;background:#fff;color:var(--text)}
+.progress{margin:16px 0 12px;background:#dfe8f0;height:8px;border-radius:999px;overflow:hidden}
+.progress > div{height:100%;background:var(--blue);width:0;transition:width .25s}
+.stage-nav{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}
+.stage-chip{padding:8px 6px;border-radius:10px;text-align:center;font-size:10px;font-weight:800;background:#f5f8fb;border:1px solid var(--line);color:var(--muted)}
+.stage-chip.active{background:#eaf4ff;border-color:#8fc3ee;color:var(--navy)}
+.stage-chip.done{background:#eef8f0;border-color:#b7dcbc;color:var(--green)}
+.main-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px}
+.heading{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.eyebrow{font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:800}
+h2{margin:4px 0 12px;color:var(--navy)}
+.flight-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:13px}
+.flight-chip{font-size:11px;background:#f7fafc;border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:#526174}
+.radio{background:#061b31;color:#c8efff;border-radius:16px;padding:16px;margin:12px 0}
+.radio-top{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:10px}
+.radio-label{font-size:10px;letter-spacing:.15em;opacity:.7;font-weight:800}
+.freq-grid{display:grid;grid-template-columns:54px 1fr 54px;gap:9px;align-items:center}
+.freq-btn{height:50px;border-radius:10px;border:1px solid #46647e;background:#102d48;color:#d8f4ff;font-size:26px}
+.frequency{background:#041626;border:1px solid #365875;color:#bdeeff;font-family:"Courier New",monospace;font-size:31px;font-weight:900;text-align:center}
+.tune-msg{text-align:center;font-size:11px;margin-top:8px;color:#ffe4a0}
+.stage-instruction{background:#eff7ff;border-left:4px solid var(--blue2);border-radius:10px;padding:12px 14px;line-height:1.45;margin:12px 0}
+.atis-box{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:13px;min-height:52px;line-height:1.5}
+.ptt{width:100%;border:0;border-radius:17px;background:linear-gradient(#2377c7,#0e4e8e);color:#fff;padding:22px 16px;font-weight:900;letter-spacing:.06em;font-size:16px;margin:12px 0}
+.ptt.listening{background:linear-gradient(#ce4444,#8e1f1f)}
+.ptt .mic{display:block;font-size:29px;margin-bottom:5px}
+.ptt:disabled{opacity:.5;cursor:not-allowed}
+.transcript{height:520px;overflow:auto;padding-right:3px}
+.msg{margin-bottom:14px}
+.speaker{font-size:9px;letter-spacing:.11em;font-weight:800;color:var(--muted);margin-bottom:4px}
+.bubble{border-radius:13px;padding:11px 13px;line-height:1.45}
+.msg.pilot .bubble{background:#edf6ff;border:1px solid #c7e2fa}
+.msg.atc .bubble{background:#f0f7ee;border:1px solid #cee3c9}
+.msg.system .bubble{background:#f6f7f9;border:1px solid #e2e5e9}
+.scorebar{margin-top:16px;display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center}
+.score{font-size:34px;font-weight:900;color:var(--navy)}
+.feedback{background:#f7fafc;border:1px solid var(--line);border-radius:11px;padding:13px;line-height:1.45}
+.nav-row{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.hidden{display:none!important}
+.small{font-size:11px;color:var(--muted)}
+.good{color:var(--green)}
+.warn{color:var(--amber)}
+header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-columns:1fr}.stage-nav{grid-template-columns:repeat(2,1fr)}.freq-grid{grid-template-columns:46px 1fr 46px}.frequency{font-size:25px}.scorebar{grid-template-columns:1fr}}
+
+@media(max-width:700px){
+  html,body{width:100%;max-width:100%;overflow-x:hidden}
+  body{background:#f5f8fb}
+  .app{width:100%;max-width:100%;padding:6px;margin:0}
+  header{width:100%;border-radius:10px;padding:12px 14px;display:block}
+  h1{font-size:18px;line-height:1.2}
+  .brand{font-size:9px}
+  .card{width:100%;max-width:100%;border-radius:10px;padding:12px;box-shadow:none}
+  .setup{margin-top:8px}
+  .heading{display:block}
+  .heading .btn{width:100%;margin-top:8px}
+  .setup-grid{display:grid;grid-template-columns:1fr;gap:8px}
+  label{width:100%}
+  input,select,textarea{width:100%;max-width:100%;font-size:16px}
+  .progress{margin:8px 0}
+  .stage-nav{display:flex;gap:5px;overflow-x:auto;padding-bottom:4px;margin-bottom:8px;scrollbar-width:thin}
+  .stage-chip{flex:0 0 auto;min-width:92px;padding:7px 8px;font-size:9px}
+  .main-grid{display:block}
+  .main-grid>.card{margin-bottom:8px}
+  .flight-chips{gap:5px;margin-bottom:8px}
+  .flight-chip{font-size:10px;padding:5px 7px}
+  .radio{padding:10px;border-radius:10px;margin:8px 0}
+  .freq-grid{grid-template-columns:42px minmax(0,1fr) 42px;gap:6px}
+  .freq-btn{height:44px;font-size:22px;border-radius:8px}
+  .frequency{width:100%;min-width:0;font-size:24px;padding:8px 4px}
+  .tune-msg{font-size:10px;margin-top:6px}
+  .stage-instruction{margin:8px 0;padding:10px;font-size:13px}
+  .atis-box{padding:10px;font-size:13px}
+  .ptt{width:100%;padding:16px 10px;margin:8px 0;border-radius:12px;font-size:14px}
+  .mic{font-size:24px}
+  textarea{min-height:92px}
+  #commPanel>div[style*="display:flex"]{display:grid!important;grid-template-columns:1fr 1fr;gap:6px!important}
+  #commPanel .btn{width:100%;padding:10px 8px}
+  .scorebar{grid-template-columns:78px 1fr;gap:8px;margin-top:10px}
+  .score{font-size:28px}
+  .feedback{padding:10px;font-size:12px}
+  .nav-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;padding-top:10px}
+  .nav-row .btn{width:100%;padding:10px 6px;font-size:12px}
+  .transcript{height:300px}
+  .bubble{padding:9px 10px;font-size:13px}
+  #environmentText{font-size:11px}
+}
+@media(max-width:390px){
+  .frequency{font-size:21px}
+  .freq-grid{grid-template-columns:38px minmax(0,1fr) 38px}
+  .stage-chip{min-width:84px}
+  .scorebar{grid-template-columns:1fr}
+}
+
+
+
+
+@media(max-width:700px){
+  .setup .heading{
+    display:grid;
+    grid-template-columns:1fr auto;
+    align-items:center;
+    gap:8px;
+  }
+  .setup .heading .btn{
+    width:auto;
+    margin-top:0;
+    padding:8px 10px;
+    font-size:11px;
+  }
+}
+
+
+.setup{
+  overflow:hidden;
+}
+.setup-summary{
+  list-style:none;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  user-select:none;
+}
+.setup-summary::-webkit-details-marker{
+  display:none;
+}
+.setup-summary::after{
+  content:"▲";
+  font-size:14px;
+  font-weight:700;
+  flex:0 0 auto;
+}
+details.setup:not([open]) .setup-summary::after{
+  content:"▼";
+}
+.setup-summary-hint{
+  margin-left:auto;
+  font-size:11px;
+  opacity:.75;
+}
+.setup-content{
+  margin-top:12px;
+}
+details.setup:not([open]) .setup-summary-hint{
+  opacity:.9;
+}
+@media(max-width:700px){
+  .setup-summary{
+    align-items:flex-start;
+  }
+  .setup-summary h2{
+    font-size:16px;
+    margin-right:4px;
+  }
+  .setup-summary-hint{
+    display:none;
+  }
+}
+
+
+.atis-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  align-items:stretch;
+}
+.atis-actions .btn{
+  width:100%;
+  min-height:44px;
+}
+@media(max-width:420px){
+  .atis-actions{
+    grid-template-columns:1fr 1fr;
+    gap:7px;
+  }
+  .atis-actions .btn{
+    padding:10px 6px;
+    font-size:11px;
+  }
+}
+
+</style>
+  <meta name="theme-color" content="#0d47a1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="ATC Trainer">
+</head>
+<body>
+<div class="app">
+<header>
+  <div><div class="brand">PILOT VIBES</div><h1>FK ATC COM Trainer</h1></div>
+  
+</header>
+
+
+
+<details class="card setup" open>
+  <summary class="setup-summary">
+    <div>
+      <div class="eyebrow">FLIGHT SETUP</div>
+      <h2>KLGB → KCRQ Training Flight</h2>
+    </div>
+    <span class="setup-summary-hint">Tap to collapse / expand</span>
+  </summary>
+
+  <div class="setup-content">
+    <div class="setup-grid">
+      <label>Aircraft<input id="aircraft" value="Cessna 724SP"></label>
+
+      <label>Starting Location
+        <select id="location">
+          <option>Long Beach Flying Club</option>
+          <option>Signature Ramp</option>
+          <option>Atlantic Ramp</option>
+          <option>West Ramp</option>
+          <option>South Ramp</option>
+        </select>
+      </label>
+
+      <label>Departure ATIS (random)
+        <input id="atis" value="" readonly>
+      </label>
+
+      <label>Arrival ATIS (random)
+        <input id="arrivalAtis" value="" readonly>
+      </label>
+
+      <label>Destination Runway
+        <select id="destRunway">
+          <option selected>24</option>
+          <option>6</option>
+          <option>25</option>
+        </select>
+      </label>
+
+      <label>Expected Runway
+        <select id="runway">
+          <option>26L</option>
+          <option>26R</option>
+          <option>30</option>
+          <option>12</option>
+          <option>8L</option>
+          <option>8R</option>
+        </select>
+      </label>
+
+      <label>Departure Direction
+        <select id="direction">
+          <option>Southeast</option>
+          <option>Southwest</option>
+          <option>Northeast</option>
+          <option>Northwest</option>
+        </select>
+      </label>
+
+      <label>Requested Altitude
+        <select id="altitude">
+          <option>2,500 ft</option>
+          <option selected>3,500 ft</option>
+          <option>4,500 ft</option>
+          <option>5,500 ft</option>
+        </select>
+      </label>
+
+      <label>Training Level
+        <select id="level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </label>
+    </div>
+
+    <button id="applySetup" class="btn primary" style="margin-top:12px;width:100%;">
+      APPLY SETUP
+    </button>
+  </div>
+</details>
+
+
+
+<div class="progress"><div id="progressFill"></div></div>
+<div id="stageNav" class="stage-nav"></div>
+
+<div class="main-grid">
+  <section class="card">
+    <div class="heading">
+      <div><div id="stageCounter" class="eyebrow">STAGE 1 OF 7</div><h2 id="stageTitle">ATIS / AWOS</h2></div>
+      <div id="stageState" class="small">Not started</div>
+    </div>
+
+    <div id="flightChips" class="flight-chips"></div>
+
+    <div class="radio">
+      <div class="radio-top">
+        <div class="radio-label">COM RADIO</div>
+        <div id="targetFrequency" class="small"></div>
+      </div>
+      <div class="freq-grid">
+        <button id="freqDown" class="freq-btn">−</button>
+        <input id="frequency" class="frequency" value="121.500" inputmode="decimal">
+        <button id="freqUp" class="freq-btn">+</button>
+      </div>
+      <div id="tuneMsg" class="tune-msg">Tune to the active facility.</div>
+    </div>
+
+    <div id="instruction" class="stage-instruction"></div>
+
+    <div id="atisPanel">
+      <div id="atisActions" class="atis-actions">
+        <button id="monitorAtis" class="btn primary">MONITOR ATIS</button>
+      </div>
+      <div id="atisText" class="atis-box" style="margin-top:10px"></div>
+    </div>
+
+    <div id="commPanel" class="hidden">
+      <button id="ptt" class="ptt" disabled>
+        <span class="mic">🎙</span><span id="pttLabel">HOLD TO TALK</span>
+      </button>
+      <textarea id="pilotText" rows="4" placeholder="Speech transcript will appear here. You may also type a transmission."></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
+        <button id="sendTyped" class="btn primary">SEND TYPED</button>
+        <button id="clearText" class="btn">CLEAR</button>
+      </div>
+      <div class="small" style="margin-top:8px">PTT automatically evaluates the transmission when you release the button.</div>
+    </div>
+
+    <div class="scorebar">
+      <div><div id="score" class="score">—</div><div class="small">STAGE SCORE</div></div>
+      <div id="feedback" class="feedback">Tune the radio to begin.</div>
+    </div>
+
+    <div id="navRow" class="nav-row">
+      <button id="previous" class="btn">← PREVIOUS</button>
+      <button id="next" class="btn primary" disabled>NEXT →</button>
+      <button id="reset" class="btn secondary hidden">RESET / START OVER</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="eyebrow">RADIO EXCHANGE</div>
+    <div id="transcript" class="transcript"></div>
+  </section>
+</div>
+
+<p class="small" style="text-align:center;margin:16px 0 0">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
+</div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+
+const DIGIT = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"niner"};
+const PHONETIC = {A:"Alpha",B:"Bravo",C:"Charlie",D:"Delta",E:"Echo",F:"Foxtrot",G:"Golf",H:"Hotel",I:"India",J:"Juliet",K:"Kilo",L:"Lima",M:"Mike",N:"November",O:"Oscar",P:"Papa",Q:"Quebec",R:"Romeo",S:"Sierra",T:"Tango",U:"Uniform",V:"Victor",W:"Whiskey",X:"X-ray",Y:"Yankee",Z:"Zulu"};
+
+const STAGES = [
+  {id:"atis", title:"DEPARTURE ATIS", facility:"Long Beach ATIS", freq:"127.750", type:"atis"},
+  {id:"clearance", title:"CLEARANCE DELIVERY", facility:"Long Beach Clearance", freq:"118.150", type:"comm"},
+  {id:"ground", title:"GROUND", facility:"Long Beach Ground", freq:"133.000", type:"comm"},
+  {id:"tower", title:"TOWER", facility:"Long Beach Tower", freq:"119.400", type:"comm"},
+  {id:"departure", title:"DEPARTURE", facility:"SoCal Departure", freq:"127.200", type:"comm"},
+  {id:"arrival", title:"ARRIVAL / APPROACH", facility:"SoCal Approach", freq:"127.300", type:"comm"},
+  {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:"Palomar ATIS", freq:"120.150", type:"atis"},
+  {id:"destTower", title:"DESTINATION TOWER", facility:"Palomar Tower", freq:"118.600", type:"comm"},
+  {id:"destGround", title:"DESTINATION GROUND", facility:"Palomar Ground", freq:"121.800", type:"comm"}
+];
+
+const app = {
+  stageIndex: 0,
+  phase: "idle",
+  micAllowed: false,
+  recognizer: null,
+  recognitionText: "",
+  autoEvaluateOnEnd: false,
+  stageComplete: false,
+  squawk:"4721",
+  config: {
+    aircraft:"Cessna 724SP",
+    location:"Long Beach Flying Club",
+    atis:"",
+    arrivalAtis:"",
+    runway:"26L",
+    destRunway:"24",
+    direction:"Southeast",
+    altitude:"3,500 ft",
+    level:"beginner"
+  },
+  pttStopping:false
+};
+
+function norm(s){return (s||"").toLowerCase().replace(/[.,!?]/g," ").replace(/\s+/g," ").trim()}
+function compact(s){return norm(s).replace(/\s+/g,"")}
+function clampFreq(v){return Math.min(136.975,Math.max(118,Math.round(v*1000)/1000))}
+function formatFreq(v){return Number(v).toFixed(3)}
+function supportedMicContext(){
+  return (
+    location.hostname==="localhost" ||
+    location.hostname==="127.0.0.1" ||
+    location.protocol==="https:"
+  );
+}
+
+function tuned(){return Math.abs(parseFloat($("frequency").value)-parseFloat(STAGES[app.stageIndex].freq))<0.001}
+
+function callsignSpoken(){
+  const raw=app.config.aircraft.replace(/^cessna\s*/i,"").replace(/\s/g,"").toUpperCase();
+  return "Cessna "+[...raw].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+}
+function runwaySpoken(r=app.config.runway){
+  const m=r.toUpperCase().match(/^(\d+)([LRC])?$/);
+  if(!m) return r;
+  let s=[...m[1]].map(d=>DIGIT[d]).join(" ");
+  if(m[2]) s+=" "+({L:"left",R:"right",C:"center"}[m[2]]);
+  return s;
+}
+function altitudeSpoken(){
+  const n=app.config.altitude.replace(/\D/g,"");
+  const map={"2500":"two thousand five hundred","3500":"three thousand five hundred","4500":"four thousand five hundred","5500":"five thousand five hundred"};
+  return map[n]||[...n].map(d=>DIGIT[d]).join(" ");
+}
+function append(type,speaker,text){
+  const el=document.createElement("div");
+  el.className="msg "+type;
+  el.innerHTML=`<div class="speaker">${speaker}</div><div class="bubble">${text}</div>`;
+  $("transcript").appendChild(el);
+  $("transcript").scrollTop=$("transcript").scrollHeight;
+}
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=.95; u.pitch=.92;
+  speechSynthesis.speak(u);
+}
+
+function readSetup(generateCodes=true){
+  if(generateCodes){
+    app.config.atis=randomAtisCode();
+    app.config.arrivalAtis=randomAtisCode(app.config.atis);
+    $("atis").value=app.config.atis;
+    $("arrivalAtis").value=app.config.arrivalAtis;
+  }
+
+  app.config={
+    aircraft:$("aircraft").value.trim()||"Cessna 724SP",
+    location:$("location").value,
+    atis:$("atis").value || app.config.atis || randomAtisCode(),
+    arrivalAtis:$("arrivalAtis").value || app.config.arrivalAtis || randomAtisCode(),
+    runway:$("runway").value,
+    destRunway:$("destRunway").value,
+    direction:$("direction").value,
+    altitude:$("altitude").value,
+    level:$("level").value
+  };
+
+  app.stageIndex=0;
+  $("next").classList.remove("hidden");
+  $("reset").classList.add("hidden");
+  const nextBtn=$("next");
+  if(stage.type==="atis"){
+    $("atisActions").appendChild(nextBtn);
+  }else{
+    $("navRow").insertBefore(nextBtn,$("reset"));
+  }
+
+  renderStage(true);
+}
+
+function renderNav(){
+  $("stageNav").innerHTML="";
+
+  const current=STAGES[app.stageIndex];
+  const currentChip=document.createElement("div");
+  currentChip.className="stage-chip active";
+  currentChip.textContent=current.title;
+  $("stageNav").appendChild(currentChip);
+
+  if(app.stageIndex<STAGES.length-1){
+    const nextStage=STAGES[app.stageIndex+1];
+    const nextChip=document.createElement("div");
+    nextChip.className="stage-chip";
+    nextChip.textContent=`NEXT: ${nextStage.title}`;
+    $("stageNav").appendChild(nextChip);
+  }
+}
+
+function instructionFor(stage){
+  const c=app.config;
+  const beginner={
+    atis:`Tune ${stage.freq} and monitor Long Beach ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
+    clearance:`Contact Long Beach Clearance before Ground. Include callsign, information ${c.atis}, destination Palomar, VFR request, and ${c.direction.toLowerCase()} departure.`,
+    ground:`Call Long Beach Ground from ${c.location}. Include your callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
+    tower:`After reaching runway ${c.runway}, call Long Beach Tower and report ready for departure.`,
+    departure:`After tower handoff, check in with SoCal Departure. Include callsign and altitude.`,
+    arrival:`Contact SoCal Approach for Palomar. Include callsign, destination, and request.`,
+    arrivalAtis:`Before calling Palomar Tower, monitor Palomar ATIS and note information ${c.arrivalAtis}.`,
+    destTower:`Call Palomar Tower with callsign, position, inbound request, information ${c.arrivalAtis}, and destination runway ${c.destRunway}.`,
+    destGround:`After clearing the runway, contact Palomar Ground and request taxi to parking.`
+  };
+  const intermediate={
+    atis:"Monitor departure ATIS and record the information.",
+    clearance:"Contact Clearance Delivery and obtain the VFR departure clearance.",
+    ground:"Make the initial ground call with all essential elements.",
+    tower:"Make the departure call to tower and read back the takeoff clearance.",
+    departure:"Check in after handoff and read back the altitude assignment.",
+    arrival:"Make the arrival/approach call and read back the approach instruction.",
+    arrivalAtis:"Monitor the destination ATIS before contacting tower.",
+    destTower:"Make the initial tower call, read back pattern instructions, then read back landing clearance.",
+    destGround:"Request taxi to parking and read back the taxi instruction."
+  };
+  if(c.level==="advanced") return "Complete the radio task without prompting.";
+  return (c.level==="beginner"?beginner:intermediate)[stage.id];
+}
+
+function renderStage(resetFrequency=true){
+  const stage=STAGES[app.stageIndex];
+  const phaseMap={
+    clearance:"clearanceInitial",
+    ground:"groundInitial",
+    tower:"towerInitial",
+    departure:"departureInitial",
+    arrival:"arrivalInitial",
+    destTower:"destTowerInitial",
+    destGround:"destGroundInitial"
+  };
+
+  app.phase=phaseMap[stage.id]||"initial";
+  app.stageComplete=false;
+  app.recognitionText="";
+
+  $("stageCounter").textContent=`STAGE ${app.stageIndex+1} OF ${STAGES.length}`;
+  $("stageTitle").textContent=stage.title;
+  $("stageState").textContent="Not completed";
+  $("stageState").className="small";
+  $("progressFill").style.width=`${((app.stageIndex+1)/STAGES.length)*100}%`;
+  $("targetFrequency").textContent=app.config.level==="beginner" ? `Target ${stage.freq} MHz` : "";
+  $("instruction").textContent=instructionFor(stage);
+
+  $("atisPanel").classList.toggle("hidden",stage.type!=="atis");
+  $("commPanel").classList.toggle("hidden",stage.type!=="comm");
+  $("monitorAtis").textContent="MONITOR ATIS";
+
+  $("atisText").textContent="";
+  $("pilotText").value="";
+  $("score").textContent="—";
+  $("feedback").textContent="Tune the radio to begin.";
+  $("next").disabled=true;
+  $("next").textContent=app.stageIndex===STAGES.length-1?"FINISH":"NEXT →";
+  $("previous").disabled=app.stageIndex===0;
+  $("reset").classList.add("hidden");
+  $("transcript").innerHTML="";
+  append("system","TRAINER",`${stage.title} stage loaded.`);
+
+  if(resetFrequency) $("frequency").value="121.500";
+
+  $("flightChips").innerHTML=[
+    "KLGB → KCRQ",
+    app.config.aircraft,
+    app.config.location,
+    `DEP RWY ${app.config.runway}`,
+    `ARR RWY ${app.config.destRunway}`
+  ].map(x=>`<span class="flight-chip">${x}</span>`).join("");
+
+  renderNav();
+  updateTuneUI();
+}
+
+function updateTuneUI(){
+  if(tuned()){
+    $("tuneMsg").textContent=`Tuned to ${STAGES[app.stageIndex].facility}`;
+    $("tuneMsg").className="tune-msg good";
+  } else {
+    $("tuneMsg").textContent="Tune to the active facility.";
+    $("tuneMsg").className="tune-msg";
+  }
+  updatePTTState();
+}
+
+function updatePTTState(){
+  const stage=STAGES[app.stageIndex];
+  if(stage.type!=="comm") return;
+  $("ptt").disabled=!tuned();
+  if(!tuned()) $("pttLabel").textContent="TUNE RADIO FIRST";
+  else $("pttLabel").textContent="HOLD TO TALK";
+}
+
+async function ensureMicrophonePermission(){
+  if(app.micAllowed) return true;
+
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    $("feedback").textContent="Microphone access is unavailable in this browser.";
+    return false;
+  }
+
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    stream.getTracks().forEach(t=>t.stop());
+    app.micAllowed=true;
+    $("feedback").textContent="Microphone permission granted.";
+    return true;
+  }catch(err){
+    $("feedback").textContent="Microphone permission was not granted.";
+    return false;
+  }
+}
+
+function freshRecognizer(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) return null;
+
+  const r=new SR();
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=1;
+
+  r.onstart=()=>{
+    app.recognitionText="";
+    $("pilotText").value="";
+    $("ptt").classList.add("listening");
+    $("pttLabel").textContent="RELEASE TO SEND";
+    $("stageState").textContent="Listening";
+    $("feedback").textContent="Listening...";
+  };
+
+  r.onaudiostart=()=>{
+    $("feedback").textContent="Microphone active...";
+  };
+
+  r.onsoundstart=()=>{
+    $("feedback").textContent="Sound detected...";
+  };
+
+  r.onspeechstart=()=>{
+    $("feedback").textContent="Speech detected...";
+  };
+
+  r.onresult=event=>{
+    let text="";
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      text += event.results[i][0].transcript + " ";
+    }
+    app.recognitionText=text.trim();
+    $("pilotText").value=app.recognitionText;
+  };
+
+  r.onerror=event=>{
+    $("ptt").classList.remove("listening");
+    $("stageState").textContent="Speech error";
+    $("feedback").textContent="Speech recognition error: "+event.error;
+    app.recognizer=null;
+    app.pttStopping=false;
+    updatePTTState();
+  };
+
+  r.onend=()=>{
+    $("ptt").classList.remove("listening");
+    $("stageState").textContent="Ready";
+    $("pttLabel").textContent=tuned() ? "HOLD TO TALK" : "TUNE RADIO FIRST";
+
+    const text=$("pilotText").value.trim();
+    app.recognizer=null;
+    app.pttStopping=false;
+    updatePTTState();
+
+    if(text){
+      evaluateTransmission(text);
+    }else{
+      $("feedback").textContent="No speech was recognized. Try again.";
+    }
+  };
+
+  return r;
+}
+
+async function startPTT(e){
+  e.preventDefault();
+
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+
+  if(!tuned()){
+    $("feedback").textContent="Tune the radio to the active facility frequency before transmitting.";
+    return;
+  }
+
+  if(app.recognizer) return;
+
+  const ok=await ensureMicrophonePermission();
+  if(!ok) return;
+
+  const recognizer=freshRecognizer();
+  if(!recognizer){
+    $("feedback").textContent="Speech recognition is unavailable in this browser.";
+    return;
+  }
+
+  app.pttStopping=false;
+  app.recognizer=recognizer;
+
+  try{
+    recognizer.start();
+  }catch(err){
+    app.recognizer=null;
+    app.pttStopping=false;
+    $("feedback").textContent="Could not start speech recognition. Try again.";
+  }
+}
+
+function stopPTT(e){
+  e.preventDefault();
+
+  if(app.recognizer && !app.pttStopping){
+    app.pttStopping=true;
+    try{
+      app.recognizer.stop();
+    }catch(err){
+      app.pttStopping=false;
+    }
+  }
+}
+
+function hasCallsign(text){
+  const expected=app.config.aircraft
+    .replace(/^cessna\s*/i,"")
+    .replace(/[^a-z0-9]/gi,"")
+    .toLowerCase();
+
+  const heard=norm(text)
+    .replace(/\bseven twenty[- ]?four\b/g,"724")
+    .replace(/\bseven two four\b/g,"724")
+    .replace(/\bsierra\b/g,"s")
+    .replace(/\bpapa\b/g,"p")
+    .replace(/\s+/g,"");
+
+  if(heard.includes(expected)) return true;
+
+  const digits=(expected.match(/\d+/)||[""])[0];
+  const suffix=expected.replace(/\d/g,"");
+
+  if(digits && suffix && heard.includes(digits) && heard.includes(suffix)) return true;
+
+  return false;
+}
+function containsRunway(text,r=app.config.runway){
+  const n=norm(text);
+  const compactText=compact(text);
+  const runway=String(r).toLowerCase();
+
+  if(n.includes(runway) || compactText.includes(runway)) return true;
+
+  const match=runway.match(/^(\d+)([lrc])?$/);
+  if(!match) return false;
+
+  const digits=match[1];
+  const side=match[2] || "";
+  const digitWords={
+    "0":"zero","1":"one","2":"two","3":"three","4":"four",
+    "5":"five","6":"six","7":"seven","8":"eight","9":"nine"
+  };
+
+  const spokenDigits=[...digits].map(d=>digitWords[d]).join(" ");
+  const sideWord={l:"left",r:"right",c:"center"}[side] || "";
+
+  const variants=[
+    digits + side,
+    digits + (sideWord ? " "+sideWord : ""),
+    spokenDigits + (sideWord ? " "+sideWord : ""),
+    spokenDigits + (side ? " "+side : "")
+  ];
+
+  return variants.some(v=>v && n.includes(v));
+}
+
+const ATIS_CODES=["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliet","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","X-ray","Yankee","Zulu"];
+
+function randomAtisCode(exclude=""){
+  const choices=ATIS_CODES.filter(x=>x!==exclude);
+  return choices[Math.floor(Math.random()*choices.length)];
+}
+
+function textDigits(text){
+  let n=norm(text)
+    .replace(/\bniner\b/g,"9")
+    .replace(/\bnine\b/g,"9")
+    .replace(/\beight\b/g,"8")
+    .replace(/\bseven\b/g,"7")
+    .replace(/\bsix\b/g,"6")
+    .replace(/\bfive\b/g,"5")
+    .replace(/\bfour\b/g,"4")
+    .replace(/\bthree\b/g,"3")
+    .replace(/\btwo\b/g,"2")
+    .replace(/\bone\b/g,"1")
+    .replace(/\bzero\b/g,"0")
+    .replace(/\boh\b/g,"0");
+  return n.replace(/\D/g,"");
+}
+
+function containsAltitude(text){
+  const target=app.config.altitude.replace(/\D/g,"");
+  const digits=textDigits(text);
+  if(digits.includes(target)) return true;
+  const n=norm(text);
+  if(n.includes(altitudeSpoken().toLowerCase())) return true;
+  const variants={
+    "2500":["twenty five hundred","twenty-five hundred"],
+    "3500":["thirty five hundred","thirty-five hundred"],
+    "4500":["forty five hundred","forty-five hundred"],
+    "5500":["fifty five hundred","fifty-five hundred"]
+  };
+  return (variants[target]||[]).some(v=>n.includes(v));
+}
+
+function containsDirection(text){
+  return compact(text).includes(app.config.direction.toLowerCase().replace(/\s+/g,""));
+}
+
+function containsFrequency(text,freq){
+  const digits=textDigits(text);
+  const target=String(freq).replace(/\D/g,"");
+  return digits.includes(target) || norm(text).includes(String(freq));
+}
+
+function containsDestRunway(text){
+  return containsRunway(text,app.config.destRunway);
+}
+
+function departureTaxiway(){
+  return app.config.runway.toUpperCase()==="26L" ? "Foxtrot" : "Delta";
+}
+
+function grade(checks){
+  const vals=Object.values(checks);
+  return Math.round(vals.filter(Boolean).length/vals.length*100);
+}
+
+function evaluateTransmission(text){
+  if(!text) return;
+  if(!tuned()){
+    $("feedback").textContent="Radio is not tuned to the active facility.";
+    return;
+  }
+
+  const stage=STAGES[app.stageIndex];
+  append("pilot","PILOT",text);
+  const n=norm(text);
+  let checks={}, replyVisual="", replySpoken="", complete=false;
+
+  if(stage.id==="clearance"){
+    if(app.phase==="clearanceInitial"){
+      checks={
+        facility:n.includes("clearance")||n.includes("long beach"),
+        callsign:hasCallsign(text),
+        atis:n.includes(app.config.atis.toLowerCase()),
+        destination:n.includes("palomar")||n.includes("kcrq")||n.includes("crq"),
+        request:n.includes("vfr")||n.includes("departure")||n.includes("flight following")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=60 && checks.callsign && checks.destination){
+        replyVisual=`${app.config.aircraft}, Long Beach Clearance, VFR departure approved. Departure frequency 127.2, squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, Long Beach Clearance, V F R departure approved. Departure frequency one two seven point two, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        $("feedback").textContent="Clearance received. Read back departure frequency and squawk.";
+        app.phase="clearanceReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say again callsign, destination, ATIS, and request.`;
+        replySpoken=`${callsignSpoken()}, say again callsign, destination, A T I S, and request.`;
+        $("feedback").textContent="Clearance call incomplete. Try again.";
+      }
+    }else{
+      checks={
+        frequency:containsFrequency(text,"127.2")||n.includes("departure frequency"),
+        squawk:textDigits(text).includes(app.squawk),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.frequency&&checks.squawk;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct. Contact Ground when ready to taxi.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Contact Ground when ready to taxi.`;
+        $("feedback").textContent="Clearance Delivery complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify departure frequency 127.2 and squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, verify departure frequency one two seven point two and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        $("feedback").textContent="Read back the departure frequency and squawk.";
+      }
+    }
+  }
+
+  if(stage.id==="ground"){
+    if(app.phase==="groundInitial"){
+      checks={
+        facility:n.includes("long beach ground")||n.includes("ground"),
+        callsign:hasCallsign(text),
+        location:n.includes(app.config.location.toLowerCase())||n.includes("flying club"),
+        atis:n.includes(app.config.atis.toLowerCase()),
+        request:n.includes("taxi")||n.includes("departure")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s<60){
+        replyVisual=`${app.config.aircraft}, say again your position, ATIS, and request.`;
+        replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
+        $("feedback").textContent="Several required items were missing. Try the initial call again.";
+      }else{
+        replyVisual=`${app.config.aircraft}, Long Beach Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
+        replySpoken=`${callsignSpoken()}, Long Beach Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+        $("feedback").textContent=`Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
+        app.phase="groundReadback";
+      }
+    }else{
+      checks={runway:containsRunway(text),taxiway:n.includes(departureTaxiway().toLowerCase()),callsign:hasCallsign(text)};
+      const essential=checks.runway&&checks.taxiway;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct.`;
+        replySpoken=`${callsignSpoken()}, readback correct.`;
+        $("feedback").textContent="Ground stage complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
+        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+        $("feedback").textContent="Readback incomplete. Try again.";
+      }
+    }
+  }
+
+  if(stage.id==="tower"){
+    if(app.phase==="towerInitial"){
+      checks={
+        facility:n.includes("tower")||n.includes("long beach"),
+        callsign:hasCallsign(text),
+        runway:containsRunway(text),
+        ready:n.includes("ready")||n.includes("departure")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=75){
+        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
+        $("feedback").textContent="Read back runway, takeoff clearance, and departure direction.";
+        app.phase="towerReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say again runway and request.`;
+        replySpoken=`${callsignSpoken()}, say again runway and request.`;
+        $("feedback").textContent="Tower call incomplete. Try again.";
+      }
+    }else{
+      checks={
+        runway:containsRunway(text),
+        takeoff:n.includes("takeoff")||n.includes("cleared"),
+        direction:containsDirection(text),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.runway&&checks.takeoff&&checks.direction;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct.`;
+        replySpoken=`${callsignSpoken()}, readback correct.`;
+        $("feedback").textContent="Tower stage complete.";
+        complete=true;
+      }else{
+        const missing=[];
+        if(!checks.runway) missing.push(`runway ${app.config.runway}`);
+        if(!checks.takeoff) missing.push("takeoff clearance");
+        if(!checks.direction) missing.push(app.config.direction.toLowerCase()+" departure");
+        replyVisual=`${app.config.aircraft}, verify ${missing.join(", ")}.`;
+        replySpoken=`${callsignSpoken()}, verify the takeoff clearance.`;
+        $("feedback").textContent=`Readback not complete. Missing: ${missing.join(", ")}.`;
+      }
+    }
+  }
+
+  if(stage.id==="departure"){
+    if(app.phase==="departureInitial"){
+      checks={
+        facility:n.includes("departure")||n.includes("socal"),
+        callsign:hasCallsign(text),
+        altitude:containsAltitude(text)||n.includes("altitude")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=67){
+        replyVisual=`${app.config.aircraft}, radar contact. Climb and maintain ${app.config.altitude}.`;
+        replySpoken=`${callsignSpoken()}, radar contact. Climb and maintain ${altitudeSpoken()}.`;
+        $("feedback").textContent="Read back the assigned altitude.";
+        app.phase="departureReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say altitude.`;
+        replySpoken=`${callsignSpoken()}, say altitude.`;
+        $("feedback").textContent="Departure check-in incomplete. Try again.";
+      }
+    }else{
+      checks={altitude:containsAltitude(text),callsign:hasCallsign(text)};
+      const essential=checks.altitude;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct.`;
+        replySpoken=`${callsignSpoken()}, readback correct.`;
+        $("feedback").textContent="Departure stage complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify climb and maintain ${app.config.altitude}.`;
+        replySpoken=`${callsignSpoken()}, verify climb and maintain ${altitudeSpoken()}.`;
+        $("feedback").textContent="Altitude readback not recognized. Try again.";
+      }
+    }
+  }
+
+  if(stage.id==="arrival"){
+    if(app.phase==="arrivalInitial"){
+      checks={
+        facility:n.includes("approach")||n.includes("socal"),
+        callsign:hasCallsign(text),
+        destination:n.includes("palomar")||n.includes("kcrq")||n.includes("crq"),
+        request:n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=75){
+        replyVisual=`${app.config.aircraft}, proceed direct Palomar. Expect visual approach.`;
+        replySpoken=`${callsignSpoken()}, proceed direct Palomar. Expect visual approach.`;
+        $("feedback").textContent="Read back direct Palomar and the visual approach.";
+        app.phase="arrivalReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say destination and request.`;
+        replySpoken=`${callsignSpoken()}, say destination and request.`;
+        $("feedback").textContent="Arrival call incomplete. Try again.";
+      }
+    }else{
+      checks={
+        palomar:n.includes("palomar")||n.includes("crq"),
+        direct:n.includes("direct")||n.includes("proceed"),
+        visual:n.includes("visual"),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.palomar&&checks.visual;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct. Obtain Palomar ATIS on 120.15.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Obtain Palomar A T I S on one two zero point one five.`;
+        $("feedback").textContent="Approach stage complete. Next: Arrival ATIS.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify direct Palomar, expect visual approach.`;
+        replySpoken=`${callsignSpoken()}, verify direct Palomar, expect visual approach.`;
+        $("feedback").textContent="Approach readback not recognized. Try again.";
+      }
+    }
+  }
+
+  if(stage.id==="destTower"){
+    if(app.phase==="destTowerInitial"){
+      checks={
+        facility:n.includes("palomar tower")||n.includes("tower"),
+        callsign:hasCallsign(text),
+        atis:n.includes(app.config.arrivalAtis.toLowerCase()),
+        inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
+        runway:containsDestRunway(text)
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=60 && checks.callsign && checks.inbound){
+        replyVisual=`${app.config.aircraft}, Palomar Tower, enter right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
+        replySpoken=`${callsignSpoken()}, Palomar Tower, enter right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        $("feedback").textContent="Read back the pattern instruction.";
+        app.phase="destTowerPatternReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say again callsign, ATIS, position, and landing request.`;
+        replySpoken=`${callsignSpoken()}, say again callsign, A T I S, position, and landing request.`;
+        $("feedback").textContent="Initial Palomar Tower call incomplete. Try again.";
+      }
+    }else if(app.phase==="destTowerPatternReadback"){
+      checks={
+        downwind:n.includes("right downwind")||n.includes("downwind"),
+        runway:containsDestRunway(text),
+        extend:n.includes("extend")||n.includes("extending"),
+        base:n.includes("base"),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.downwind&&checks.runway&&checks.extend&&checks.base;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, turn base. Runway ${app.config.destRunway}, cleared to land.`;
+        replySpoken=`${callsignSpoken()}, turn base. Runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
+        $("feedback").textContent="Now read back the landing clearance.";
+        app.phase="destTowerLandingReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, verify right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
+        replySpoken=`${callsignSpoken()}, verify right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        $("feedback").textContent="Pattern readback not recognized. Try again.";
+      }
+    }else{
+      checks={
+        runway:containsDestRunway(text),
+        landing:n.includes("cleared to land")||n.includes("land"),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.runway&&checks.landing;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct.`;
+        replySpoken=`${callsignSpoken()}, readback correct.`;
+        $("feedback").textContent="Destination Tower stage complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify Runway ${app.config.destRunway}, cleared to land.`;
+        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
+        $("feedback").textContent="Landing clearance readback not recognized. Try again.";
+      }
+    }
+  }
+
+  if(stage.id==="destGround"){
+    if(app.phase==="destGroundInitial"){
+      checks={
+        facility:n.includes("ground"),
+        callsign:hasCallsign(text),
+        request:n.includes("taxi")||n.includes("parking")
+      };
+      const s=grade(checks); $("score").textContent=s+"%";
+      if(s>=67){
+        replyVisual=`${app.config.aircraft}, Palomar Ground, taxi to parking via Alpha.`;
+        replySpoken=`${callsignSpoken()}, Palomar Ground, taxi to parking via Alpha.`;
+        $("feedback").textContent="Read back taxi to parking via Alpha.";
+        app.phase="destGroundReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, say parking request.`;
+        replySpoken=`${callsignSpoken()}, say parking request.`;
+        $("feedback").textContent="Ground call incomplete. Try again.";
+      }
+    }else{
+      checks={
+        taxiway:n.includes("alpha"),
+        parking:n.includes("parking")||n.includes("taxi"),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.taxiway&&checks.parking;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct.`;
+        replySpoken=`${callsignSpoken()}, readback correct.`;
+        $("feedback").textContent="Destination Ground complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify taxi to parking via Alpha.`;
+        replySpoken=`${callsignSpoken()}, verify taxi to parking via Alpha.`;
+        $("feedback").textContent="Taxi readback not recognized. Try again.";
+      }
+    }
+  }
+
+  if(replyVisual){
+    append("atc",stage.facility.toUpperCase(),replyVisual);
+    speak(replySpoken);
+  }
+
+  if(complete) completeStage();
+}
+
+function completeStage(){
+  app.stageComplete=true;
+  $("stageState").textContent="Complete";
+  $("stageState").className="small good";
+  $("next").disabled=false;
+}
+
+function monitorAtis(){
+  if(!tuned()){
+    $("feedback").textContent="Tune the radio to the active ATIS frequency first.";
+    return;
+  }
+
+  const c=app.config;
+  const stage=STAGES[app.stageIndex];
+  let visual="",spoken="",label="",code="";
+
+  if(stage.id==="arrivalAtis"){
+    code=c.arrivalAtis;
+    label="Palomar ATIS";
+    visual=`Palomar Airport information ${code}. Wind 240 at 6. Visibility 10. Sky clear. Temperature 24. Dew point 14. Altimeter 30.01. Landing runway ${c.destRunway}. Advise on initial contact you have ${code}.`;
+    spoken=`Palomar Airport information ${code}. Winned two four zero at six. Visibility one zero. Sky clear. Temperature two four. Dew point one four. Altimeter three zero zero one. Landing runway ${runwaySpoken(c.destRunway)}. Advise on initial contact you have ${code}.`;
+  }else{
+    code=c.atis;
+    label="Long Beach ATIS";
+    visual=`Long Beach Airport information ${code}. Wind 260 at 8. Visibility 10. Sky clear. Temperature 22. Dew point 12. Altimeter 30.02. Landing and departing runway ${c.runway}. Advise on initial contact you have ${code}.`;
+    spoken=`Long Beach Airport information ${code}. Winned two six zero at eight. Visibility one zero. Sky clear. Temperature two two. Dew point one two. Altimeter three zero zero two. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
+  }
+
+  $("atisText").textContent=visual;
+  append("atc",label,visual);
+  speak(spoken);
+  $("score").textContent="100%";
+  $("feedback").textContent=`Information ${code} received. Select NEXT.`;
+  completeStage();
+}
+
+function nextStage(){
+  if(!app.stageComplete) return;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+
+  if(app.stageIndex<STAGES.length-1){
+    app.stageIndex++;
+    renderStage(true);
+    window.scrollTo({top:0,behavior:"smooth"});
+  }else{
+    $("feedback").textContent="Training flight complete. Select RESET / START OVER to begin a new session.";
+    $("next").disabled=true;
+    $("next").classList.add("hidden");
+    $("reset").classList.remove("hidden");
+    $("stageState").textContent="Flight complete";
+    $("stageState").className="small good";
+  }
+}
+
+function resetTraining(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  app.stageIndex=0;
+  app.phase="idle";
+  app.stageComplete=false;
+  app.recognitionText="";
+  app.config.atis=randomAtisCode();
+  app.config.arrivalAtis=randomAtisCode(app.config.atis);
+  $("atis").value=app.config.atis;
+  $("arrivalAtis").value=app.config.arrivalAtis;
+  $("next").classList.remove("hidden");
+  $("reset").classList.add("hidden");
+  renderStage(true);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function previousStage(){
+  if(app.stageIndex===0) return;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  app.stageIndex--;
+  renderStage(true);
+}
+
+$("applySetup").addEventListener("click",()=>readSetup(true));
+$("monitorAtis").addEventListener("click",monitorAtis);
+$("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
+$("clearText").addEventListener("click",()=>{$("pilotText").value=""});
+$("next").addEventListener("click",nextStage);
+$("previous").addEventListener("click",previousStage);
+$("reset").addEventListener("click",resetTraining);
+
+$("freqDown").addEventListener("click",()=>{
+  $("frequency").value=formatFreq(clampFreq((parseFloat($("frequency").value)||121.5)-.025)); updateTuneUI();
+});
+$("freqUp").addEventListener("click",()=>{
+  $("frequency").value=formatFreq(clampFreq((parseFloat($("frequency").value)||121.5)+.025)); updateTuneUI();
+});
+$("frequency").addEventListener("input",updateTuneUI);
+$("frequency").addEventListener("change",()=>{
+  $("frequency").value=formatFreq(clampFreq(parseFloat($("frequency").value)||121.5)); updateTuneUI();
+});
+
+$("ptt").addEventListener("pointerdown",e=>{
+  try{$("ptt").setPointerCapture(e.pointerId)}catch(_){}
+  startPTT(e);
+});
+$("ptt").addEventListener("pointerup",stopPTT);
+$("ptt").addEventListener("pointercancel",stopPTT);
+$("ptt").addEventListener("lostpointercapture",stopPTT);
+
+readSetup(true);
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
