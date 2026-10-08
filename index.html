@@ -52,7 +52,10 @@ h2{margin:4px 0 12px;color:var(--navy)}
 .stage-instruction{background:#eff7ff;border-left:4px solid var(--blue2);border-radius:10px;padding:12px 14px;line-height:1.45;margin:12px 0}
 .atis-box{background:#f7fafc;border:1px solid var(--line);border-radius:12px;padding:13px;min-height:52px;line-height:1.5}
 .ptt{width:100%;border:0;border-radius:17px;background:linear-gradient(#2377c7,#0e4e8e);color:#fff;padding:22px 16px;font-weight:900;letter-spacing:.06em;font-size:16px;margin:12px 0}
-.ptt.listening{background:linear-gradient(#ce4444,#8e1f1f)}
+.ptt.listening{
+  background:linear-gradient(#ce4444,#8e1f1f);
+  box-shadow:0 0 0 3px rgba(206,68,68,.18),0 8px 22px rgba(90,18,18,.22);
+}
 .ptt .mic{display:block;font-size:29px;margin-bottom:5px}
 .ptt:disabled{opacity:.5;cursor:not-allowed}
 .transcript{height:520px;overflow:auto;padding-right:3px}
@@ -510,6 +513,35 @@ summary:focus-visible{
   outline-offset:2px;
 }
 
+
+/* V3.7 compact stage header */
+.stage-title-row{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.stage-title-row h2{
+  margin-bottom:0;
+}
+.next-stage-text{
+  font-size:12px;
+  color:var(--muted);
+  font-weight:700;
+  white-space:nowrap;
+}
+@media(max-width:600px){
+  .stage-title-row{
+    gap:6px;
+  }
+  .stage-title-row h2{
+    font-size:18px;
+  }
+  .next-stage-text{
+    font-size:10px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -610,12 +642,18 @@ summary:focus-visible{
 
 
 <div class="progress"><div id="progressFill"></div></div>
-<div id="stageNav" class="stage-nav"></div>
+
 
 <div class="main-grid">
   <section class="card">
-    <div class="heading">
-      <div><div id="stageCounter" class="eyebrow">STAGE 1 OF 7</div><h2 id="stageTitle">ATIS / AWOS</h2></div>
+    <div class="heading stage-heading">
+      <div class="stage-heading-main">
+        <div id="stageCounter" class="eyebrow">STAGE 1 OF 9</div>
+        <div class="stage-title-row">
+          <h2 id="stageTitle">DEPARTURE ATIS</h2>
+          <span id="nextStageText" class="next-stage-text"></span>
+        </div>
+      </div>
       <div id="stageState" class="small">Not started</div>
     </div>
 
@@ -645,7 +683,7 @@ summary:focus-visible{
 
     <div id="commPanel" class="hidden">
       <button id="ptt" class="ptt" disabled>
-        <span class="mic">🎙</span><span id="pttLabel">HOLD TO TALK</span>
+        <span class="mic">🎙</span><span id="pttLabel">TAP TO TALK</span>
       </button>
       <textarea id="pilotText" rows="4" placeholder="Speech transcript will appear here. You may also type a transmission."></textarea>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
@@ -861,6 +899,8 @@ function renderStage(resetFrequency=true){
 
   $("stageCounter").textContent=`STAGE ${app.stageIndex+1} OF ${STAGES.length}`;
   $("stageTitle").textContent=stage.title;
+  const nextStage = STAGES[app.stageIndex+1];
+  $("nextStageText").textContent = nextStage ? `Next: ${nextStage.title}` : "Final Stage";
   $("stageState").textContent="Not completed";
   $("stageState").className="small";
   $("progressFill").style.width=`${((app.stageIndex+1)/STAGES.length)*100}%`;
@@ -910,9 +950,16 @@ function updateTuneUI(){
 function updatePTTState(){
   const stage=STAGES[app.stageIndex];
   if(stage.type!=="comm") return;
+
+  if(app.recognizer){
+    $("ptt").disabled=false;
+    $("pttLabel").textContent="TAP TO END & SEND";
+    return;
+  }
+
   $("ptt").disabled=!tuned();
   if(!tuned()) $("pttLabel").textContent="TUNE RADIO FIRST";
-  else $("pttLabel").textContent="HOLD TO TALK";
+  else $("pttLabel").textContent="TAP TO TALK";
 }
 
 async function ensureMicrophonePermission(){
@@ -949,7 +996,7 @@ function freshRecognizer(){
     app.recognitionText="";
     $("pilotText").value="";
     $("ptt").classList.add("listening");
-    $("pttLabel").textContent="RELEASE TO SEND";
+    $("pttLabel").textContent="TAP TO END & SEND";
     $("stageState").textContent="Listening";
     $("feedback").textContent="Listening...";
   };
@@ -987,7 +1034,7 @@ function freshRecognizer(){
   r.onend=()=>{
     $("ptt").classList.remove("listening");
     $("stageState").textContent="Ready";
-    $("pttLabel").textContent=tuned() ? "HOLD TO TALK" : "TUNE RADIO FIRST";
+    $("pttLabel").textContent=tuned() ? "TAP TO TALK" : "TUNE RADIO FIRST";
 
     const text=$("pilotText").value.trim();
     app.recognizer=null;
@@ -1005,7 +1052,7 @@ function freshRecognizer(){
 }
 
 async function startPTT(e){
-  e.preventDefault();
+  if(e) e.preventDefault();
 
   if("speechSynthesis" in window) speechSynthesis.cancel();
 
@@ -1038,7 +1085,7 @@ async function startPTT(e){
 }
 
 function stopPTT(e){
-  e.preventDefault();
+  if(e) e.preventDefault();
 
   if(app.recognizer && !app.pttStopping){
     app.pttStopping=true;
@@ -1579,13 +1626,15 @@ $("frequency").addEventListener("change",()=>{
   $("frequency").value=formatFreq(clampFreq(parseFloat($("frequency").value)||121.5)); updateTuneUI();
 });
 
-$("ptt").addEventListener("pointerdown",e=>{
-  try{$("ptt").setPointerCapture(e.pointerId)}catch(_){}
-  startPTT(e);
+$("ptt").addEventListener("click",e=>{
+  e.preventDefault();
+
+  if(app.recognizer){
+    stopPTT(e);
+  }else{
+    startPTT(e);
+  }
 });
-$("ptt").addEventListener("pointerup",stopPTT);
-$("ptt").addEventListener("pointercancel",stopPTT);
-$("ptt").addEventListener("lostpointercapture",stopPTT);
 
 readSetup(true);
 
