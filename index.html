@@ -169,6 +169,12 @@ details.setup:not([open]) .setup-summary::after{
   font-size:11px;
   opacity:.75;
 }
+.setup-summary-hint::before{
+  content:"Tap to Collapse";
+}
+details.setup:not([open]) .setup-summary-hint::before{
+  content:"Tap to Expand";
+}
 .setup-content{
   margin-top:12px;
 }
@@ -224,13 +230,13 @@ details.setup:not([open]) .setup-summary-hint{
 
 
 
-<details class="card setup" open>
+<details class="card setup">
   <summary class="setup-summary">
     <div>
       <div class="eyebrow">FLIGHT SETUP</div>
       <h2>KLGB → KCRQ Training Flight</h2>
     </div>
-    <span class="setup-summary-hint">Tap to collapse / expand</span>
+    <span class="setup-summary-hint"></span>
   </summary>
 
   <div class="setup-content">
