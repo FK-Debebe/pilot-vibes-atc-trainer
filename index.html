@@ -710,16 +710,6 @@ summary:focus-visible{
 }
 
 
-/* V3.12 ATIS fields are system-generated and read-only */
-#atis[readonly],
-#arrivalAtis[readonly]{
-  background:#eef2f6;
-  color:#5f6f7f;
-  border-color:#d3dde6;
-  cursor:not-allowed;
-}
-
-
 /* V3.13 bottom Flight Setup collapse control */
 .setup-bottom-toggle{
   display:block;
@@ -1306,6 +1296,16 @@ details.setup:not([open]) .setup-bottom-toggle{
   .radio-digit{height:39px;font-size:21px}
 }
 
+
+/* =========================================================
+   V3.17 COM GUI REFINEMENTS
+   ========================================================= */
+.com-target{
+  color:#ffffff !important;
+  font-weight:900;
+  text-shadow:0 0 5px rgba(255,255,255,.22);
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1372,14 +1372,6 @@ details.setup:not([open]) .setup-bottom-toggle{
           <option>West Ramp</option>
           <option>South Ramp</option>
         </select>
-      </label>
-
-      <label>Departure ATIS (random)
-        <input id="atis" value="" readonly readonly aria-readonly="true">
-      </label>
-
-      <label>Arrival ATIS (random)
-        <input id="arrivalAtis" value="" readonly readonly aria-readonly="true">
       </label>
 
       <label>Destination Runway
@@ -1523,15 +1515,15 @@ details.setup:not([open]) .setup-bottom-toggle{
             <span class="legend-sub">WHOLE MHz</span>
           </div>
           <div class="channel-legend">
-            <span class="legend-main">25 kHz</span>
-            <span class="legend-sub">CHANNEL STEPS</span>
+            <span class="legend-main">10 kHz</span>
+            <span class="legend-sub">CHANNEL + 5 kHz FINE</span>
           </div>
         </div>
 
         <div class="com-status-row">
           <span class="rx-light"><i></i> RX</span>
           <span class="tx-light"><i></i> TX</span>
-          <span class="panel-id">FK AVIONICS</span>
+          
         </div>
       </div>
       <div id="tuneMsg" class="tune-msg">Tune to the active facility.</div>
@@ -1733,8 +1725,7 @@ function readSetup(generateCodes=true){
   if(generateCodes){
     app.config.atis=randomAtisCode();
     app.config.arrivalAtis=randomAtisCode(app.config.atis);
-    $("atis").value=app.config.atis;
-    $("arrivalAtis").value=app.config.arrivalAtis;
+    
   }
 
   app.config={
@@ -1742,8 +1733,8 @@ function readSetup(generateCodes=true){
     destinationAirport:destCode,
     aircraft:$("aircraft").value.trim()||"Cessna 724SP",
     location:$("location").value,
-    atis:$("atis").value || app.config.atis || randomAtisCode(),
-    arrivalAtis:$("arrivalAtis").value || app.config.arrivalAtis || randomAtisCode(),
+    atis:app.config.atis || randomAtisCode(),
+    arrivalAtis:app.config.arrivalAtis || randomAtisCode(),
     runway:$("runway").value,
     destRunway:$("destRunway").value,
     direction:$("direction").value,
@@ -2534,8 +2525,8 @@ $("reset").addEventListener("click",resetTraining);
 function radioValueParts(){
   const value=parseFloat($("frequency").value)||121.500;
   const mhz=Math.floor(value);
-  const frac=Math.round((value-mhz)*1000/25)*25;
-  return {mhz,frac:Math.max(0,Math.min(975,frac))};
+  const frac=Math.round((value-mhz)*1000/5)*5;
+  return {mhz,frac:Math.max(0,Math.min(990,frac))};
 }
 
 function renderRadioDigits(){
@@ -2552,13 +2543,13 @@ function renderRadioDigits(){
 
 function setRadioFrequency(mhz,frac){
   mhz=Math.max(118,Math.min(137,mhz));
-  frac=Math.round(frac/25)*25;
+  frac=Math.round(frac/5)*5;
 
   if(frac<0){
-    if(mhz>118){ mhz--; frac=975; }
+    if(mhz>118){ mhz--; frac=990; }
     else frac=0;
   }
-  if(frac>975){
+  if(frac>990){
     if(mhz<137){ mhz++; frac=0; }
     else frac=0;
   }
@@ -2574,28 +2565,50 @@ function setRadioFrequency(mhz,frac){
 function stepWholeDigit(index,dir){
   const {mhz,frac}=radioValueParts();
   const digits=String(mhz).padStart(3,"0").split("");
-  const current=Number(digits[index]);
+  let tens=Number(digits[1]);
+  let ones=Number(digits[2]);
 
-  /* Search the next legal 118–137 value while changing only this digit. */
-  for(let step=1;step<=10;step++){
-    const candidateDigit=(current + dir*step + 100)%10;
-    const candidate=[...digits];
-    candidate[index]=String(candidateDigit);
-    const candidateMHz=Number(candidate.join(""));
-    if(candidateMHz>=118 && candidateMHz<=137){
-      setRadioFrequency(candidateMHz,frac);
-      return;
-    }
+  if(index===1){
+    /* The second displayed digit represents the 10 MHz position.
+       Because COM tuning is limited to 118–137 MHz, this digit must
+       cycle through 1, 2, and 3. Clamp the ones digit only when needed
+       to keep the resulting frequency legal. */
+    const allowed=[1,2,3];
+    let pos=allowed.indexOf(tens);
+    pos=(pos + dir + allowed.length) % allowed.length;
+    tens=allowed[pos];
+
+    if(tens===1 && ones<8) ones=8;   // 118–119
+    if(tens===3 && ones>7) ones=7;   // 130–137
+
+    setRadioFrequency(100 + tens*10 + ones,frac);
+    return;
+  }
+
+  if(index===2){
+    /* The third displayed digit cycles through the legal ones values
+       for the current 10 MHz decade. */
+    let allowed;
+    if(tens===1) allowed=[8,9];
+    else if(tens===3) allowed=[0,1,2,3,4,5,6,7];
+    else allowed=[0,1,2,3,4,5,6,7,8,9];
+
+    let pos=allowed.indexOf(ones);
+    if(pos<0) pos=0;
+    pos=(pos + dir + allowed.length) % allowed.length;
+    ones=allowed[pos];
+
+    setRadioFrequency(100 + tens*10 + ones,frac);
   }
 }
 
 function stepDecimalDigit(index,dir){
   const {mhz,frac}=radioValueParts();
 
-  /* Keep the radio on real 25 kHz channel spacing.
-     The first decimal selector makes a 100 kHz coarse change.
-     The two right selectors make 25 kHz fine channel changes. */
-  const delta=index===3 ? 100 : 25;
+  /* V3.17: 10 kHz channel tuning with a 5 kHz final-digit fine control.
+     This keeps the requested 10 kHz GUI while still allowing exact trainer
+     target frequencies that end in 5. */
+  const delta=index===3 ? 100 : (index===4 ? 10 : 5);
   setRadioFrequency(mhz,frac + dir*delta);
 }
 
