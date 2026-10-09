@@ -972,6 +972,340 @@ details.setup:not([open]) .setup-bottom-toggle{
   }
 }
 
+
+/* =========================================================
+   V3.16 FK COM 1 — INDIVIDUAL DIGIT RADIO PANEL
+   ========================================================= */
+.com-radio-panel{
+  background:transparent;
+  border:0;
+  padding:0;
+  box-shadow:none;
+}
+.com-bezel{
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.035),transparent 35%),
+    linear-gradient(#24282b,#111416);
+  border:2px solid #050606;
+  border-radius:8px;
+  padding:16px 18px 12px;
+  box-shadow:
+    inset 0 0 0 1px #565c60,
+    inset 0 0 24px rgba(0,0,0,.65),
+    0 5px 12px rgba(0,0,0,.22);
+}
+.com-bezel::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.12;
+  background:repeating-linear-gradient(
+    0deg,
+    rgba(255,255,255,.09) 0,
+    rgba(255,255,255,.09) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+.panel-screw{
+  position:absolute;
+  width:9px;height:9px;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#a6adb1 0 12%,#596065 35%,#202427 70%);
+  border:1px solid #070808;
+  box-shadow:0 1px 1px #000;
+  z-index:2;
+}
+.panel-screw::after{
+  content:"";
+  position:absolute;
+  width:6px;height:1px;
+  background:#171a1c;
+  left:1px;top:3px;
+  transform:rotate(-22deg);
+}
+.screw-tl{left:6px;top:6px}
+.screw-tr{right:6px;top:6px}
+.screw-bl{left:6px;bottom:6px}
+.screw-br{right:6px;bottom:6px}
+
+.com-header{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin:0 18px 12px;
+}
+.com-brand{
+  color:#f0f3f4;
+  font-size:22px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-shadow:0 1px 1px #000;
+}
+.com-model{
+  margin-top:2px;
+  color:#7f898f;
+  font-size:7px;
+  font-weight:700;
+  letter-spacing:.12em;
+}
+.com-target{
+  color:#c5cdd1;
+  font-family:"Courier New",monospace;
+  font-size:13px;
+  font-weight:700;
+  text-align:right;
+  white-space:nowrap;
+}
+.digit-tuner{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(36px,1fr)) 16px repeat(3,minmax(36px,1fr));
+  gap:5px;
+  align-items:center;
+  padding:10px 12px;
+  background:#0a0c0d;
+  border:1px solid #555d61;
+  border-radius:6px;
+  box-shadow:
+    inset 0 0 12px rgba(0,0,0,.9),
+    0 1px 0 rgba(255,255,255,.05);
+}
+.digit-column{
+  display:grid;
+  grid-template-rows:29px 48px 29px;
+  gap:5px;
+  min-width:0;
+}
+.digit-spacer{
+  height:29px;
+}
+.digit-btn{
+  width:100%;
+  height:29px;
+  min-height:29px;
+  padding:0;
+  border:1px solid #616a70;
+  border-radius:4px;
+  background:
+    linear-gradient(#51585d,#292e31);
+  color:#f7f8f8;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.18),
+    0 2px 2px rgba(0,0,0,.6);
+}
+.digit-btn:hover{
+  background:linear-gradient(#626a6f,#33393d);
+}
+.digit-btn:active{
+  transform:translateY(1px);
+  box-shadow:inset 0 2px 3px rgba(0,0,0,.65);
+}
+.radio-digit{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  height:48px;
+  border:1px solid #37433d;
+  border-radius:4px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(45,91,56,.26),transparent 60%),
+    #010603;
+  color:#aaff91;
+  font-family:"Courier New",monospace;
+  font-size:31px;
+  font-weight:900;
+  line-height:1;
+  text-shadow:
+    0 0 4px rgba(128,255,112,.62),
+    0 0 9px rgba(82,229,85,.28);
+  box-shadow:
+    inset 0 0 10px rgba(0,0,0,.9),
+    0 0 0 1px #131817;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.fixed-digit .radio-digit{
+  color:#8fd47f;
+}
+.decimal-point{
+  align-self:center;
+  margin-top:0;
+  color:#aaff91;
+  font-family:"Courier New",monospace;
+  font-size:32px;
+  font-weight:900;
+  text-align:center;
+  text-shadow:0 0 5px rgba(128,255,112,.55);
+}
+.com-legends{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin:8px 14px 0;
+  color:#b0b8bd;
+}
+.mhz-legend,.channel-legend{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.legend-main{
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+.legend-sub{
+  margin-top:1px;
+  color:#6f7a80;
+  font-size:6px;
+  font-weight:800;
+  letter-spacing:.12em;
+}
+.com-status-row{
+  position:relative;
+  z-index:1;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin:8px 14px 0;
+  color:#6d777c;
+  font-size:7px;
+  font-weight:800;
+  letter-spacing:.1em;
+}
+.rx-light,.tx-light{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+.rx-light i,.tx-light i{
+  width:6px;height:6px;border-radius:50%;
+  display:inline-block;
+  background:#283128;
+  border:1px solid #080a08;
+}
+.rx-light i{
+  background:#53b858;
+  box-shadow:0 0 5px rgba(84,203,90,.55);
+}
+.panel-id{
+  margin-left:auto;
+}
+.com-radio-panel .tune-msg{
+  margin-top:5px;
+  text-align:center;
+  color:#dcae49;
+  font-size:9px;
+}
+
+/* Radio panel in the center column should stay compact. */
+@media(min-width:1051px){
+  .com-brand{font-size:20px}
+  .digit-tuner{
+    grid-template-columns:repeat(3,minmax(34px,1fr)) 14px repeat(3,minmax(34px,1fr));
+    padding:9px 9px;
+    gap:4px;
+  }
+  .radio-digit{
+    font-size:27px;
+  }
+}
+
+/* Tablet */
+@media(max-width:1050px){
+  .com-bezel{padding:14px 13px 11px}
+  .com-header{margin:0 14px 10px}
+  .digit-tuner{
+    grid-template-columns:repeat(3,minmax(34px,1fr)) 14px repeat(3,minmax(34px,1fr));
+    padding:9px;
+    gap:4px;
+  }
+  .digit-column{grid-template-rows:28px 46px 28px}
+  .digit-btn{height:28px;min-height:28px}
+  .radio-digit{height:46px;font-size:27px}
+}
+
+/* Phone */
+@media(max-width:700px){
+  .com-bezel{
+    padding:12px 8px 9px;
+    border-radius:7px;
+  }
+  .com-header{
+    margin:0 10px 8px;
+  }
+  .com-brand{
+    font-size:17px;
+  }
+  .com-model{
+    font-size:5.5px;
+  }
+  .com-target{
+    font-size:10px;
+  }
+  .digit-tuner{
+    grid-template-columns:repeat(3,minmax(30px,1fr)) 10px repeat(3,minmax(30px,1fr));
+    gap:3px;
+    padding:7px 5px;
+  }
+  .digit-column{
+    grid-template-rows:27px 42px 27px;
+    gap:3px;
+  }
+  .digit-spacer{height:27px}
+  .digit-btn{
+    height:27px;
+    min-height:27px;
+    font-size:16px;
+  }
+  .radio-digit{
+    height:42px;
+    font-size:24px;
+  }
+  .decimal-point{
+    font-size:25px;
+  }
+  .com-legends{
+    margin:6px 8px 0;
+    gap:10px;
+  }
+  .legend-main{font-size:8px}
+  .legend-sub{font-size:5px}
+  .com-status-row{
+    margin:6px 8px 0;
+  }
+}
+
+/* Very small phones */
+@media(max-width:380px){
+  .com-header{margin-left:7px;margin-right:7px}
+  .com-brand{font-size:15px}
+  .com-target{font-size:9px}
+  .digit-tuner{
+    grid-template-columns:repeat(3,minmax(27px,1fr)) 8px repeat(3,minmax(27px,1fr));
+    gap:2px;
+    padding:6px 4px;
+  }
+  .digit-column{grid-template-rows:25px 39px 25px}
+  .digit-btn{height:25px;min-height:25px;font-size:15px}
+  .radio-digit{height:39px;font-size:21px}
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1127,37 +1461,77 @@ details.setup:not([open]) .setup-bottom-toggle{
     <div id="flightChips" class="flight-chips"></div>
 
     <div class="radio com-radio-panel">
-      <div class="radio-faceplate">
-        <div class="radio-top">
+      <div class="com-bezel">
+        <span class="panel-screw screw-tl"></span>
+        <span class="panel-screw screw-tr"></span>
+        <span class="panel-screw screw-bl"></span>
+        <span class="panel-screw screw-br"></span>
+
+        <div class="com-header">
           <div>
-            <div class="radio-label">COM 1</div>
-            <div class="radio-sub-label">ACTIVE FREQUENCY</div>
+            <div class="com-brand">FK COM 1</div>
+            <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
           </div>
-          <div id="targetFrequency" class="radio-target"></div>
+          <div id="targetFrequency" class="com-target"></div>
         </div>
 
-        <div class="com-tuning-row">
-          <div class="tuning-control tuning-mhz">
-            <button id="mhzUp" class="radio-tune-btn" type="button" aria-label="Increase MHz">+</button>
-            <div class="knob-label">MHz</div>
-            <button id="mhzDown" class="radio-tune-btn" type="button" aria-label="Decrease MHz">−</button>
+        <input id="frequency" type="hidden" value="121.500">
+
+        <div class="digit-tuner" aria-label="COM 1 frequency tuner">
+          <div class="digit-column fixed-digit">
+            <div class="digit-spacer"></div>
+            <div id="digit0" class="radio-digit">1</div>
+            <div class="digit-spacer"></div>
           </div>
 
-          <div class="frequency-window" aria-label="COM frequency display">
-            <input id="frequency" class="frequency" value="121.500"
-                   readonly tabindex="-1" aria-readonly="true">
+          <div class="digit-column">
+            <button class="digit-btn digit-up" data-digit="1" data-dir="1" type="button" aria-label="Increase second MHz digit">+</button>
+            <div id="digit1" class="radio-digit">2</div>
+            <button class="digit-btn digit-down" data-digit="1" data-dir="-1" type="button" aria-label="Decrease second MHz digit">−</button>
           </div>
 
-          <div class="tuning-control tuning-frac">
-            <button id="fracUp" class="radio-tune-btn" type="button" aria-label="Increase decimal frequency">+</button>
-            <div class="knob-label">kHz</div>
-            <button id="fracDown" class="radio-tune-btn" type="button" aria-label="Decrease decimal frequency">−</button>
+          <div class="digit-column">
+            <button class="digit-btn digit-up" data-digit="2" data-dir="1" type="button" aria-label="Increase third MHz digit">+</button>
+            <div id="digit2" class="radio-digit">1</div>
+            <button class="digit-btn digit-down" data-digit="2" data-dir="-1" type="button" aria-label="Decrease third MHz digit">−</button>
+          </div>
+
+          <div class="decimal-point">.</div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="3" data-dir="1" type="button" aria-label="Increase first decimal digit">+</button>
+            <div id="digit3" class="radio-digit">5</div>
+            <button class="digit-btn digit-down" data-digit="3" data-dir="-1" type="button" aria-label="Decrease first decimal digit">−</button>
+          </div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="4" data-dir="1" type="button" aria-label="Increase second decimal digit">+</button>
+            <div id="digit4" class="radio-digit">0</div>
+            <button class="digit-btn digit-down" data-digit="4" data-dir="-1" type="button" aria-label="Decrease second decimal digit">−</button>
+          </div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="5" data-dir="1" type="button" aria-label="Increase third decimal digit">+</button>
+            <div id="digit5" class="radio-digit">0</div>
+            <button class="digit-btn digit-down" data-digit="5" data-dir="-1" type="button" aria-label="Decrease third decimal digit">−</button>
           </div>
         </div>
 
-        <div class="radio-scale-labels">
-          <span>118–137</span>
-          <span>25 kHz STEPS</span>
+        <div class="com-legends">
+          <div class="mhz-legend">
+            <span class="legend-main">118–137 MHz</span>
+            <span class="legend-sub">WHOLE MHz</span>
+          </div>
+          <div class="channel-legend">
+            <span class="legend-main">25 kHz</span>
+            <span class="legend-sub">CHANNEL STEPS</span>
+          </div>
+        </div>
+
+        <div class="com-status-row">
+          <span class="rx-light"><i></i> RX</span>
+          <span class="tx-light"><i></i> TX</span>
+          <span class="panel-id">FK AVIONICS</span>
         </div>
       </div>
       <div id="tuneMsg" class="tune-msg">Tune to the active facility.</div>
@@ -1461,6 +1835,7 @@ function renderStage(resetFrequency=true){
   append("system","TRAINER",`${stage.title} stage loaded.`);
 
   if(resetFrequency) $("frequency").value="121.500";
+  renderRadioDigits();
 
   $("flightChips").innerHTML=[
     app.config.aircraft,
@@ -2156,42 +2531,82 @@ $("next").addEventListener("click",nextStage);
 $("previous").addEventListener("click",previousStage);
 $("reset").addEventListener("click",resetTraining);
 
-function splitComFrequency(){
+function radioValueParts(){
   const value=parseFloat($("frequency").value)||121.500;
-  let mhz=Math.floor(value);
-  let frac=Math.round((value-mhz)*1000/25)*25;
-  if(frac>=1000){ frac=0; mhz+=1; }
-  return {mhz,frac};
+  const mhz=Math.floor(value);
+  const frac=Math.round((value-mhz)*1000/25)*25;
+  return {mhz,frac:Math.max(0,Math.min(975,frac))};
 }
 
-function setComFrequency(mhz,frac){
-  if(mhz<118) mhz=137;
-  if(mhz>137) mhz=118;
+function renderRadioDigits(){
+  const {mhz,frac}=radioValueParts();
+  const whole=String(mhz).padStart(3,"0");
+  const decimal=String(frac).padStart(3,"0");
+  const chars=whole+decimal;
 
-  if(frac<0) frac=975;
-  if(frac>975) frac=0;
+  for(let i=0;i<6;i++){
+    const el=$(`digit${i}`);
+    if(el) el.textContent=chars[i];
+  }
+}
+
+function setRadioFrequency(mhz,frac){
+  mhz=Math.max(118,Math.min(137,mhz));
+  frac=Math.round(frac/25)*25;
+
+  if(frac<0){
+    if(mhz>118){ mhz--; frac=975; }
+    else frac=0;
+  }
+  if(frac>975){
+    if(mhz<137){ mhz++; frac=0; }
+    else frac=0;
+  }
+
+  /* 137 MHz is the upper edge; keep it at 137.000. */
+  if(mhz===137 && frac>0) frac=0;
 
   $("frequency").value=`${mhz}.${String(frac).padStart(3,"0")}`;
+  renderRadioDigits();
   updateTuneUI();
 }
 
-$("mhzUp").addEventListener("click",()=>{
-  const f=splitComFrequency();
-  setComFrequency(f.mhz+1,f.frac);
-});
-$("mhzDown").addEventListener("click",()=>{
-  const f=splitComFrequency();
-  setComFrequency(f.mhz-1,f.frac);
-});
-$("fracUp").addEventListener("click",()=>{
-  const f=splitComFrequency();
-  setComFrequency(f.mhz,f.frac+25);
-});
-$("fracDown").addEventListener("click",()=>{
-  const f=splitComFrequency();
-  setComFrequency(f.mhz,f.frac-25);
-});
+function stepWholeDigit(index,dir){
+  const {mhz,frac}=radioValueParts();
+  const digits=String(mhz).padStart(3,"0").split("");
+  const current=Number(digits[index]);
 
+  /* Search the next legal 118–137 value while changing only this digit. */
+  for(let step=1;step<=10;step++){
+    const candidateDigit=(current + dir*step + 100)%10;
+    const candidate=[...digits];
+    candidate[index]=String(candidateDigit);
+    const candidateMHz=Number(candidate.join(""));
+    if(candidateMHz>=118 && candidateMHz<=137){
+      setRadioFrequency(candidateMHz,frac);
+      return;
+    }
+  }
+}
+
+function stepDecimalDigit(index,dir){
+  const {mhz,frac}=radioValueParts();
+
+  /* Keep the radio on real 25 kHz channel spacing.
+     The first decimal selector makes a 100 kHz coarse change.
+     The two right selectors make 25 kHz fine channel changes. */
+  const delta=index===3 ? 100 : 25;
+  setRadioFrequency(mhz,frac + dir*delta);
+}
+
+document.querySelectorAll(".digit-btn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const index=Number(btn.dataset.digit);
+    const dir=Number(btn.dataset.dir);
+    if(index<=2) stepWholeDigit(index,dir);
+    else stepDecimalDigit(index,dir);
+  });
+});
 $("ptt").addEventListener("click",e=>{
   e.preventDefault();
 
@@ -2202,6 +2617,7 @@ $("ptt").addEventListener("click",e=>{
   }
 });
 
+renderRadioDigits();
 updateDepartureChoices(false);
 updateDestinationChoices(false);
 $("runway").value="26L";
