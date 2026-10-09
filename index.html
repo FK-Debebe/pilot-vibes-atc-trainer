@@ -787,6 +787,191 @@ details.setup:not([open]) .setup-bottom-toggle{
   }
 }
 
+
+/* =========================================================
+   V3.15 REALISTIC COM RADIO PANEL
+   ========================================================= */
+.com-radio-panel{
+  background:#20252a;
+  border:1px solid #101316;
+  border-radius:10px;
+  padding:8px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    inset 0 -2px 5px rgba(0,0,0,.35),
+    0 3px 8px rgba(0,0,0,.18);
+}
+.radio-faceplate{
+  background:linear-gradient(#2c3237,#1c2125);
+  border:1px solid #4a5157;
+  border-radius:7px;
+  padding:9px 10px 8px;
+  box-shadow:inset 0 0 0 1px #111;
+}
+.com-radio-panel .radio-top{
+  margin-bottom:7px;
+  align-items:flex-start;
+}
+.com-radio-panel .radio-label{
+  color:#e9eef2;
+  font-size:11px;
+  letter-spacing:.18em;
+  font-weight:900;
+}
+.radio-sub-label{
+  margin-top:2px;
+  color:#858f97;
+  font-size:7px;
+  letter-spacing:.11em;
+  font-weight:700;
+}
+.radio-target{
+  color:#98a5ae;
+  font-size:9px;
+  font-weight:700;
+  text-align:right;
+  line-height:1.2;
+}
+.com-tuning-row{
+  display:grid;
+  grid-template-columns:50px minmax(150px,1fr) 50px;
+  gap:8px;
+  align-items:center;
+}
+.tuning-control{
+  display:grid;
+  grid-template-rows:35px auto 35px;
+  gap:3px;
+  align-items:center;
+}
+.radio-tune-btn{
+  width:100%;
+  height:35px;
+  border:1px solid #697077;
+  border-radius:5px;
+  background:linear-gradient(#4a5055,#282d31);
+  color:#f4f6f7;
+  font-size:21px;
+  font-weight:900;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.14),
+    0 1px 2px rgba(0,0,0,.6);
+}
+.radio-tune-btn:active{
+  transform:translateY(1px);
+  background:linear-gradient(#292e32,#444a4f);
+}
+.knob-label{
+  color:#b1bac0;
+  text-align:center;
+  font-size:7px;
+  letter-spacing:.08em;
+  font-weight:800;
+}
+.frequency-window{
+  background:#020706;
+  border:2px solid #0c1010;
+  border-radius:5px;
+  padding:5px 7px;
+  box-shadow:
+    inset 0 0 10px rgba(0,0,0,.9),
+    0 0 0 1px #545b60;
+}
+.frequency-window .frequency{
+  display:block;
+  width:100%;
+  margin:0;
+  padding:3px 2px;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#9cff8f;
+  caret-color:transparent;
+  font-family:"Courier New",monospace;
+  font-size:30px;
+  font-weight:900;
+  letter-spacing:.06em;
+  text-align:center;
+  outline:none;
+  pointer-events:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.radio-scale-labels{
+  display:flex;
+  justify-content:space-between;
+  margin-top:4px;
+  color:#7d888f;
+  font-size:7px;
+  letter-spacing:.08em;
+  font-weight:700;
+}
+.com-radio-panel .tune-msg{
+  color:#efc86b;
+  margin-top:6px;
+  font-size:9px;
+}
+
+/* Tablet */
+@media(max-width:1050px){
+  .com-tuning-row{
+    grid-template-columns:46px minmax(130px,1fr) 46px;
+    gap:6px;
+  }
+  .frequency-window .frequency{
+    font-size:27px;
+  }
+}
+
+/* Phone */
+@media(max-width:700px){
+  .com-radio-panel{
+    padding:6px;
+  }
+  .radio-faceplate{
+    padding:7px 7px 6px;
+  }
+  .com-tuning-row{
+    grid-template-columns:42px minmax(120px,1fr) 42px;
+    gap:5px;
+  }
+  .tuning-control{
+    grid-template-rows:32px auto 32px;
+  }
+  .radio-tune-btn{
+    height:32px;
+    min-height:32px;
+    font-size:19px;
+  }
+  .frequency-window{
+    padding:4px 5px;
+  }
+  .frequency-window .frequency{
+    min-height:auto;
+    font-size:24px;
+    padding:2px;
+  }
+  .radio-target{
+    font-size:8px;
+  }
+}
+
+/* Very small phones */
+@media(max-width:380px){
+  .com-tuning-row{
+    grid-template-columns:38px minmax(105px,1fr) 38px;
+    gap:4px;
+  }
+  .frequency-window .frequency{
+    font-size:21px;
+  }
+  .radio-tune-btn{
+    font-size:18px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -941,15 +1126,39 @@ details.setup:not([open]) .setup-bottom-toggle{
 
     <div id="flightChips" class="flight-chips"></div>
 
-    <div class="radio">
-      <div class="radio-top">
-        <div class="radio-label">COM RADIO</div>
-        <div id="targetFrequency" class="small"></div>
-      </div>
-      <div class="freq-grid">
-        <button id="freqDown" class="freq-btn">−</button>
-        <input id="frequency" class="frequency" value="121.500" inputmode="decimal">
-        <button id="freqUp" class="freq-btn">+</button>
+    <div class="radio com-radio-panel">
+      <div class="radio-faceplate">
+        <div class="radio-top">
+          <div>
+            <div class="radio-label">COM 1</div>
+            <div class="radio-sub-label">ACTIVE FREQUENCY</div>
+          </div>
+          <div id="targetFrequency" class="radio-target"></div>
+        </div>
+
+        <div class="com-tuning-row">
+          <div class="tuning-control tuning-mhz">
+            <button id="mhzUp" class="radio-tune-btn" type="button" aria-label="Increase MHz">+</button>
+            <div class="knob-label">MHz</div>
+            <button id="mhzDown" class="radio-tune-btn" type="button" aria-label="Decrease MHz">−</button>
+          </div>
+
+          <div class="frequency-window" aria-label="COM frequency display">
+            <input id="frequency" class="frequency" value="121.500"
+                   readonly tabindex="-1" aria-readonly="true">
+          </div>
+
+          <div class="tuning-control tuning-frac">
+            <button id="fracUp" class="radio-tune-btn" type="button" aria-label="Increase decimal frequency">+</button>
+            <div class="knob-label">kHz</div>
+            <button id="fracDown" class="radio-tune-btn" type="button" aria-label="Decrease decimal frequency">−</button>
+          </div>
+        </div>
+
+        <div class="radio-scale-labels">
+          <span>118–137</span>
+          <span>25 kHz STEPS</span>
+        </div>
       </div>
       <div id="tuneMsg" class="tune-msg">Tune to the active facility.</div>
     </div>
@@ -1947,15 +2156,40 @@ $("next").addEventListener("click",nextStage);
 $("previous").addEventListener("click",previousStage);
 $("reset").addEventListener("click",resetTraining);
 
-$("freqDown").addEventListener("click",()=>{
-  $("frequency").value=formatFreq(clampFreq((parseFloat($("frequency").value)||121.5)-.025)); updateTuneUI();
+function splitComFrequency(){
+  const value=parseFloat($("frequency").value)||121.500;
+  let mhz=Math.floor(value);
+  let frac=Math.round((value-mhz)*1000/25)*25;
+  if(frac>=1000){ frac=0; mhz+=1; }
+  return {mhz,frac};
+}
+
+function setComFrequency(mhz,frac){
+  if(mhz<118) mhz=137;
+  if(mhz>137) mhz=118;
+
+  if(frac<0) frac=975;
+  if(frac>975) frac=0;
+
+  $("frequency").value=`${mhz}.${String(frac).padStart(3,"0")}`;
+  updateTuneUI();
+}
+
+$("mhzUp").addEventListener("click",()=>{
+  const f=splitComFrequency();
+  setComFrequency(f.mhz+1,f.frac);
 });
-$("freqUp").addEventListener("click",()=>{
-  $("frequency").value=formatFreq(clampFreq((parseFloat($("frequency").value)||121.5)+.025)); updateTuneUI();
+$("mhzDown").addEventListener("click",()=>{
+  const f=splitComFrequency();
+  setComFrequency(f.mhz-1,f.frac);
 });
-$("frequency").addEventListener("input",updateTuneUI);
-$("frequency").addEventListener("change",()=>{
-  $("frequency").value=formatFreq(clampFreq(parseFloat($("frequency").value)||121.5)); updateTuneUI();
+$("fracUp").addEventListener("click",()=>{
+  const f=splitComFrequency();
+  setComFrequency(f.mhz,f.frac+25);
+});
+$("fracDown").addEventListener("click",()=>{
+  const f=splitComFrequency();
+  setComFrequency(f.mhz,f.frac-25);
 });
 
 $("ptt").addEventListener("click",e=>{
