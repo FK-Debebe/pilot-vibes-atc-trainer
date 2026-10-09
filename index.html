@@ -1440,6 +1440,33 @@ details.setup:not([open]) .setup-bottom-toggle{
   }
 }
 
+
+/* =========================================================
+   V3.20 COMPACT NAVIGATION ABOVE FK COM 1
+   ========================================================= */
+#navRow{
+  margin-top:4px;
+  margin-bottom:7px;
+  padding-top:6px;
+}
+#navRow .btn{
+  min-height:34px;
+  padding:7px 10px;
+  font-size:10px;
+}
+@media(max-width:700px){
+  #navRow{
+    margin-top:2px;
+    margin-bottom:5px;
+    padding-top:4px;
+  }
+  #navRow .btn{
+    min-height:32px;
+    padding:6px 7px;
+    font-size:9px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1584,7 +1611,11 @@ details.setup:not([open]) .setup-bottom-toggle{
       <div id="stageState" class="small">Not started</div>
     </div>
 
-    <div id="flightChips" class="flight-chips"></div>
+    <div id="navRow" class="nav-row">
+      <button id="previous" class="btn">← PREVIOUS</button>
+      <button id="next" class="btn primary" disabled>NEXT →</button>
+      <button id="reset" class="btn secondary hidden">RESET / START OVER</button>
+    </div>
 
     <div class="radio com-radio-panel">
       <div class="com-bezel">
@@ -1689,11 +1720,7 @@ details.setup:not([open]) .setup-bottom-toggle{
       <div id="feedback" class="feedback">Tune the radio to begin.</div>
     </div>
 
-    <div id="navRow" class="nav-row">
-      <button id="previous" class="btn">← PREVIOUS</button>
-      <button id="next" class="btn primary" disabled>NEXT →</button>
-      <button id="reset" class="btn secondary hidden">RESET / START OVER</button>
-    </div>
+
   </section>
 
   <section class="card">
@@ -1782,13 +1809,34 @@ function updateRouteHeading(){
   if($("routeHeading")) $("routeHeading").textContent=`${dep} → ${dest} Training Flight`;
 }
 
+const AIRPORT_ALIASES={
+  KCRQ:["palomar","mcclellan palomar","mcclellan-palomar"],
+  KLGB:["long beach"],
+  KFUL:["fullerton"],
+  KTOA:["torrance"],
+  KHHR:["hawthorne"],
+  KSNA:["john wayne","orange county"],
+  KONT:["ontario"],
+  KPSP:["palm springs"],
+  KSBA:["santa barbara"],
+  KRNM:["ramona"]
+};
+
 function airportMentioned(text,code){
   const n=norm(text);
   const ap=airportData(code);
   const code3=code.replace(/^K/,"").toLowerCase();
   const name=ap.name.toLowerCase();
   const simple=name.replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
-  return n.includes(code.toLowerCase()) || n.includes(code3) || n.includes(name) || (simple && n.includes(simple));
+
+  const aliases=AIRPORT_ALIASES[code]||[];
+  return (
+    n.includes(code.toLowerCase()) ||
+    n.includes(code3) ||
+    n.includes(name) ||
+    (simple && n.includes(simple)) ||
+    aliases.some(alias=>n.includes(norm(alias)))
+  );
 }
 
 let STAGES = buildStages("KLGB","KCRQ");
@@ -1984,12 +2032,6 @@ function renderStage(resetFrequency=true){
   if(resetFrequency) $("frequency").value="121.500";
   renderRadioDigits();
 
-  $("flightChips").innerHTML=[
-    app.config.aircraft,
-    `DEP RWY ${app.config.runway}`,
-    `ARR RWY ${app.config.destRunway}`
-  ].map(x=>`<span class="flight-chip">${x}</span>`).join("");
-
   renderNav();
   updateTuneUI();
 }
@@ -2156,24 +2198,23 @@ function stopPTT(e){
 }
 
 function hasCallsign(text){
-  const expected=app.config.aircraft
-    .replace(/^cessna\s*/i,"")
-    .replace(/[^a-z0-9]/gi,"")
-    .toLowerCase();
+  const n=norm(text);
+  const configured=String(app.config.aircraft||"").trim();
+  const full=norm(configured);
+  if(full && n.includes(full)) return true;
 
-  const heard=norm(text)
-    .replace(/\bseven twenty[- ]?four\b/g,"724")
-    .replace(/\bseven two four\b/g,"724")
-    .replace(/\bsierra\b/g,"s")
-    .replace(/\bpapa\b/g,"p")
-    .replace(/\s+/g,"");
+  /* Accept the aircraft identification without the manufacturer/type prefix.
+     Example: configured "Cessna 724SP" -> accept "724SP". */
+  const tail=configured.replace(/^[A-Za-z]+\s+/,"").trim();
+  if(tail){
+    const tailNorm=norm(tail);
+    const tailCompact=compact(tail);
+    if(n.includes(tailNorm) || compact(text).includes(tailCompact)) return true;
+  }
 
-  if(heard.includes(expected)) return true;
-
-  const digits=(expected.match(/\d+/)||[""])[0];
-  const suffix=expected.replace(/\d/g,"");
-
-  if(digits && suffix && heard.includes(digits) && heard.includes(suffix)) return true;
+  /* Also accept common speech-to-text spacing between letters/numbers. */
+  const configuredCompact=compact(configured);
+  if(configuredCompact && compact(text).includes(configuredCompact)) return true;
 
   return false;
 }
@@ -2251,10 +2292,40 @@ function containsDirection(text){
 }
 
 function containsFrequency(text,freq){
+  const target=String(freq);
+  const targetDigits=target.replace(/\D/g,"");
+  const n=norm(text);
+
+  /* Accept common speech-to-text variants such as:
+     127.2, 1272, one two seven point two, and frequency 127.2. */
   const digits=textDigits(text);
-  const target=String(freq).replace(/\D/g,"");
-  return digits.includes(target) || norm(text).includes(String(freq));
+  if(digits.includes(targetDigits)) return true;
+
+  const compactText=n.replace(/\s+/g,"");
+  const compactTarget=target.replace(/\s+/g,"").toLowerCase();
+  if(compactText.includes(compactTarget)) return true;
+
+  /* For frequencies ending with trailing zeros, accept shortened spoken form
+     such as 127.2 for 127.200. */
+  const numeric=Number(target);
+  if(Number.isFinite(numeric)){
+    const short=numeric.toString();
+    if(n.includes(short) || compactText.includes(short.replace(/\s+/g,""))) return true;
+    const shortDigits=short.replace(/\D/g,"");
+    if(shortDigits && digits.includes(shortDigits)) return true;
+  }
+
+  return false;
 }
+
+function containsSquawk(text,squawk){
+  const target=String(squawk).replace(/\D/g,"");
+  const digits=textDigits(text);
+
+  /* Accept "1616", "16 16", "one six one six", etc. */
+  return target && digits.includes(target);
+}
+
 
 function containsDestRunway(text){
   return containsRunway(text,app.config.destRunway);
@@ -2509,7 +2580,7 @@ function evaluateTransmission(text){
     }else{
       checks={
         frequency:containsFrequency(text,depAirport().departure)||n.includes("departure frequency"),
-        squawk:textDigits(text).includes(app.squawk),
+        squawk:containsSquawk(text,app.squawk),
         callsign:hasCallsign(text)
       };
       const essential=checks.frequency&&checks.squawk;
