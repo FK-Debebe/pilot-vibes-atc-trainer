@@ -1306,6 +1306,140 @@ details.setup:not([open]) .setup-bottom-toggle{
   text-shadow:0 0 5px rgba(255,255,255,.22);
 }
 
+
+/* =========================================================
+   V3.19 TRAINING ANALYTICS + FINAL REPORT
+   ========================================================= */
+.final-report{
+  max-width:1320px;
+  margin:16px auto 0;
+  scroll-margin-top:12px;
+}
+.report-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--line);
+}
+.report-head h2{
+  margin:3px 0 0;
+  color:#12395f;
+}
+.report-grade{
+  min-width:92px;
+  padding:12px 14px;
+  border-radius:12px;
+  background:#0d355c;
+  color:white;
+  font-size:28px;
+  font-weight:900;
+  text-align:center;
+}
+.report-summary{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+  margin-top:12px;
+}
+.report-summary>div{
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:10px;
+  text-align:center;
+  background:#f8fafc;
+}
+.report-summary b{
+  display:block;
+  color:#12395f;
+  font-size:20px;
+}
+.report-summary span{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:9px;
+  font-weight:700;
+  text-transform:uppercase;
+}
+.report-stages{
+  margin-top:14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+}
+.report-table-head,
+.report-table-row{
+  display:grid;
+  grid-template-columns:minmax(160px,1.4fr) 70px 75px minmax(180px,1fr);
+  gap:8px;
+  align-items:center;
+  padding:9px 11px;
+}
+.report-table-head{
+  background:#12395f;
+  color:white;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.05em;
+}
+.report-table-row{
+  border-top:1px solid var(--line);
+  font-size:11px;
+  background:white;
+}
+.report-table-row:nth-child(odd){
+  background:#f8fafc;
+}
+.report-recommendations{
+  margin-top:14px;
+  padding:12px 14px;
+  border-left:4px solid #2787c8;
+  border-radius:8px;
+  background:#eef6fc;
+}
+.report-recommendations h3{
+  margin:0 0 7px;
+  color:#12395f;
+  font-size:15px;
+}
+.report-recommendations ul{
+  margin:0;
+  padding-left:20px;
+}
+.report-recommendations li{
+  margin:4px 0;
+  font-size:12px;
+}
+.report-scenario{
+  margin-top:9px;
+  padding-top:8px;
+  border-top:1px solid #cbddea;
+  color:#526575;
+  font-size:10px;
+}
+@media(max-width:700px){
+  .report-head{
+    align-items:flex-start;
+  }
+  .report-grade{
+    min-width:70px;
+    font-size:22px;
+    padding:9px 10px;
+  }
+  .report-summary{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  .report-table-head,
+  .report-table-row{
+    grid-template-columns:minmax(115px,1.2fr) 50px 58px minmax(115px,1fr);
+    gap:4px;
+    padding:8px 6px;
+    font-size:9px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1569,6 +1703,20 @@ details.setup:not([open]) .setup-bottom-toggle{
 </div>
 </div>
 
+
+<section id="finalReport" class="card final-report hidden">
+  <div class="report-head">
+    <div>
+      <div class="eyebrow">TRAINING SESSION COMPLETE</div>
+      <h2>End-of-Flight Report</h2>
+    </div>
+    <div id="reportGrade" class="report-grade">—</div>
+  </div>
+  <div id="reportSummary" class="report-summary"></div>
+  <div id="reportStages" class="report-stages"></div>
+  <div id="reportRecommendations" class="report-recommendations"></div>
+</section>
+
 <p class="small" style="text-align:center;margin:16px 0 0">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
 </div>
 
@@ -1667,7 +1815,14 @@ const app = {
     altitude:"3,500 ft",
     level:"beginner"
   },
-  pttStopping:false
+  pttStopping:false,
+  scenario:null,
+  session:{
+    attempts:0,
+    tuningErrors:0,
+    stages:{},
+    missing:{}
+  }
 };
 
 function norm(s){return (s||"").toLowerCase().replace(/[.,!?]/g," ").replace(/\s+/g," ").trim()}
@@ -1719,6 +1874,7 @@ function speak(text){
 }
 
 function readSetup(generateCodes=true){
+  if(!app.scenario) newScenario();
   const depCode=$("departureAirport").value || "KLGB";
   const destCode=$("destinationAirport").value || "KCRQ";
 
@@ -2111,10 +2267,217 @@ function grade(checks){
   return Math.round(vals.filter(Boolean).length/vals.length*100);
 }
 
+function randomBetween(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function randomSquawk(){
+  let code="";
+  do{
+    code=Array.from({length:4},()=>String(randomBetween(0,7))).join("");
+  }while(["7500","7600","7700","0000"].includes(code));
+  return code;
+}
+
+function newScenario(){
+  const depDir=[240,250,260,270,280][randomBetween(0,4)];
+  const arrDir=[210,220,230,240,250][randomBetween(0,4)];
+  const depTemp=randomBetween(18,27);
+  const arrTemp=randomBetween(20,30);
+
+  app.squawk=randomSquawk();
+  app.scenario={
+    depWindDir:depDir,
+    depWindSpeed:randomBetween(5,12),
+    arrWindDir:arrDir,
+    arrWindSpeed:randomBetween(4,11),
+    depVisibility:[8,9,10][randomBetween(0,2)],
+    arrVisibility:[8,9,10][randomBetween(0,2)],
+    depTemp,
+    depDew:depTemp-randomBetween(6,12),
+    arrTemp,
+    arrDew:arrTemp-randomBetween(6,12),
+    depAltimeter:(29.92+Math.random()*.20).toFixed(2),
+    arrAltimeter:(29.90+Math.random()*.22).toFixed(2),
+    patternSide:Math.random()<.5?"left":"right"
+  };
+}
+
+function resetSessionStats(){
+  app.session={
+    attempts:0,
+    tuningErrors:0,
+    stages:{},
+    missing:{}
+  };
+  $("finalReport").classList.add("hidden");
+  $("reportSummary").innerHTML="";
+  $("reportStages").innerHTML="";
+  $("reportRecommendations").innerHTML="";
+  $("reportGrade").textContent="—";
+}
+
+const CHECK_LABELS={
+  facility:"facility name",
+  callsign:"aircraft callsign",
+  atis:"ATIS code",
+  destination:"destination",
+  request:"request",
+  frequency:"assigned frequency",
+  squawk:"squawk code",
+  location:"starting location",
+  runway:"runway",
+  taxiway:"taxiway",
+  ready:"ready-for-departure request",
+  takeoff:"takeoff clearance",
+  direction:"departure direction",
+  altitude:"assigned altitude",
+  direct:"direct instruction",
+  visual:"visual approach",
+  inbound:"inbound / landing request",
+  downwind:"downwind instruction",
+  extend:"extend-downwind instruction",
+  base:"base instruction",
+  landing:"landing clearance",
+  parking:"parking request"
+};
+
+function missingItems(checks){
+  return Object.entries(checks||{})
+    .filter(([,ok])=>!ok)
+    .map(([key])=>CHECK_LABELS[key]||key);
+}
+
+function missingFeedback(checks){
+  const missing=missingItems(checks);
+  return missing.length ? ` Missing: ${missing.join(", ")}.` : "";
+}
+
+function recordAttempt(stage,checks){
+  if(!checks || !Object.keys(checks).length) return;
+
+  app.session.attempts++;
+  const scoreText=$("score").textContent||"";
+  const score=parseInt(scoreText,10);
+  const id=stage.id;
+  const stat=app.session.stages[id] || {
+    title:stage.title,
+    attempts:0,
+    best:0,
+    completed:false,
+    misses:{}
+  };
+
+  stat.attempts++;
+  if(Number.isFinite(score)) stat.best=Math.max(stat.best,score);
+
+  for(const item of missingItems(checks)){
+    stat.misses[item]=(stat.misses[item]||0)+1;
+    app.session.missing[item]=(app.session.missing[item]||0)+1;
+  }
+  app.session.stages[id]=stat;
+}
+
+function recordStageComplete(scoreOverride=null){
+  const stage=STAGES[app.stageIndex];
+  const stat=app.session.stages[stage.id] || {
+    title:stage.title,
+    attempts:0,
+    best:0,
+    completed:false,
+    misses:{}
+  };
+  const displayed=parseInt($("score").textContent,10);
+  const score=scoreOverride ?? (Number.isFinite(displayed)?displayed:100);
+  stat.best=Math.max(stat.best,score);
+  stat.completed=true;
+  app.session.stages[stage.id]=stat;
+}
+
+function stageBest(stage){
+  const stat=app.session.stages[stage.id];
+  return stat ? stat.best : 0;
+}
+
+function renderFinalReport(){
+  const stageStats=STAGES.map(stage=>{
+    const stat=app.session.stages[stage.id] || {
+      title:stage.title,attempts:0,best:0,completed:false,misses:{}
+    };
+    return {stage,...stat};
+  });
+
+  const scores=stageStats.map(s=>s.best);
+  const overall=scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  const totalStageAttempts=stageStats.reduce((n,s)=>n+s.attempts,0);
+  const retries=Math.max(0,totalStageAttempts-STAGES.filter(s=>s.type==="comm").length);
+  const completed=stageStats.filter(s=>s.completed).length;
+
+  $("reportGrade").textContent=`${overall}%`;
+
+  $("reportSummary").innerHTML=`
+    <div><b>${overall}%</b><span>Overall Score</span></div>
+    <div><b>${completed}/${STAGES.length}</b><span>Stages Completed</span></div>
+    <div><b>${app.session.attempts}</b><span>Radio Calls</span></div>
+    <div><b>${retries}</b><span>Retries</span></div>
+    <div><b>${app.session.tuningErrors}</b><span>Tuning Errors</span></div>
+  `;
+
+  $("reportStages").innerHTML=`
+    <div class="report-table-head">
+      <span>Stage</span><span>Best</span><span>Attempts</span><span>Needs Work</span>
+    </div>
+    ${stageStats.map(s=>{
+      const misses=Object.entries(s.misses)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,2)
+        .map(([name])=>name)
+        .join(", ") || "—";
+      return `<div class="report-table-row">
+        <span>${s.title}</span>
+        <span class="${s.best>=90?"good":s.best>=75?"warn":""}">${s.best}%</span>
+        <span>${s.attempts || (s.stage.type==="atis"?1:0)}</span>
+        <span>${misses}</span>
+      </div>`;
+    }).join("")}
+  `;
+
+  const common=Object.entries(app.session.missing)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,4);
+
+  let recommendations=[];
+  if(common.length){
+    recommendations.push(`Practice including ${common.map(([name])=>name).join(", ")} in the initial call or readback.`);
+  }
+  if(app.session.tuningErrors>0){
+    recommendations.push("Practice tuning the active frequency before transmitting.");
+  }
+  const weakest=[...stageStats].sort((a,b)=>a.best-b.best)[0];
+  if(weakest && weakest.best<90){
+    recommendations.push(`Repeat ${weakest.title} — it was your lowest-scoring stage at ${weakest.best}%.`);
+  }
+  if(!recommendations.length){
+    recommendations.push("Strong session. Try Intermediate or Advanced mode for less prompting.");
+  }
+
+  $("reportRecommendations").innerHTML=`
+    <h3>Recommended Practice</h3>
+    <ul>${recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>
+    <div class="report-scenario">
+      Scenario: squawk ${app.squawk} • departure wind ${app.scenario.depWindDir}° at ${app.scenario.depWindSpeed} kt •
+      arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • ${app.scenario.patternSide} traffic pattern
+    </div>
+  `;
+
+  $("finalReport").classList.remove("hidden");
+}
+
 function evaluateTransmission(text){
   if(!text) return;
   if(!tuned()){
-    $("feedback").textContent="Radio is not tuned to the active facility.";
+    app.session.tuningErrors++;
+    $("feedback").textContent=`Radio is not tuned to the active facility. Target ${STAGES[app.stageIndex].freq} MHz.`;
     return;
   }
 
@@ -2307,7 +2670,7 @@ function evaluateTransmission(text){
         visual:n.includes("visual"),
         callsign:hasCallsign(text)
       };
-      const essential=checks.palomar&&checks.visual;
+      const essential=checks.destination&&checks.visual;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
         replyVisual=`${app.config.aircraft}, readback correct. Obtain ${destAirport().name} ATIS on ${destAirport().atis}.`;
@@ -2333,8 +2696,8 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=60 && checks.callsign && checks.inbound){
-        replyVisual=`${app.config.aircraft}, ${destAirport().name} Tower, enter right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
-        replySpoken=`${callsignSpoken()}, ${destAirport().name} Tower, enter right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        replyVisual=`${app.config.aircraft}, ${destAirport().name} Tower, enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
+        replySpoken=`${callsignSpoken()}, ${destAirport().name} Tower, enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
         $("feedback").textContent="Read back the pattern instruction.";
         app.phase="destTowerPatternReadback";
       }else{
@@ -2344,7 +2707,7 @@ function evaluateTransmission(text){
       }
     }else if(app.phase==="destTowerPatternReadback"){
       checks={
-        downwind:n.includes("right downwind")||n.includes("downwind"),
+        downwind:n.includes(`${app.scenario.patternSide} downwind`)||n.includes("downwind"),
         runway:containsDestRunway(text),
         extend:n.includes("extend")||n.includes("extending"),
         base:n.includes("base"),
@@ -2358,8 +2721,8 @@ function evaluateTransmission(text){
         $("feedback").textContent="Now read back the landing clearance.";
         app.phase="destTowerLandingReadback";
       }else{
-        replyVisual=`${app.config.aircraft}, verify right downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
-        replySpoken=`${callsignSpoken()}, verify right downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        replyVisual=`${app.config.aircraft}, verify ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
+        replySpoken=`${callsignSpoken()}, verify ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
         $("feedback").textContent="Pattern readback not recognized. Try again.";
       }
     }else{
@@ -2422,6 +2785,17 @@ function evaluateTransmission(text){
     }
   }
 
+  recordAttempt(stage,checks);
+
+  const currentFeedback=$("feedback").textContent||"";
+  const looksLikeError=/incomplete|not recognized|try again|missing|required|verify|say again/i.test(currentFeedback);
+  if(looksLikeError){
+    const detail=missingFeedback(checks);
+    if(detail && !currentFeedback.includes("Missing:")){
+      $("feedback").textContent=currentFeedback.replace(/\.$/,"")+ "." + detail;
+    }
+  }
+
   if(replyVisual){
     append("atc",stage.facility.toUpperCase(),replyVisual);
     speak(replySpoken);
@@ -2431,6 +2805,7 @@ function evaluateTransmission(text){
 }
 
 function completeStage(){
+  recordStageComplete();
   app.stageComplete=true;
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
@@ -2439,7 +2814,8 @@ function completeStage(){
 
 function monitorAtis(){
   if(!tuned()){
-    $("feedback").textContent="Tune the radio to the active ATIS frequency first.";
+    app.session.tuningErrors++;
+    $("feedback").textContent=`Tune the radio to ${STAGES[app.stageIndex].freq} MHz before monitoring ATIS.`;
     return;
   }
 
@@ -2449,16 +2825,18 @@ function monitorAtis(){
   const dest=destAirport();
   let visual="",spoken="",label="",code="";
 
+  const sc=app.scenario;
+
   if(stage.id==="arrivalAtis"){
     code=c.arrivalAtis;
     label=`${dest.name} ATIS`;
-    visual=`${dest.name} Airport information ${code}. Wind 240 at 6. Visibility 10. Sky clear. Temperature 24. Dew point 14. Altimeter 30.01. Landing runway ${c.destRunway}. Advise on initial contact you have ${code}.`;
-    spoken=`${dest.name} Airport information ${code}. Winned two four zero at six. Visibility one zero. Sky clear. Temperature two four. Dew point one four. Altimeter three zero zero one. Landing runway ${runwaySpoken(c.destRunway)}. Advise on initial contact you have ${code}.`;
+    visual=`${dest.name} Airport information ${code}. Wind ${sc.arrWindDir} at ${sc.arrWindSpeed}. Visibility ${sc.arrVisibility}. Sky clear. Temperature ${sc.arrTemp}. Dew point ${sc.arrDew}. Altimeter ${sc.arrAltimeter}. Landing runway ${c.destRunway}. Advise on initial contact you have ${code}.`;
+    spoken=`${dest.name} Airport information ${code}. Winned ${[...String(sc.arrWindDir)].map(d=>DIGIT[d]).join(" ")} at ${[...String(sc.arrWindSpeed)].map(d=>DIGIT[d]).join(" ")}. Visibility ${[...String(sc.arrVisibility)].map(d=>DIGIT[d]).join(" ")}. Sky clear. Temperature ${[...String(sc.arrTemp)].map(d=>DIGIT[d]).join(" ")}. Dew point ${[...String(sc.arrDew)].map(d=>DIGIT[d]).join(" ")}. Altimeter ${frequencySpoken(sc.arrAltimeter)}. Landing runway ${runwaySpoken(c.destRunway)}. Advise on initial contact you have ${code}.`;
   }else{
     code=c.atis;
     label=`${dep.name} ATIS`;
-    visual=`${dep.name} Airport information ${code}. Wind 260 at 8. Visibility 10. Sky clear. Temperature 22. Dew point 12. Altimeter 30.02. Landing and departing runway ${c.runway}. Advise on initial contact you have ${code}.`;
-    spoken=`${dep.name} Airport information ${code}. Winned two six zero at eight. Visibility one zero. Sky clear. Temperature two two. Dew point one two. Altimeter three zero zero two. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
+    visual=`${dep.name} Airport information ${code}. Wind ${sc.depWindDir} at ${sc.depWindSpeed}. Visibility ${sc.depVisibility}. Sky clear. Temperature ${sc.depTemp}. Dew point ${sc.depDew}. Altimeter ${sc.depAltimeter}. Landing and departing runway ${c.runway}. Advise on initial contact you have ${code}.`;
+    spoken=`${dep.name} Airport information ${code}. Winned ${[...String(sc.depWindDir)].map(d=>DIGIT[d]).join(" ")} at ${[...String(sc.depWindSpeed)].map(d=>DIGIT[d]).join(" ")}. Visibility ${[...String(sc.depVisibility)].map(d=>DIGIT[d]).join(" ")}. Sky clear. Temperature ${[...String(sc.depTemp)].map(d=>DIGIT[d]).join(" ")}. Dew point ${[...String(sc.depDew)].map(d=>DIGIT[d]).join(" ")}. Altimeter ${frequencySpoken(sc.depAltimeter)}. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
   }
 
   $("atisText").textContent=visual;
@@ -2478,17 +2856,23 @@ function nextStage(){
     renderStage(true);
     window.scrollTo({top:0,behavior:"smooth"});
   }else{
-    $("feedback").textContent="Training flight complete. Select RESET / START OVER to begin a new session.";
+    $("feedback").textContent="Training flight complete. Review your End-of-Flight Report below.";
     $("next").disabled=true;
     $("next").classList.add("hidden");
     $("reset").classList.remove("hidden");
     $("stageState").textContent="Flight complete";
     $("stageState").className="small good";
+    renderFinalReport();
+    setTimeout(()=>$("finalReport").scrollIntoView({behavior:"smooth",block:"start"}),150);
   }
 }
 
 function resetTraining(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
+  newScenario();
+  resetSessionStats();
+  app.config.atis=randomAtisCode();
+  app.config.arrivalAtis=randomAtisCode(app.config.atis);
   STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport);
   app.stageIndex=0;
   app.phase="idle";
