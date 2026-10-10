@@ -1694,6 +1694,121 @@ header h1{
   }
 }
 
+
+/* =========================================================
+   V3.45 MOBILE FULL-SCREEN TRAINING MODE
+   ========================================================= */
+.training-mode-btn{
+  display:none;
+  background:#fff;
+  color:var(--navy);
+  border-color:rgba(255,255,255,.7);
+  min-height:36px;
+  padding:7px 11px;
+  font-size:11px;
+}
+.training-exit{
+  position:fixed;
+  top:calc(8px + env(safe-area-inset-top));
+  right:calc(8px + env(safe-area-inset-right));
+  z-index:1000;
+  border:0;
+  border-radius:999px;
+  padding:8px 11px;
+  background:rgba(10,47,87,.92);
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.06em;
+  box-shadow:0 4px 14px rgba(0,0,0,.18);
+}
+body.training-mode{
+  background:#f5f8fb;
+}
+body.training-mode .app{
+  max-width:none;
+  width:100%;
+  padding:
+    max(4px,env(safe-area-inset-top))
+    max(4px,env(safe-area-inset-right))
+    max(6px,env(safe-area-inset-bottom))
+    max(4px,env(safe-area-inset-left));
+}
+body.training-mode header,
+body.training-mode .setup,
+body.training-mode .app>p.small,
+body.training-mode #finalReport{
+  display:none!important;
+}
+body.training-mode .trainer-shell{
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-areas:
+    "progress"
+    "stage"
+    "transcript"
+    "diagram";
+  gap:6px;
+}
+body.training-mode .trainer-shell>.progress{
+  margin:0 0 3px;
+}
+body.training-mode .trainer-shell>.main-grid{
+  display:contents;
+}
+body.training-mode .trainer-shell>.main-grid>section:first-child{
+  grid-area:stage;
+}
+body.training-mode .radio-exchange-card{
+  grid-area:transcript;
+}
+body.training-mode .airport-diagram-card{
+  grid-area:diagram;
+}
+body.training-mode .card{
+  border-radius:9px;
+  box-shadow:none;
+}
+body.training-mode .nav-row{
+  margin-top:7px;
+  padding-top:7px;
+}
+body.training-mode .stage-instruction{
+  margin:7px 0;
+}
+body.training-mode .radio{
+  margin:7px 0;
+}
+body.training-mode .scorebar{
+  margin-top:8px;
+}
+body.training-mode .transcript{
+  height:min(250px,30vh);
+  min-height:150px;
+}
+body.training-mode .training-exit{
+  display:block!important;
+}
+@media(max-width:700px){
+  .training-mode-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:auto!important;
+    min-height:34px;
+    margin:0!important;
+    padding:6px 9px!important;
+    font-size:10px!important;
+    flex:0 0 auto;
+  }
+  .header-actions{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:nowrap;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1703,10 +1818,15 @@ header h1{
 <div class="app">
 <header>
   <div><h1>FK ATC COM Trainer</h1></div>
-  <button id="installApp" class="btn install-app-btn hidden" type="button">INSTALL APP</button>
+  <div class="header-actions">
+    <button id="trainingModeBtn" class="btn training-mode-btn" type="button">FULL SCREEN</button>
+    <button id="installApp" class="btn install-app-btn hidden" type="button">INSTALL APP</button>
+  </div>
 </header>
 
 
+
+<button id="exitTrainingMode" class="training-exit hidden" type="button" aria-label="Exit full-screen training mode">EXIT</button>
 
 <div class="trainer-shell">
 <details class="card setup">
@@ -4020,6 +4140,80 @@ readSetup(true);
 
 
 
+
+
+/* =========================================================
+   V3.45 MOBILE FULL-SCREEN TRAINING MODE
+   ========================================================= */
+let trainingModeActive=false;
+
+function updateTrainingModeUI(){
+  const btn=$("trainingModeBtn");
+  const exit=$("exitTrainingMode");
+  document.body.classList.toggle("training-mode",trainingModeActive);
+
+  if(btn){
+    btn.textContent=trainingModeActive ? "EXIT FULL SCREEN" : "FULL SCREEN";
+    btn.setAttribute("aria-pressed",trainingModeActive ? "true" : "false");
+  }
+  if(exit){
+    exit.classList.toggle("hidden",!trainingModeActive);
+  }
+}
+
+async function enterTrainingMode(){
+  trainingModeActive=true;
+  updateTrainingModeUI();
+
+  try{
+    const root=document.documentElement;
+    if(root.requestFullscreen && !document.fullscreenElement){
+      await root.requestFullscreen({navigationUI:"hide"});
+    }else if(root.webkitRequestFullscreen && !document.webkitFullscreenElement){
+      root.webkitRequestFullscreen();
+    }
+  }catch(e){
+    /* CSS training mode remains active if browser fullscreen is unavailable. */
+  }
+
+  window.scrollTo({top:0,left:0,behavior:"smooth"});
+}
+
+async function exitTrainingMode(){
+  trainingModeActive=false;
+  updateTrainingModeUI();
+
+  try{
+    if(document.fullscreenElement && document.exitFullscreen){
+      await document.exitFullscreen();
+    }else if(document.webkitFullscreenElement && document.webkitExitFullscreen){
+      document.webkitExitFullscreen();
+    }
+  }catch(e){}
+}
+
+async function toggleTrainingMode(){
+  if(trainingModeActive) await exitTrainingMode();
+  else await enterTrainingMode();
+}
+
+$("trainingModeBtn")?.addEventListener("click",toggleTrainingMode);
+$("exitTrainingMode")?.addEventListener("click",exitTrainingMode);
+
+document.addEventListener("fullscreenchange",()=>{
+  if(trainingModeActive && !document.fullscreenElement){
+    trainingModeActive=false;
+    updateTrainingModeUI();
+  }
+});
+document.addEventListener("webkitfullscreenchange",()=>{
+  if(trainingModeActive && !document.webkitFullscreenElement){
+    trainingModeActive=false;
+    updateTrainingModeUI();
+  }
+});
+
+updateTrainingModeUI();
 
 /* =========================================================
    V3.43 PWA / INSTALLABLE WEB APP
