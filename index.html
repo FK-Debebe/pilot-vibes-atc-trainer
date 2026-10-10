@@ -2464,24 +2464,42 @@ function stopPTT(e){
   }
 }
 
+function aviationCompact(text){
+  let n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const wordMap={
+    zero:"0",oh:"0",
+    one:"1",two:"2",three:"3",four:"4",five:"5",
+    six:"6",seven:"7",eight:"8",nine:"9",niner:"9",
+    alpha:"a",bravo:"b",charlie:"c",delta:"d",echo:"e",
+    foxtrot:"f",golf:"g",hotel:"h",india:"i",juliet:"j",
+    kilo:"k",lima:"l",mike:"m",november:"n",oscar:"o",
+    papa:"p",quebec:"q",romeo:"r",sierra:"s",tango:"t",
+    uniform:"u",victor:"v",whiskey:"w",xray:"x",yankee:"y",zulu:"z"
+  };
+
+  const words=n.split(/\s+/).map(w=>wordMap[w] ?? w);
+  return words.join("").replace(/[^a-z0-9]/g,"");
+}
+
 function hasCallsign(text){
   const n=norm(text);
   const configured=String(app.config.aircraft||"").trim();
   const full=norm(configured);
   if(full && n.includes(full)) return true;
 
-  /* Accept the aircraft identification without the manufacturer/type prefix.
-     Example: configured "Cessna 724SP" -> accept "724SP". */
+  /* Accept the aircraft identification without the type prefix:
+     "Cessna 724SP" -> "724SP". */
   const tail=configured.replace(/^[A-Za-z]+\s+/,"").trim();
-  if(tail){
-    const tailNorm=norm(tail);
-    const tailCompact=compact(tail);
-    if(n.includes(tailNorm) || compact(text).includes(tailCompact)) return true;
-  }
+  const textCompact=aviationCompact(text);
+  const configuredCompact=aviationCompact(configured);
+  const tailCompact=aviationCompact(tail);
 
-  /* Also accept common speech-to-text spacing between letters/numbers. */
-  const configuredCompact=compact(configured);
-  if(configuredCompact && compact(text).includes(configuredCompact)) return true;
+  if(tailCompact && textCompact.includes(tailCompact)) return true;
+  if(configuredCompact && textCompact.includes(configuredCompact)) return true;
 
   return false;
 }
@@ -2555,7 +2573,29 @@ function containsAltitude(text){
 }
 
 function containsDirection(text){
-  return compact(text).includes(app.config.direction.toLowerCase().replace(/\s+/g,""));
+  const raw=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const joined=raw.replace(/[^a-z0-9]/g,"");
+  const target=String(app.config.direction||"")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g,"");
+
+  const aliases={
+    southeast:["southeast","south east","south-east","s e","se","southeastern"],
+    southwest:["southwest","south west","south-west","s w","sw","southwestern"],
+    northeast:["northeast","north east","north-east","n e","ne","northeastern"],
+    northwest:["northwest","north west","north-west","n w","nw","northwestern"]
+  };
+
+  const candidates=aliases[target]||[app.config.direction];
+  return candidates.some(v=>{
+    const phrase=String(v).toLowerCase().replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+    const compactPhrase=phrase.replace(/[^a-z0-9]/g,"");
+    return raw.includes(phrase) || (compactPhrase && joined.includes(compactPhrase));
+  });
 }
 
 function containsFrequency(text,freq){
@@ -2924,7 +2964,7 @@ function evaluateTransmission(text){
     }else{
       checks={
         runway:containsRunway(text),
-        takeoff:n.includes("takeoff")||n.includes("cleared"),
+        takeoff:n.includes("takeoff")||n.includes("take off")||n.includes("cleared"),
         direction:containsDirection(text),
         callsign:hasCallsign(text)
       };
