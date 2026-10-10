@@ -1704,7 +1704,7 @@ header h1{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
   </div>
 </details>
 
@@ -2131,11 +2131,76 @@ function append(type,speaker,text){
   $("transcript").appendChild(el);
   $("transcript").scrollTop=$("transcript").scrollHeight;
 }
-function speak(text){
+/* =========================================================
+   V3.37 FACILITY-SPECIFIC ATC VOICES
+   Uses different installed English voices when available.
+   If a device exposes only one voice, role-specific rate/pitch
+   differences still keep Ground/Tower/Departure/Approach distinct.
+   ========================================================= */
+
+const ATC_VOICE_PROFILES={
+  atis:      {rate:.90,pitch:.88,voiceSlot:0},
+  clearance: {rate:.94,pitch:.96,voiceSlot:1},
+  ground:    {rate:.97,pitch:.86,voiceSlot:2},
+  tower:     {rate:1.00,pitch:1.00,voiceSlot:3},
+  departure: {rate:1.03,pitch:.92,voiceSlot:4},
+  approach:  {rate:.96,pitch:1.06,voiceSlot:5}
+};
+
+let atcEnglishVoices=[];
+
+function loadATCVoices(){
   if(!("speechSynthesis" in window)) return;
+  const all=speechSynthesis.getVoices()||[];
+  const english=all.filter(v=>/^en(?:-|$)/i.test(v.lang||""));
+  const preferred=english.filter(v=>/microsoft|google|samantha|alex|daniel|aria|jenny|guy|david|zira|mark/i.test(v.name||""));
+  const remainder=english.filter(v=>!preferred.includes(v));
+  atcEnglishVoices=[...preferred,...remainder];
+}
+
+if("speechSynthesis" in window){
+  loadATCVoices();
+  if(typeof speechSynthesis.addEventListener==="function"){
+    speechSynthesis.addEventListener("voiceschanged",loadATCVoices);
+  }else{
+    speechSynthesis.onvoiceschanged=loadATCVoices;
+  }
+}
+
+function currentVoiceRole(){
+  const stage=STAGES?.[app.stageIndex];
+  if(!stage) return "tower";
+  if(stage.type==="atis") return "atis";
+  if(stage.id==="clearance") return "clearance";
+  if(stage.id==="ground" || stage.id==="destGround") return "ground";
+  if(stage.id==="tower" || stage.id==="destTower") return "tower";
+  if(stage.id==="departure") return "departure";
+  if(stage.id==="arrival") return "approach";
+  return "tower";
+}
+
+function speak(text,role=currentVoiceRole()){
+  if(!("speechSynthesis" in window)) return;
+
   speechSynthesis.cancel();
+  loadATCVoices();
+
+  const profile=ATC_VOICE_PROFILES[role]||ATC_VOICE_PROFILES.tower;
   const u=new SpeechSynthesisUtterance(text);
-  u.rate=.95; u.pitch=.92;
+
+  if(atcEnglishVoices.length){
+    /* Spread facility roles across the available voice list.
+       Modulo keeps this safe on devices with only a few voices. */
+    u.voice=atcEnglishVoices[profile.voiceSlot % atcEnglishVoices.length];
+    if(u.voice?.lang) u.lang=u.voice.lang;
+  }else{
+    u.lang="en-US";
+  }
+
+  u.rate=profile.rate;
+  u.pitch=profile.pitch;
+  u.volume=1;
+
   speechSynthesis.speak(u);
 }
 
@@ -3427,7 +3492,7 @@ function monitorAtis(){
 
   $("atisText").textContent=visual;
   append("atc",label,visual);
-  speak(spoken);
+  speak(spoken,"atis");
   $("score").textContent="100%";
   $("feedback").textContent=`Information ${code} received. Select NEXT.`;
   completeStage();
