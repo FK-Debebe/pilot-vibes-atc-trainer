@@ -1,4 +1,4 @@
-const CACHE_NAME="fk-atc-com-trainer-v3-45";
+const CACHE_NAME="fk-atc-com-trainer-v3-46";
 const APP_SHELL=[
   "./",
   "./index.html",
@@ -25,7 +25,6 @@ self.addEventListener("activate",event=>{
 
 self.addEventListener("fetch",event=>{
   if(event.request.method!=="GET") return;
-
   event.respondWith(
     fetch(event.request)
       .then(response=>{

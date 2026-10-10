@@ -589,8 +589,7 @@ summary:focus-visible{
   grid-template-columns:minmax(230px,.72fr) minmax(420px,1.35fr) minmax(300px,.93fr);
   grid-template-areas:
     "setup progress progress"
-    "setup stage transcript"
-    "setup diagram diagram";
+    "setup stage transcript";
   gap:14px;
   align-items:start;
 }
@@ -612,9 +611,6 @@ summary:focus-visible{
 }
 .trainer-shell>.main-grid>.radio-exchange-card{
   grid-area:transcript;
-}
-.trainer-shell>.main-grid>.airport-diagram-card{
-  grid-area:diagram;
 }
 .setup-grid{
   grid-template-columns:1fr;
@@ -644,8 +640,7 @@ summary:focus-visible{
     grid-template-areas:
       "setup progress"
       "setup stage"
-      "transcript transcript"
-      "diagram diagram";
+      "transcript transcript";
   }
   .trainer-shell>.setup{
     position:static;
@@ -659,8 +654,7 @@ summary:focus-visible{
       "setup"
       "progress"
       "stage"
-      "transcript"
-      "diagram";
+      "transcript";
     gap:8px;
   }
   .trainer-shell>.setup{
@@ -690,8 +684,7 @@ summary:focus-visible{
   .trainer-shell{
     grid-template-areas:
       ". progress progress"
-      "setup stage transcript"
-      "setup diagram diagram";
+      "setup stage transcript";
   }
 
   .setup-summary h2#routeHeading{
@@ -1629,186 +1622,6 @@ header h1{
 }
 
 
-/* Airport diagram panel */
-.airport-diagram-card .eyebrow-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  margin-bottom:6px;
-  flex-wrap:wrap;
-}
-.airport-diagram-card h3{
-  margin:4px 0 2px;
-  font-size:18px;
-}
-.airport-diagram-card .diagram-subtitle{
-  color:var(--muted);
-  font-size:13px;
-  margin-bottom:10px;
-}
-.diagram-canvas{
-  width:100%;
-  min-height:260px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:linear-gradient(180deg,#f8fbfe,#eef5fb);
-  padding:10px;
-  overflow:hidden;
-}
-.diagram-canvas svg{
-  width:100%;
-  height:auto;
-  display:block;
-}
-.diagram-route{
-  margin-top:10px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-.diagram-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 10px;
-  border-radius:999px;
-  background:#f2f7fc;
-  border:1px solid #d7e4f0;
-  color:var(--navy);
-  font-size:12px;
-  font-weight:700;
-}
-.diagram-note{
-  margin-top:8px;
-  color:var(--muted);
-  font-size:12px;
-}
-@media(max-width:700px){
-  .diagram-canvas{
-    min-height:220px;
-    padding:8px;
-  }
-  .airport-diagram-card h3{
-    font-size:16px;
-  }
-}
-
-
-/* =========================================================
-   V3.45 MOBILE FULL-SCREEN TRAINING MODE
-   ========================================================= */
-.training-mode-btn{
-  display:none;
-  background:#fff;
-  color:var(--navy);
-  border-color:rgba(255,255,255,.7);
-  min-height:36px;
-  padding:7px 11px;
-  font-size:11px;
-}
-.training-exit{
-  position:fixed;
-  top:calc(8px + env(safe-area-inset-top));
-  right:calc(8px + env(safe-area-inset-right));
-  z-index:1000;
-  border:0;
-  border-radius:999px;
-  padding:8px 11px;
-  background:rgba(10,47,87,.92);
-  color:#fff;
-  font-size:10px;
-  font-weight:900;
-  letter-spacing:.06em;
-  box-shadow:0 4px 14px rgba(0,0,0,.18);
-}
-body.training-mode{
-  background:#f5f8fb;
-}
-body.training-mode .app{
-  max-width:none;
-  width:100%;
-  padding:
-    max(4px,env(safe-area-inset-top))
-    max(4px,env(safe-area-inset-right))
-    max(6px,env(safe-area-inset-bottom))
-    max(4px,env(safe-area-inset-left));
-}
-body.training-mode header,
-body.training-mode .setup,
-body.training-mode .app>p.small,
-body.training-mode #finalReport{
-  display:none!important;
-}
-body.training-mode .trainer-shell{
-  display:grid;
-  grid-template-columns:1fr;
-  grid-template-areas:
-    "progress"
-    "stage"
-    "transcript"
-    "diagram";
-  gap:6px;
-}
-body.training-mode .trainer-shell>.progress{
-  margin:0 0 3px;
-}
-body.training-mode .trainer-shell>.main-grid{
-  display:contents;
-}
-body.training-mode .trainer-shell>.main-grid>section:first-child{
-  grid-area:stage;
-}
-body.training-mode .radio-exchange-card{
-  grid-area:transcript;
-}
-body.training-mode .airport-diagram-card{
-  grid-area:diagram;
-}
-body.training-mode .card{
-  border-radius:9px;
-  box-shadow:none;
-}
-body.training-mode .nav-row{
-  margin-top:7px;
-  padding-top:7px;
-}
-body.training-mode .stage-instruction{
-  margin:7px 0;
-}
-body.training-mode .radio{
-  margin:7px 0;
-}
-body.training-mode .scorebar{
-  margin-top:8px;
-}
-body.training-mode .transcript{
-  height:min(250px,30vh);
-  min-height:150px;
-}
-body.training-mode .training-exit{
-  display:block!important;
-}
-@media(max-width:700px){
-  .training-mode-btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    width:auto!important;
-    min-height:34px;
-    margin:0!important;
-    padding:6px 9px!important;
-    font-size:10px!important;
-    flex:0 0 auto;
-  }
-  .header-actions{
-    display:flex;
-    align-items:center;
-    gap:6px;
-    flex-wrap:nowrap;
-  }
-}
-
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1936,7 +1749,7 @@ body.training-mode .training-exit{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Each training flight may also include unexpected ATC changes such as runway or altitude amendments, a different departure direction, stand by, unable, extended downwind, or a go-around. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
   </div>
 </details>
 
@@ -2079,18 +1892,6 @@ body.training-mode .training-exit{
   <section class="card radio-exchange-card">
     <div class="eyebrow">RADIO EXCHANGE</div>
     <div id="transcript" class="transcript"></div>
-  </section>
-
-  <section id="airportDiagramCard" class="card airport-diagram-card hidden">
-    <div class="eyebrow-row">
-      <div class="eyebrow">AIRPORT DIAGRAM</div>
-      <div class="small">Taxi training aid</div>
-    </div>
-    <h3 id="airportDiagramTitle">Airport Diagram</h3>
-    <div id="airportDiagramSubtitle" class="diagram-subtitle"></div>
-    <div id="airportDiagramCanvas" class="diagram-canvas"></div>
-    <div id="airportDiagramRoute" class="diagram-route"></div>
-    <div class="diagram-note">Simplified, not to scale. Intended only to support taxi-practice situational awareness.</div>
   </section>
 </div>
 </div>
@@ -2327,11 +2128,14 @@ const app = {
   recognitionCommitted:"",
   recognitionSegment:"",
   recognitionRestartTimer:null,
+  unexpectedTimer:null,
+  awaitingATC:false,
   lastATC:null,
   scenario:null,
   session:{
     attempts:0,
     tuningErrors:0,
+    unexpected:[],
     stages:{},
     missing:{}
   }
@@ -2386,8 +2190,9 @@ function updateRepeatButtons(){
   const commStage=stage?.type==="comm";
 
   if(sayAgain){
-    /* A radio clarification request requires the active COM frequency. */
-    sayAgain.disabled=!(hasATC && correctFrequency && commStage && !app.stageComplete);
+    /* A radio clarification request requires the active COM frequency.
+       Do not transmit while ATC has instructed the pilot to stand by. */
+    sayAgain.disabled=!(hasATC && correctFrequency && commStage && !app.stageComplete && !app.awaitingATC);
   }
 }
 
@@ -2532,6 +2337,7 @@ function readSetup(generateCodes=true){
   };
 
   STAGES=buildStages(depCode,destCode);
+  configureUnexpectedEvents();
   app.stageIndex=0;
   $("next").classList.remove("hidden");
   $("reset").classList.add("hidden");
@@ -2585,6 +2391,9 @@ function renderStage(resetFrequency=true){
     destGround:"destGroundInitial"
   };
 
+  clearTimeout(app.unexpectedTimer);
+  app.unexpectedTimer=null;
+  app.awaitingATC=false;
   app.phase=phaseMap[stage.id]||"initial";
   app.stageComplete=false;
   app.recognitionText="";
@@ -2621,7 +2430,6 @@ function renderStage(resetFrequency=true){
   renderNav();
   updateTuneUI();
   updateRepeatButtons();
-  renderAirportDiagram();
 }
 
 
@@ -2631,7 +2439,7 @@ function updatePilotInputState(){
 
   /* Pilot voice/text input is available only while the current stage
      is active AND the correct facility frequency is tuned. */
-  const enableInputs=correctFrequency && !stageComplete;
+  const enableInputs=correctFrequency && !stageComplete && !app.awaitingATC;
 
   const ptt=$("ptt");
   const pilotText=$("pilotText");
@@ -2686,6 +2494,12 @@ function updateTuneUI(){
 function updatePTTState(){
   const stage=STAGES[app.stageIndex];
   if(stage.type!=="comm") return;
+
+  if(app.awaitingATC){
+    $("ptt").disabled=true;
+    $("pttLabel").textContent="STAND BY";
+    return;
+  }
 
   if(app.recognizer){
     $("ptt").disabled=false;
@@ -3178,151 +2992,148 @@ function destinationTaxiway(){
   return ap.taxiwaysByRunway?.[app.config.destRunway] || ap.parkingTaxiway || "Alpha";
 }
 
-function reciprocalRunway(runway){
-  const m=String(runway||"").trim().match(/^(\d{1,2})([LRC]?)$/i);
-  if(!m) return String(runway||"");
-  let n=parseInt(m[1],10)+18;
-  if(n>36) n-=36;
-  let suffix=(m[2]||"").toUpperCase();
-  if(suffix==="L") suffix="R";
-  else if(suffix==="R") suffix="L";
-  return String(n).padStart(2,"0")+suffix;
+
+const UNEXPECTED_EVENT_LABELS={
+  runwayChange:"Runway change",
+  amendedAltitude:"Amended altitude",
+  directionChange:"Different departure direction",
+  standby:"Stand by",
+  unable:"Unable",
+  extendDownwind:"Extend downwind",
+  goAround:"Go around"
+};
+
+function alternateRunway(ap,current){
+  const choices=(ap?.runways||[]).filter(r=>String(r)!==String(current));
+  return choices.length ? choices[randomBetween(0,choices.length-1)] : current;
 }
 
-function taxiDiagramContext(){
-  const stage=STAGES?.[app.stageIndex];
-  if(!stage) return null;
-
-  if(stage.id==="ground"){
-    const ap=depAirport();
-    const runway=app.config.runway || ap.preferredRunway || ap.runways?.[0] || "";
-    const taxiway=departureTaxiway();
-    return {
-      mode:"departure",
-      airport:ap,
-      runway,
-      reciprocal:reciprocalRunway(runway),
-      taxiway,
-      routeLabel:`${app.config.location || "Ramp"} → ${taxiway} → Runway ${runway}`,
-      subtitle:`${ap.name}: departure taxi route to Runway ${runway}`,
-      location:app.config.location || ap.locations?.[0] || "Ramp",
-      highlight:"#1767b1"
-    };
-  }
-
-  if(stage.id==="destGround"){
-    const ap=destAirport();
-    const runway=app.config.destRunway || ap.preferredRunway || ap.runways?.[0] || "";
-    const taxiway=destinationTaxiway();
-    const parking=ap.locations?.[1] || ap.locations?.[0] || "Parking";
-    return {
-      mode:"arrival",
-      airport:ap,
-      runway,
-      reciprocal:reciprocalRunway(runway),
-      taxiway,
-      routeLabel:`Runway ${runway} exit → ${taxiway} → ${parking}`,
-      subtitle:`${ap.name}: arrival taxi route to parking`,
-      location:parking,
-      highlight:"#177f3e"
-    };
-  }
-
-  return null;
+function alternateDirection(current){
+  const dirs=["Southeast","Southwest","Northeast","Northwest"]
+    .filter(d=>d.toLowerCase()!==String(current||"").toLowerCase());
+  return dirs[randomBetween(0,dirs.length-1)] || current;
 }
 
-function airportDiagramSvg(ctx){
-  const highlight=ctx.highlight || "#1767b1";
-  const taxi=ctx.taxiway || "Alpha";
-  const runway=ctx.runway || "";
-  const reciprocal=ctx.reciprocal || reciprocalRunway(runway);
-  const airport=ctx.airport?.name || "Airport";
-  const location=ctx.location || "Ramp";
-
-  if(ctx.mode==="arrival"){
-    return `
-<svg viewBox="0 0 640 260" role="img" aria-label="${airport} airport diagram for taxi training">
-  <rect x="0" y="0" width="640" height="260" rx="16" fill="#eef6ee"/>
-  <rect x="48" y="52" width="544" height="34" rx="4" fill="#4b545b"/>
-  <line x1="72" y1="69" x2="568" y2="69" stroke="#fff7d6" stroke-width="3" stroke-dasharray="16 12"/>
-  <text x="60" y="45" font-size="16" font-weight="700" fill="#26415c">${reciprocal}</text>
-  <text x="552" y="45" font-size="16" font-weight="700" fill="#26415c">${runway}</text>
-
-  <rect x="92" y="138" width="442" height="24" rx="6" fill="#8e9aa3"/>
-  <text x="305" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#334">${taxiwayText(taxi)}</text>
-
-  <rect x="430" y="182" width="152" height="46" rx="10" fill="#d9e7f4" stroke="#9bb6cf"/>
-  <text x="506" y="210" text-anchor="middle" font-size="14" font-weight="700" fill="#173a58">${location}</text>
-
-  <rect x="170" y="84" width="16" height="54" rx="3" fill="#90979d"/>
-  <text x="154" y="112" text-anchor="end" font-size="13" font-weight="700" fill="#334">Exit</text>
-
-  <polyline points="178,69 178,150 430,150 430,205" fill="none" stroke="${highlight}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="178" cy="69" r="8" fill="${highlight}"/>
-  <circle cx="430" cy="205" r="8" fill="${highlight}"/>
-
-  <text x="496" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="${highlight}">Taxi to parking</text>
-</svg>`;
-  }
-
-  return `
-<svg viewBox="0 0 640 260" role="img" aria-label="${airport} airport diagram for taxi training">
-  <rect x="0" y="0" width="640" height="260" rx="16" fill="#eef5ee"/>
-  <rect x="48" y="52" width="544" height="34" rx="4" fill="#4b545b"/>
-  <line x1="72" y1="69" x2="568" y2="69" stroke="#fff7d6" stroke-width="3" stroke-dasharray="16 12"/>
-  <text x="60" y="45" font-size="16" font-weight="700" fill="#26415c">${reciprocal}</text>
-  <text x="552" y="45" font-size="16" font-weight="700" fill="#26415c">${runway}</text>
-
-  <rect x="110" y="138" width="404" height="24" rx="6" fill="#8e9aa3"/>
-  <text x="312" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#334">${taxiwayText(taxi)}</text>
-
-  <rect x="48" y="182" width="160" height="46" rx="10" fill="#d9e7f4" stroke="#9bb6cf"/>
-  <text x="128" y="210" text-anchor="middle" font-size="14" font-weight="700" fill="#173a58">${location}</text>
-
-  <rect x="474" y="86" width="16" height="52" rx="3" fill="#90979d"/>
-  <line x1="468" y1="136" x2="496" y2="136" stroke="#ffd966" stroke-width="4"/>
-  <line x1="468" y1="142" x2="496" y2="142" stroke="#ffd966" stroke-width="4"/>
-  <text x="504" y="126" font-size="13" font-weight="700" fill="#334">Hold short</text>
-
-  <polyline points="208,205 208,150 482,150 482,69" fill="none" stroke="${highlight}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="208" cy="205" r="8" fill="${highlight}"/>
-  <circle cx="482" cy="69" r="8" fill="${highlight}"/>
-
-  <text x="188" y="28" font-size="13" font-weight="700" fill="${highlight}">Taxi to departure runway</text>
-</svg>`;
+function alternateAltitude(current){
+  const currentDigits=String(current||"").replace(/\D/g,"");
+  const choices=["2,500 ft","3,500 ft","4,500 ft","5,500 ft"]
+    .filter(a=>a.replace(/\D/g,"")!==currentDigits);
+  return choices[randomBetween(0,choices.length-1)] || current;
 }
 
-function taxiwayText(name){
-  const n=String(name||"").trim();
-  return n ? `Taxiway ${n}` : "Taxiway";
-}
+function configureUnexpectedEvents(){
+  const level=app.config.level||"beginner";
+  const counts={beginner:2,intermediate:3,advanced:4};
+  const pool=Object.keys(UNEXPECTED_EVENT_LABELS);
 
-function renderAirportDiagram(){
-  const card=$("airportDiagramCard");
-  const title=$("airportDiagramTitle");
-  const subtitle=$("airportDiagramSubtitle");
-  const canvas=$("airportDiagramCanvas");
-  const route=$("airportDiagramRoute");
-  if(!card || !title || !subtitle || !canvas || !route) return;
-
-  const ctx=taxiDiagramContext();
-  if(!ctx){
-    card.classList.add("hidden");
-    canvas.innerHTML="";
-    route.innerHTML="";
-    return;
+  /* Shuffle once per training flight, then activate a level-based subset. */
+  const shuffled=[...pool];
+  for(let i=shuffled.length-1;i>0;i--){
+    const j=randomBetween(0,i);
+    [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
   }
 
-  title.textContent=`${ctx.airport.name} Airport Diagram`;
-  subtitle.textContent=ctx.subtitle;
-  canvas.innerHTML=airportDiagramSvg(ctx);
-  route.innerHTML=`
-    <span class="diagram-pill">${ctx.mode==="departure" ? "Departure taxi" : "Arrival taxi"}</span>
-    <span class="diagram-pill">Runway ${ctx.runway}</span>
-    <span class="diagram-pill">${taxiwayText(ctx.taxiway)}</span>
-    <span class="diagram-pill">${ctx.location}</span>
-  `;
-  card.classList.remove("hidden");
+  const active=new Set(shuffled.slice(0,counts[level]||2));
+  app.scenario.unexpected={};
+  for(const key of pool){
+    app.scenario.unexpected[key]={enabled:active.has(key),triggered:false};
+  }
+
+  app.scenario.originalRunway=app.config.runway;
+  app.scenario.originalDestRunway=app.config.destRunway;
+  app.scenario.originalAltitude=app.config.altitude;
+  app.scenario.originalDirection=app.config.direction;
+}
+
+function unexpectedEnabled(key){
+  return !!app.scenario?.unexpected?.[key]?.enabled;
+}
+
+function unexpectedTriggered(key){
+  return !!app.scenario?.unexpected?.[key]?.triggered;
+}
+
+function markUnexpected(key){
+  const event=app.scenario?.unexpected?.[key];
+  if(!event || event.triggered) return;
+  event.triggered=true;
+  app.session.unexpected=app.session.unexpected||[];
+  if(!app.session.unexpected.includes(key)) app.session.unexpected.push(key);
+}
+
+function triggerRunwayChange(){
+  const newRunway=alternateRunway(depAirport(),app.config.runway);
+  if(newRunway===app.config.runway) return false;
+  app.config.runway=newRunway;
+  if($("runway")) $("runway").value=newRunway;
+  markUnexpected("runwayChange");
+  return true;
+}
+
+function triggerAltitudeAmendment(){
+  const newAltitude=alternateAltitude(app.config.altitude);
+  if(newAltitude===app.config.altitude) return false;
+  app.config.altitude=newAltitude;
+  if($("altitude")) $("altitude").value=newAltitude;
+  markUnexpected("amendedAltitude");
+  return true;
+}
+
+function triggerDirectionChange(){
+  const newDirection=alternateDirection(app.config.direction);
+  if(newDirection===app.config.direction) return false;
+  app.config.direction=newDirection;
+  if($("direction")) $("direction").value=newDirection;
+  markUnexpected("directionChange");
+  return true;
+}
+
+function triggerUnableRunway(){
+  const newRunway=alternateRunway(destAirport(),app.config.destRunway);
+  if(newRunway===app.config.destRunway) return false;
+  app.config.destRunway=newRunway;
+  if($("destRunway")) $("destRunway").value=newRunway;
+  markUnexpected("unable");
+  return true;
+}
+
+function scheduleATCFollowup({stageId,phase,visual,spoken,feedback,nextPhase,role}){
+  clearTimeout(app.unexpectedTimer);
+  app.awaitingATC=true;
+  updatePilotInputState();
+
+  app.unexpectedTimer=setTimeout(()=>{
+    const stage=STAGES?.[app.stageIndex];
+    if(!stage || stage.id!==stageId || app.phase!==phase) return;
+
+    app.awaitingATC=false;
+    app.phase=nextPhase;
+    append("atc",stage.facility.toUpperCase(),visual);
+    rememberATC(visual,spoken,stage.facility,role||currentVoiceRole());
+    speak(spoken,role||currentVoiceRole());
+    $("feedback").textContent=feedback;
+    updatePilotInputState();
+  },1800);
+}
+
+function containsDirectionValue(text,direction){
+  const raw=norm(text).replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+  const joined=raw.replace(/[^a-z0-9]/g,"");
+  const target=String(direction||"").toLowerCase().replace(/[^a-z0-9]/g,"");
+
+  const aliases={
+    southeast:["southeast","south east","south-east","s e","se","southeastern"],
+    southwest:["southwest","south west","south-west","s w","sw","southwestern"],
+    northeast:["northeast","north east","north-east","n e","ne","northeastern"],
+    northwest:["northwest","north west","north-west","n w","nw","northwestern"]
+  };
+
+  const candidates=aliases[target]||[direction];
+  return candidates.some(v=>{
+    const phrase=String(v||"").toLowerCase().replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+    const compactPhrase=phrase.replace(/[^a-z0-9]/g,"");
+    return raw.includes(phrase)||(compactPhrase&&joined.includes(compactPhrase));
+  });
 }
 
 function grade(checks){
@@ -3370,6 +3181,7 @@ function resetSessionStats(){
   app.session={
     attempts:0,
     tuningErrors:0,
+    unexpected:[],
     stages:{},
     missing:{}
   };
@@ -3530,6 +3342,9 @@ function renderFinalReport(){
     <div class="report-scenario">
       Scenario: squawk ${app.squawk} • departure wind ${app.scenario.depWindDir}° at ${app.scenario.depWindSpeed} kt •
       arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • ${app.scenario.patternSide} traffic pattern
+      ${app.session.unexpected?.length
+        ? `<br><b>Unexpected ATC events:</b> ${app.session.unexpected.map(k=>UNEXPECTED_EVENT_LABELS[k]||k).join(" • ")}`
+        : "<br><b>Unexpected ATC events:</b> None encountered"}
     </div>
   `;
 
@@ -3611,9 +3426,16 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
       }else{
-        replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
-        $("feedback").textContent=`Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
+        const changed=unexpectedEnabled("runwayChange")&&!unexpectedTriggered("runwayChange")&&triggerRunwayChange();
+        if(changed){
+          replyVisual=`${app.config.aircraft}, runway change. Runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
+          replySpoken=`${callsignSpoken()}, runway change. Runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+          $("feedback").textContent=`Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, and callsign.`;
+        }else{
+          replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
+          replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+          $("feedback").textContent=`Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
+        }
         app.phase="groundReadback";
       }
     }else{
@@ -3653,9 +3475,12 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.runway}. Make the tower call again.`;
       }else if(s>=75){
+        const changed=unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
         replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
-        $("feedback").textContent="Read back runway, takeoff clearance, and departure direction.";
+        $("feedback").textContent=changed
+          ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
+          : "Read back runway, takeoff clearance, and departure direction.";
         app.phase="towerReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say again runway and request.`;
@@ -3702,9 +3527,12 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=67){
+        const amended=unexpectedEnabled("amendedAltitude")&&!unexpectedTriggered("amendedAltitude")&&triggerAltitudeAmendment();
         replyVisual=`${app.config.aircraft}, radar contact. Climb and maintain ${app.config.altitude}.`;
         replySpoken=`${callsignSpoken()}, radar contact. Climb and maintain ${altitudeSpoken()}.`;
-        $("feedback").textContent="Read back the assigned altitude.";
+        $("feedback").textContent=amended
+          ? `Altitude amended. Read back climb and maintain ${app.config.altitude}.`
+          : "Read back the assigned altitude.";
         app.phase="departureReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say altitude.`;
@@ -3743,16 +3571,33 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=75){
-        replyVisual=`${app.config.aircraft}, proceed direct ${destAirport().name}. Expect visual approach.`;
-        replySpoken=`${callsignSpoken()}, proceed direct ${destAirport().name}. Expect visual approach.`;
-        $("feedback").textContent=`Read back direct ${destAirport().name} and the visual approach.`;
-        app.phase="arrivalReadback";
+        if(unexpectedEnabled("standby")&&!unexpectedTriggered("standby")){
+          markUnexpected("standby");
+          replyVisual=`${app.config.aircraft}, stand by.`;
+          replySpoken=`${callsignSpoken()}, stand by.`;
+          $("feedback").textContent="ATC said stand by. No readback is required; wait for the controller to call you back.";
+          app.phase="arrivalStandby";
+          scheduleATCFollowup({
+            stageId:"arrival",
+            phase:"arrivalStandby",
+            visual:`${app.config.aircraft}, proceed direct ${destAirport().name}. Expect visual approach.`,
+            spoken:`${callsignSpoken()}, proceed direct ${destAirport().name}. Expect visual approach.`,
+            feedback:`ATC called back. Read back direct ${destAirport().name} and the visual approach.`,
+            nextPhase:"arrivalReadback",
+            role:"approach"
+          });
+        }else{
+          replyVisual=`${app.config.aircraft}, proceed direct ${destAirport().name}. Expect visual approach.`;
+          replySpoken=`${callsignSpoken()}, proceed direct ${destAirport().name}. Expect visual approach.`;
+          $("feedback").textContent=`Read back direct ${destAirport().name} and the visual approach.`;
+          app.phase="arrivalReadback";
+        }
       }else{
         replyVisual=`${app.config.aircraft}, say destination and request.`;
         replySpoken=`${callsignSpoken()}, say destination and request.`;
         $("feedback").textContent="Arrival call incomplete. Try again.";
       }
-    }else{
+    }else if(app.phase==="arrivalReadback"){
       checks={
         destination:airportMentioned(text,app.config.destinationAirport),
         direct:n.includes("direct")||n.includes("proceed"),
@@ -3790,9 +3635,21 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}.`;
         $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.destRunway}. Make the tower call again.`;
       }else if(s>=60 && checks.callsign && checks.inbound){
-        replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
-        replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
-        $("feedback").textContent="Read back the pattern instruction.";
+        const unable=unexpectedEnabled("unable")&&!unexpectedTriggered("unable")&&triggerUnableRunway();
+        const extend=unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind");
+        if(extend) markUnexpected("extendDownwind");
+
+        if(unable){
+          replyVisual=`${app.config.aircraft}, unable requested runway. Enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+          replySpoken=`${callsignSpoken()}, unable requested runway. Enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+          $("feedback").textContent=`ATC is unable your requested runway. Read back ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, and ATC calling your base":""}.`;
+        }else{
+          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+          $("feedback").textContent=extend
+            ? "Unexpected instruction: extend downwind. Read back the full pattern instruction."
+            : "Read back the pattern entry and runway.";
+        }
         app.phase="destTowerPatternReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say again callsign, ATIS, position, and landing request.`;
@@ -3800,14 +3657,17 @@ function evaluateTransmission(text){
         $("feedback").textContent=`Initial ${airportFacility(destAirport(),"tower")} call incomplete. Try again.`;
       }
     }else if(app.phase==="destTowerPatternReadback"){
+      const extendRequired=unexpectedTriggered("extendDownwind");
       checks={
         downwind:containsDownwind(text,app.scenario.patternSide),
         runway:containsDestRunway(text),
-        extend:n.includes("extend")||n.includes("extending")||n.includes("extended"),
-        base:n.includes("base")||n.includes("call base")||n.includes("call my base"),
         callsign:hasCallsign(text)
       };
-      const essential=checks.downwind&&checks.runway&&checks.extend&&checks.base;
+      if(extendRequired){
+        checks.extend=n.includes("extend")||n.includes("extending")||n.includes("extended");
+        checks.base=n.includes("base")||n.includes("call base")||n.includes("call my base");
+      }
+      const essential=checks.downwind&&checks.runway&&(!extendRequired||(checks.extend&&checks.base));
       const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(wrongRunway){
@@ -3820,11 +3680,12 @@ function evaluateTransmission(text){
         $("feedback").textContent="Now read back the landing clearance.";
         app.phase="destTowerLandingReadback";
       }else{
-        replyVisual=`${app.config.aircraft}, verify ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
-        replySpoken=`${callsignSpoken()}, verify ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
+        const extendRequired=unexpectedTriggered("extendDownwind");
+        replyVisual=`${app.config.aircraft}, verify ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extendRequired?", extend downwind, I will call your base":"."}`;
+        replySpoken=`${callsignSpoken()}, verify ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extendRequired?", extend downwind, I will call your base":"."}`;
         $("feedback").textContent="Pattern readback not recognized. Try again.";
       }
-    }else{
+    }else if(app.phase==="destTowerLandingReadback"){
       checks={
         runway:containsDestRunway(text),
         landing:n.includes("cleared to land")||n.includes("land"),
@@ -3838,14 +3699,40 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.destRunway}. Read back the landing clearance again.`;
       }else if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct.`;
-        replySpoken=`${callsignSpoken()}, readback correct.`;
-        $("feedback").textContent="Destination Tower stage complete.";
-        complete=true;
+        if(unexpectedEnabled("goAround")&&!unexpectedTriggered("goAround")){
+          markUnexpected("goAround");
+          replyVisual=`${app.config.aircraft}, go around. Fly runway heading, remain in the pattern.`;
+          replySpoken=`${callsignSpoken()}, go around. Fly runway heading, remain in the pattern.`;
+          $("feedback").textContent="Unexpected go-around. Read back the go-around instruction.";
+          app.phase="destTowerGoAroundReadback";
+        }else{
+          replyVisual=`${app.config.aircraft}, readback correct.`;
+          replySpoken=`${callsignSpoken()}, readback correct.`;
+          $("feedback").textContent="Destination Tower stage complete.";
+          complete=true;
+        }
       }else{
         replyVisual=`${app.config.aircraft}, verify Runway ${app.config.destRunway}, cleared to land.`;
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
         $("feedback").textContent="Landing clearance readback not recognized. Try again.";
+      }
+    }else if(app.phase==="destTowerGoAroundReadback"){
+      checks={
+        goaround:n.includes("go around")||n.includes("going around"),
+        heading:n.includes("runway heading")||containsDestRunway(text),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.goaround;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, roger. Remain in the pattern.`;
+        replySpoken=`${callsignSpoken()}, roger. Remain in the pattern.`;
+        $("feedback").textContent="Go-around readback correct. Destination Tower stage complete.";
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify go around, fly runway heading.`;
+        replySpoken=`${callsignSpoken()}, verify go around, fly runway heading.`;
+        $("feedback").textContent="Go-around readback not recognized. Try again.";
       }
     }
   }
