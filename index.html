@@ -21,6 +21,8 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer}
 .btn{border-radius:10px;padding:10px 14px;font-weight:800;border:1px solid var(--line);background:white;color:var(--navy)}
 .btn.primary{background:var(--blue);color:white;border-color:var(--blue)}
+#sayAgain{background:#f3f8fc;color:var(--navy);border-color:#b9cde0}
+#sayAgain:not(:disabled):hover{background:#e6f1fa}
 .btn.success{background:var(--green);color:white;border-color:var(--green)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .mic-status{font-size:12px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18)}
@@ -551,7 +553,8 @@ summary:focus-visible{
   grid-template-columns:minmax(230px,.72fr) minmax(420px,1.35fr) minmax(300px,.93fr);
   grid-template-areas:
     "setup progress progress"
-    "setup stage transcript";
+    "setup stage transcript"
+    "setup diagram diagram";
   gap:14px;
   align-items:start;
 }
@@ -571,8 +574,11 @@ summary:focus-visible{
 .trainer-shell>.main-grid>section:first-child{
   grid-area:stage;
 }
-.trainer-shell>.main-grid>section:last-child{
+.trainer-shell>.main-grid>.radio-exchange-card{
   grid-area:transcript;
+}
+.trainer-shell>.main-grid>.airport-diagram-card{
+  grid-area:diagram;
 }
 .setup-grid{
   grid-template-columns:1fr;
@@ -602,7 +608,8 @@ summary:focus-visible{
     grid-template-areas:
       "setup progress"
       "setup stage"
-      "transcript transcript";
+      "transcript transcript"
+      "diagram diagram";
   }
   .trainer-shell>.setup{
     position:static;
@@ -616,7 +623,8 @@ summary:focus-visible{
       "setup"
       "progress"
       "stage"
-      "transcript";
+      "transcript"
+      "diagram";
     gap:8px;
   }
   .trainer-shell>.setup{
@@ -646,7 +654,8 @@ summary:focus-visible{
   .trainer-shell{
     grid-template-areas:
       ". progress progress"
-      "setup stage transcript";
+      "setup stage transcript"
+      "setup diagram diagram";
   }
 
   .setup-summary h2#routeHeading{
@@ -1583,6 +1592,72 @@ header h1{
   50%{transform:scale(1.015)}
 }
 
+
+/* Airport diagram panel */
+.airport-diagram-card .eyebrow-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:6px;
+  flex-wrap:wrap;
+}
+.airport-diagram-card h3{
+  margin:4px 0 2px;
+  font-size:18px;
+}
+.airport-diagram-card .diagram-subtitle{
+  color:var(--muted);
+  font-size:13px;
+  margin-bottom:10px;
+}
+.diagram-canvas{
+  width:100%;
+  min-height:260px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:linear-gradient(180deg,#f8fbfe,#eef5fb);
+  padding:10px;
+  overflow:hidden;
+}
+.diagram-canvas svg{
+  width:100%;
+  height:auto;
+  display:block;
+}
+.diagram-route{
+  margin-top:10px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.diagram-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  background:#f2f7fc;
+  border:1px solid #d7e4f0;
+  color:var(--navy);
+  font-size:12px;
+  font-weight:700;
+}
+.diagram-note{
+  margin-top:8px;
+  color:var(--muted);
+  font-size:12px;
+}
+@media(max-width:700px){
+  .diagram-canvas{
+    min-height:220px;
+    padding:8px;
+  }
+  .airport-diagram-card h3{
+    font-size:16px;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1729,7 +1804,7 @@ header h1{
     <div id="navRow" class="nav-row">
       <button id="previous" class="btn">← PREVIOUS</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
-      <button id="reset" class="btn secondary hidden">RESET / START OVER</button>
+      <button id="reset" class="btn primary hidden">RESET / START OVER</button>
     </div>
 
     <div class="radio com-radio-panel">
@@ -1831,8 +1906,9 @@ header h1{
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
         <button id="sendTyped" class="btn primary">SEND TYPED</button>
         <button id="clearText" class="btn">CLEAR</button>
+        <button id="sayAgain" class="btn" disabled>SAY AGAIN</button>
       </div>
-      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission.</div>
+      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
     </div>
 
     <div class="scorebar">
@@ -1843,9 +1919,21 @@ header h1{
 
   </section>
 
-  <section class="card">
+  <section class="card radio-exchange-card">
     <div class="eyebrow">RADIO EXCHANGE</div>
     <div id="transcript" class="transcript"></div>
+  </section>
+
+  <section id="airportDiagramCard" class="card airport-diagram-card hidden">
+    <div class="eyebrow-row">
+      <div class="eyebrow">AIRPORT DIAGRAM</div>
+      <div class="small">Taxi training aid</div>
+    </div>
+    <h3 id="airportDiagramTitle">Airport Diagram</h3>
+    <div id="airportDiagramSubtitle" class="diagram-subtitle"></div>
+    <div id="airportDiagramCanvas" class="diagram-canvas"></div>
+    <div id="airportDiagramRoute" class="diagram-route"></div>
+    <div class="diagram-note">Simplified, not to scale. Intended only to support taxi-practice situational awareness.</div>
   </section>
 </div>
 </div>
@@ -2082,6 +2170,7 @@ const app = {
   recognitionCommitted:"",
   recognitionSegment:"",
   recognitionRestartTimer:null,
+  lastATC:null,
   scenario:null,
   session:{
     attempts:0,
@@ -2130,6 +2219,62 @@ function append(type,speaker,text){
   el.innerHTML=`<div class="speaker">${speaker}</div><div class="bubble">${text}</div>`;
   $("transcript").appendChild(el);
   $("transcript").scrollTop=$("transcript").scrollHeight;
+}
+
+function updateRepeatButtons(){
+  const sayAgain=$("sayAgain");
+  const hasATC=!!(app.lastATC && app.lastATC.spoken);
+  const correctFrequency=tuned();
+  const stage=STAGES?.[app.stageIndex];
+  const commStage=stage?.type==="comm";
+
+  if(sayAgain){
+    /* A radio clarification request requires the active COM frequency. */
+    sayAgain.disabled=!(hasATC && correctFrequency && commStage && !app.stageComplete);
+  }
+}
+
+function rememberATC(visual,spoken,speaker,role=currentVoiceRole()){
+  app.lastATC={
+    visual:String(visual||""),
+    spoken:String(spoken||visual||""),
+    speaker:String(speaker||STAGES?.[app.stageIndex]?.facility||"ATC"),
+    role:role||currentVoiceRole()
+  };
+  updateRepeatButtons();
+}
+
+function sayAgainRequest(){
+  const stage=STAGES?.[app.stageIndex];
+
+  if(!app.lastATC || !app.lastATC.spoken){
+    $("feedback").textContent="There is no ATC transmission to request again yet.";
+    return;
+  }
+  if(!stage || stage.type!=="comm"){
+    $("feedback").textContent="Say Again is available during ATC communication stages.";
+    return;
+  }
+  if(!tuned()){
+    $("feedback").textContent=`Tune ${stage.freq} MHz before transmitting a Say Again request.`;
+    return;
+  }
+  if(app.stageComplete){
+    $("feedback").textContent="This stage is already complete.";
+    return;
+  }
+
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+
+  /* Model a concise, proper clarification request. */
+  const pilotRequest=`${app.config.aircraft}, say again.`;
+  append("pilot","PILOT",pilotRequest);
+
+  /* Controller repeats the previous clearance/instruction verbatim. */
+  append("atc",app.lastATC.speaker.toUpperCase(),app.lastATC.visual);
+  speak(app.lastATC.spoken,app.lastATC.role);
+
+  $("feedback").textContent='Good clarification phraseology: “Say again.” The previous ATC transmission was repeated. Stage progress and score are unchanged.';
 }
 /* =========================================================
    V3.37 FACILITY-SPECIFIC ATC VOICES
@@ -2286,6 +2431,7 @@ function renderStage(resetFrequency=true){
   app.phase=phaseMap[stage.id]||"initial";
   app.stageComplete=false;
   app.recognitionText="";
+  app.lastATC=null;
 
   $("stageCounter").textContent=`STAGE ${app.stageIndex+1} OF ${STAGES.length}`;
   $("stageTitle").textContent=stage.title;
@@ -2317,6 +2463,8 @@ function renderStage(resetFrequency=true){
 
   renderNav();
   updateTuneUI();
+  updateRepeatButtons();
+  renderAirportDiagram();
 }
 
 
@@ -2358,6 +2506,8 @@ function updatePilotInputState(){
     if(ptt) ptt.removeAttribute("aria-disabled");
     if(pilotText) pilotText.removeAttribute("aria-disabled");
   }
+
+  updateRepeatButtons();
 }
 
 function updateTuneUI(){
@@ -2869,6 +3019,153 @@ function departureTaxiway(){
 function destinationTaxiway(){
   const ap=destAirport();
   return ap.taxiwaysByRunway?.[app.config.destRunway] || ap.parkingTaxiway || "Alpha";
+}
+
+function reciprocalRunway(runway){
+  const m=String(runway||"").trim().match(/^(\d{1,2})([LRC]?)$/i);
+  if(!m) return String(runway||"");
+  let n=parseInt(m[1],10)+18;
+  if(n>36) n-=36;
+  let suffix=(m[2]||"").toUpperCase();
+  if(suffix==="L") suffix="R";
+  else if(suffix==="R") suffix="L";
+  return String(n).padStart(2,"0")+suffix;
+}
+
+function taxiDiagramContext(){
+  const stage=STAGES?.[app.stageIndex];
+  if(!stage) return null;
+
+  if(stage.id==="ground"){
+    const ap=depAirport();
+    const runway=app.config.runway || ap.preferredRunway || ap.runways?.[0] || "";
+    const taxiway=departureTaxiway();
+    return {
+      mode:"departure",
+      airport:ap,
+      runway,
+      reciprocal:reciprocalRunway(runway),
+      taxiway,
+      routeLabel:`${app.config.location || "Ramp"} → ${taxiway} → Runway ${runway}`,
+      subtitle:`${ap.name}: departure taxi route to Runway ${runway}`,
+      location:app.config.location || ap.locations?.[0] || "Ramp",
+      highlight:"#1767b1"
+    };
+  }
+
+  if(stage.id==="destGround"){
+    const ap=destAirport();
+    const runway=app.config.destRunway || ap.preferredRunway || ap.runways?.[0] || "";
+    const taxiway=destinationTaxiway();
+    const parking=ap.locations?.[1] || ap.locations?.[0] || "Parking";
+    return {
+      mode:"arrival",
+      airport:ap,
+      runway,
+      reciprocal:reciprocalRunway(runway),
+      taxiway,
+      routeLabel:`Runway ${runway} exit → ${taxiway} → ${parking}`,
+      subtitle:`${ap.name}: arrival taxi route to parking`,
+      location:parking,
+      highlight:"#177f3e"
+    };
+  }
+
+  return null;
+}
+
+function airportDiagramSvg(ctx){
+  const highlight=ctx.highlight || "#1767b1";
+  const taxi=ctx.taxiway || "Alpha";
+  const runway=ctx.runway || "";
+  const reciprocal=ctx.reciprocal || reciprocalRunway(runway);
+  const airport=ctx.airport?.name || "Airport";
+  const location=ctx.location || "Ramp";
+
+  if(ctx.mode==="arrival"){
+    return `
+<svg viewBox="0 0 640 260" role="img" aria-label="${airport} airport diagram for taxi training">
+  <rect x="0" y="0" width="640" height="260" rx="16" fill="#eef6ee"/>
+  <rect x="48" y="52" width="544" height="34" rx="4" fill="#4b545b"/>
+  <line x1="72" y1="69" x2="568" y2="69" stroke="#fff7d6" stroke-width="3" stroke-dasharray="16 12"/>
+  <text x="60" y="45" font-size="16" font-weight="700" fill="#26415c">${reciprocal}</text>
+  <text x="552" y="45" font-size="16" font-weight="700" fill="#26415c">${runway}</text>
+
+  <rect x="92" y="138" width="442" height="24" rx="6" fill="#8e9aa3"/>
+  <text x="305" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#334">${taxiwayText(taxi)}</text>
+
+  <rect x="430" y="182" width="152" height="46" rx="10" fill="#d9e7f4" stroke="#9bb6cf"/>
+  <text x="506" y="210" text-anchor="middle" font-size="14" font-weight="700" fill="#173a58">${location}</text>
+
+  <rect x="170" y="84" width="16" height="54" rx="3" fill="#90979d"/>
+  <text x="154" y="112" text-anchor="end" font-size="13" font-weight="700" fill="#334">Exit</text>
+
+  <polyline points="178,69 178,150 430,150 430,205" fill="none" stroke="${highlight}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="178" cy="69" r="8" fill="${highlight}"/>
+  <circle cx="430" cy="205" r="8" fill="${highlight}"/>
+
+  <text x="496" y="28" text-anchor="middle" font-size="13" font-weight="700" fill="${highlight}">Taxi to parking</text>
+</svg>`;
+  }
+
+  return `
+<svg viewBox="0 0 640 260" role="img" aria-label="${airport} airport diagram for taxi training">
+  <rect x="0" y="0" width="640" height="260" rx="16" fill="#eef5ee"/>
+  <rect x="48" y="52" width="544" height="34" rx="4" fill="#4b545b"/>
+  <line x1="72" y1="69" x2="568" y2="69" stroke="#fff7d6" stroke-width="3" stroke-dasharray="16 12"/>
+  <text x="60" y="45" font-size="16" font-weight="700" fill="#26415c">${reciprocal}</text>
+  <text x="552" y="45" font-size="16" font-weight="700" fill="#26415c">${runway}</text>
+
+  <rect x="110" y="138" width="404" height="24" rx="6" fill="#8e9aa3"/>
+  <text x="312" y="132" text-anchor="middle" font-size="14" font-weight="700" fill="#334">${taxiwayText(taxi)}</text>
+
+  <rect x="48" y="182" width="160" height="46" rx="10" fill="#d9e7f4" stroke="#9bb6cf"/>
+  <text x="128" y="210" text-anchor="middle" font-size="14" font-weight="700" fill="#173a58">${location}</text>
+
+  <rect x="474" y="86" width="16" height="52" rx="3" fill="#90979d"/>
+  <line x1="468" y1="136" x2="496" y2="136" stroke="#ffd966" stroke-width="4"/>
+  <line x1="468" y1="142" x2="496" y2="142" stroke="#ffd966" stroke-width="4"/>
+  <text x="504" y="126" font-size="13" font-weight="700" fill="#334">Hold short</text>
+
+  <polyline points="208,205 208,150 482,150 482,69" fill="none" stroke="${highlight}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="208" cy="205" r="8" fill="${highlight}"/>
+  <circle cx="482" cy="69" r="8" fill="${highlight}"/>
+
+  <text x="188" y="28" font-size="13" font-weight="700" fill="${highlight}">Taxi to departure runway</text>
+</svg>`;
+}
+
+function taxiwayText(name){
+  const n=String(name||"").trim();
+  return n ? `Taxiway ${n}` : "Taxiway";
+}
+
+function renderAirportDiagram(){
+  const card=$("airportDiagramCard");
+  const title=$("airportDiagramTitle");
+  const subtitle=$("airportDiagramSubtitle");
+  const canvas=$("airportDiagramCanvas");
+  const route=$("airportDiagramRoute");
+  if(!card || !title || !subtitle || !canvas || !route) return;
+
+  const ctx=taxiDiagramContext();
+  if(!ctx){
+    card.classList.add("hidden");
+    canvas.innerHTML="";
+    route.innerHTML="";
+    return;
+  }
+
+  title.textContent=`${ctx.airport.name} Airport Diagram`;
+  subtitle.textContent=ctx.subtitle;
+  canvas.innerHTML=airportDiagramSvg(ctx);
+  route.innerHTML=`
+    <span class="diagram-pill">${ctx.mode==="departure" ? "Departure taxi" : "Arrival taxi"}</span>
+    <span class="diagram-pill">Runway ${ctx.runway}</span>
+    <span class="diagram-pill">${taxiwayText(ctx.taxiway)}</span>
+    <span class="diagram-pill">${ctx.location}</span>
+  `;
+  card.classList.remove("hidden");
 }
 
 function grade(checks){
@@ -3448,6 +3745,7 @@ function evaluateTransmission(text){
 
   if(replyVisual){
     append("atc",stage.facility.toUpperCase(),replyVisual);
+    rememberATC(replyVisual,replySpoken,stage.facility,currentVoiceRole());
     speak(replySpoken);
   }
 
@@ -3492,6 +3790,7 @@ function monitorAtis(){
 
   $("atisText").textContent=visual;
   append("atc",label,visual);
+  rememberATC(visual,spoken,label,"atis");
   speak(spoken,"atis");
   $("score").textContent="100%";
   $("feedback").textContent=`Information ${code} received. Select NEXT.`;
@@ -3553,6 +3852,7 @@ $("applySetup").addEventListener("click",()=>readSetup(true));
 $("monitorAtis").addEventListener("click",monitorAtis);
 $("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
 $("clearText").addEventListener("click",()=>{$("pilotText").value=""});
+$("sayAgain").addEventListener("click",sayAgainRequest);
 $("next").addEventListener("click",nextStage);
 $("previous").addEventListener("click",previousStage);
 $("reset").addEventListener("click",resetTraining);
