@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0a2f57">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FK ATC Trainer">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icon-192.png">
 <title>FK ATC COM Trainer V3.5 Mobile Responsive</title>
 <style>
 :root{
@@ -27,6 +34,30 @@ button{cursor:pointer}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .mic-status{font-size:12px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18)}
 .mic-status.ok{background:rgba(54,190,100,.18)}
+.install-app-btn{
+  background:#fff;
+  color:var(--navy);
+  border-color:rgba(255,255,255,.7);
+  min-height:36px;
+  padding:7px 11px;
+  font-size:11px;
+}
+@media(max-width:700px){
+  header{
+    display:flex!important;
+    align-items:center!important;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .install-app-btn{
+    width:auto!important;
+    min-height:34px;
+    margin:0!important;
+    padding:6px 9px!important;
+    font-size:10px!important;
+    flex:0 0 auto;
+  }
+}
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
 .setup{margin-top:16px}
 .setup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -1667,6 +1698,7 @@ header h1{
 <div class="app">
 <header>
   <div><h1>FK ATC COM Trainer</h1></div>
+  <button id="installApp" class="btn install-app-btn hidden" type="button">INSTALL APP</button>
 </header>
 
 
@@ -3982,6 +4014,77 @@ readSetup(true);
 
 
 
+
+
+/* =========================================================
+   V3.43 PWA / INSTALLABLE WEB APP
+   ========================================================= */
+let deferredInstallPrompt=null;
+
+function isIOSDevice(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+}
+
+function isStandaloneMode(){
+  return window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone===true;
+}
+
+function updateInstallButton(){
+  const btn=$("installApp");
+  if(!btn) return;
+
+  if(isStandaloneMode()){
+    btn.classList.add("hidden");
+    return;
+  }
+
+  /* Android/Chromium exposes beforeinstallprompt.
+     iPhone/iPad uses Safari Share -> Add to Home Screen. */
+  if(deferredInstallPrompt || isIOSDevice()){
+    btn.classList.remove("hidden");
+    btn.textContent=isIOSDevice() ? "ADD TO HOME" : "INSTALL APP";
+  }else{
+    btn.classList.add("hidden");
+  }
+}
+
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  updateInstallButton();
+});
+
+window.addEventListener("appinstalled",()=>{
+  deferredInstallPrompt=null;
+  updateInstallButton();
+});
+
+$("installApp")?.addEventListener("click",async()=>{
+  if(isIOSDevice()){
+    alert('On iPhone/iPad: open this page in Safari, tap the Share button, then choose “Add to Home Screen.”');
+    return;
+  }
+
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  try{
+    await deferredInstallPrompt.userChoice;
+  }catch(e){}
+  deferredInstallPrompt=null;
+  updateInstallButton();
+});
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./service-worker.js").catch(err=>{
+      console.warn("Service worker registration failed:",err);
+    });
+  });
+}
+
+updateInstallButton();
 
 function collapseSetupAndTop(button){
   const details=button.closest("details");
