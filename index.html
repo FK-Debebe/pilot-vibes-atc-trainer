@@ -1704,7 +1704,7 @@ header h1{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
   </div>
 </details>
 
@@ -2570,7 +2570,8 @@ function aviationCompact(text){
     alpha:"a",bravo:"b",charlie:"c",delta:"d",echo:"e",
     foxtrot:"f",golf:"g",hotel:"h",india:"i",juliet:"j",
     kilo:"k",lima:"l",mike:"m",november:"n",oscar:"o",
-    papa:"p",quebec:"q",romeo:"r",sierra:"s",tango:"t",
+    papa:"p",poppa:"p",quebec:"q",romeo:"r",
+    sierra:"s",sara:"s",sera:"s",tango:"t",
     uniform:"u",victor:"v",whiskey:"w",xray:"x",yankee:"y",zulu:"z"
   };
 
@@ -2729,6 +2730,47 @@ function containsSquawk(text,squawk){
 
 function containsDestRunway(text){
   return containsRunway(text,app.config.destRunway);
+}
+
+/* Return a different runway that the pilot explicitly mentioned.
+   This lets ATC correct an incorrect readback instead of treating it
+   as merely missing information. */
+function wrongRunwayMention(text,target,airport){
+  const runways=(airport?.runways||[]).filter(r=>String(r)!==String(target));
+  return runways.find(r=>containsRunway(text,r)) || "";
+}
+
+function containsSpecificAltitude(text,altitude){
+  const target=String(altitude||"").replace(/\D/g,"");
+  if(!target) return false;
+
+  const digits=textDigits(text);
+  if(digits.includes(target)) return true;
+
+  const n=norm(text);
+  const variants={
+    "2500":["two thousand five hundred","twenty five hundred","twenty-five hundred"],
+    "3500":["three thousand five hundred","thirty five hundred","thirty-five hundred"],
+    "4500":["four thousand five hundred","forty five hundred","forty-five hundred"],
+    "5500":["five thousand five hundred","fifty five hundred","fifty-five hundred"]
+  };
+  return (variants[target]||[]).some(v=>n.includes(v));
+}
+
+function wrongAltitudeMention(text){
+  const target=app.config.altitude.replace(/\D/g,"");
+  const candidates=["2500","3500","4500","5500"].filter(a=>a!==target);
+  return candidates.find(a=>containsSpecificAltitude(text,a)) || "";
+}
+
+function spokenAltitudeValue(value){
+  const map={
+    "2500":"two thousand five hundred",
+    "3500":"three thousand five hundred",
+    "4500":"four thousand five hundred",
+    "5500":"five thousand five hundred"
+  };
+  return map[String(value).replace(/\D/g,"")] || String(value);
 }
 
 function departureTaxiway(){
@@ -2975,18 +3017,24 @@ function evaluateTransmission(text){
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=60 && checks.callsign && checks.destination){
-        replyVisual=`${app.config.aircraft}, ${depAirport().name} Clearance, VFR departure approved. Departure frequency ${depAirport().departure}, squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, ${depAirport().name} Clearance, V F R departure approved. Departure frequency ${frequencySpoken(depAirport().departure)}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        replyVisual=`${app.config.aircraft}, ${depAirport().name} Clearance, VFR departure approved. Departure frequency ${airportFrequency(depAirport(),"departure")}, squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, ${depAirport().name} Clearance, V F R departure approved. Departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         $("feedback").textContent="Clearance received. Read back departure frequency and squawk.";
         app.phase="clearanceReadback";
       }else{
-        replyVisual=`${app.config.aircraft}, say again callsign, destination, ATIS, and request.`;
-        replySpoken=`${callsignSpoken()}, say again callsign, destination, A T I S, and request.`;
-        $("feedback").textContent="Clearance call incomplete. Try again.";
+        const missing=[];
+        if(!checks.facility) missing.push("Clearance facility");
+        if(!checks.callsign) missing.push("callsign");
+        if(!checks.atis) missing.push(`information ${app.config.atis}`);
+        if(!checks.destination) missing.push(destAirport().radioName||destAirport().name);
+        if(!checks.request) missing.push("VFR / flight-following request");
+        replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
+        replySpoken=`${callsignSpoken()}, say again the missing information.`;
+        $("feedback").textContent=`Clearance call incomplete. Missing or not recognized: ${missing.join(", ")}.`;
       }
     }else{
       checks={
-        frequency:containsFrequency(text,depAirport().departure)||n.includes("departure frequency"),
+        frequency:containsFrequency(text,airportFrequency(depAirport(),"departure"))||n.includes("departure frequency"),
         squawk:containsSquawk(text,app.squawk),
         callsign:hasCallsign(text)
       };
@@ -2998,8 +3046,8 @@ function evaluateTransmission(text){
         $("feedback").textContent="Clearance Delivery complete.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify departure frequency ${depAirport().departure} and squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, verify departure frequency ${frequencySpoken(depAirport().departure)} and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        replyVisual=`${app.config.aircraft}, verify departure frequency ${airportFrequency(depAirport(),"departure")} and squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, verify departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))} and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         $("feedback").textContent="Read back the departure frequency and squawk.";
       }
     }
@@ -3026,10 +3074,15 @@ function evaluateTransmission(text){
         app.phase="groundReadback";
       }
     }else{
+      const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
       checks={runway:containsRunway(text),taxiway:n.includes(departureTaxiway().toLowerCase()),callsign:hasCallsign(text)};
       const essential=checks.runway&&checks.taxiway;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
-      if(essential){
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}. Taxi via ${departureTaxiway()}.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.runway}. Read it back again.`;
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
         replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Ground stage complete.";
@@ -3051,7 +3104,12 @@ function evaluateTransmission(text){
         ready:n.includes("ready")||n.includes("departure")
       };
       const s=grade(checks); $("score").textContent=s+"%";
-      if(s>=75){
+      const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}.`;
+        $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.runway}. Make the tower call again.`;
+      }else if(s>=75){
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
         replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
         $("feedback").textContent="Read back runway, takeoff clearance, and departure direction.";
@@ -3069,8 +3127,13 @@ function evaluateTransmission(text){
         callsign:hasCallsign(text)
       };
       const essential=checks.runway&&checks.takeoff&&checks.direction;
+      const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
-      if(essential){
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}, cleared for takeoff.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, cleared for takeoff.`;
+        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.runway}. Read back the clearance again.`;
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
         replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Tower stage complete.";
@@ -3090,7 +3153,7 @@ function evaluateTransmission(text){
   if(stage.id==="departure"){
     if(app.phase==="departureInitial"){
       checks={
-        facility:n.includes("departure")||norm(depAirport().depFacility).split(" ").some(w=>w.length>4&&n.includes(w)),
+        facility:n.includes("departure")||norm(airportFacility(depAirport(),"departure")).split(" ").some(w=>w.length>4&&n.includes(w)),
         callsign:hasCallsign(text),
         altitude:containsAltitude(text)||n.includes("altitude")
       };
@@ -3108,8 +3171,13 @@ function evaluateTransmission(text){
     }else{
       checks={altitude:containsAltitude(text),callsign:hasCallsign(text)};
       const essential=checks.altitude;
+      const wrongAltitude=wrongAltitudeMention(text);
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
-      if(essential){
+      if(wrongAltitude){
+        replyVisual=`${app.config.aircraft}, negative, climb and maintain ${app.config.altitude}.`;
+        replySpoken=`${callsignSpoken()}, negative, climb and maintain ${altitudeSpoken()}.`;
+        $("feedback").textContent=`Incorrect altitude readback: you said ${Number(wrongAltitude).toLocaleString()} feet. Assigned altitude is ${app.config.altitude}. Read it back again.`;
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
         replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Departure stage complete.";
@@ -3151,8 +3219,8 @@ function evaluateTransmission(text){
       const essential=checks.destination&&checks.visual;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct. Obtain ${destAirport().name} ATIS on ${destAirport().atis}.`;
-        replySpoken=`${callsignSpoken()}, readback correct. Obtain ${destAirport().name} A T I S on ${frequencySpoken(destAirport().atis)}.`;
+        replyVisual=`${app.config.aircraft}, readback correct. Obtain ${destAirport().name} ATIS on ${airportFrequency(destAirport(),"atis")}.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Obtain ${destAirport().name} A T I S on ${frequencySpoken(airportFrequency(destAirport(),"atis"))}.`;
         $("feedback").textContent="Approach stage complete. Next: Arrival ATIS.";
         complete=true;
       }else{
@@ -3173,7 +3241,12 @@ function evaluateTransmission(text){
         runway:containsDestRunway(text)
       };
       const s=grade(checks); $("score").textContent=s+"%";
-      if(s>=60 && checks.callsign && checks.inbound){
+      const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}.`;
+        $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.destRunway}. Make the tower call again.`;
+      }else if(s>=60 && checks.callsign && checks.inbound){
         replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}, extend downwind, I will call your base.`;
         replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}, extend downwind, I will call your base.`;
         $("feedback").textContent="Read back the pattern instruction.";
@@ -3192,8 +3265,13 @@ function evaluateTransmission(text){
         callsign:hasCallsign(text)
       };
       const essential=checks.downwind&&checks.runway&&checks.extend&&checks.base;
+      const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
-      if(essential){
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}. Enter ${app.scenario.patternSide} downwind.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}. Enter ${app.scenario.patternSide} downwind.`;
+        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.destRunway}. Read back the pattern instruction again.`;
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, turn base. Runway ${app.config.destRunway}, cleared to land.`;
         replySpoken=`${callsignSpoken()}, turn base. Runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
         $("feedback").textContent="Now read back the landing clearance.";
@@ -3210,8 +3288,13 @@ function evaluateTransmission(text){
         callsign:hasCallsign(text)
       };
       const essential=checks.runway&&checks.landing;
+      const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
-      if(essential){
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}, cleared to land.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
+        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.destRunway}. Read back the landing clearance again.`;
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
         replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Destination Tower stage complete.";
