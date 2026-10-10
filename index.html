@@ -480,8 +480,9 @@ input,select,textarea{
     height:min(300px,34vh);
     min-height:190px;
     overflow:auto;
-    overscroll-behavior:contain;
+    overscroll-behavior:auto;
     -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
   }
 
   .nav-row{
@@ -498,6 +499,10 @@ input,select,textarea{
   .bubble{
     font-size:13px;
     overflow-wrap:anywhere;
+  }
+
+  .radio-exchange-card{
+    touch-action:pan-y;
   }
 }
 
