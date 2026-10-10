@@ -1467,6 +1467,96 @@ details.setup:not([open]) .setup-bottom-toggle{
   }
 }
 
+
+/* =========================================================
+   V3.23 FK COM 1 READY / NOT READY STATUS
+   ========================================================= */
+.com-header-right{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+.radio-ready-state{
+  min-width:72px;
+  padding:3px 7px;
+  border-radius:4px;
+  border:1px solid #3b4145;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-align:center;
+  box-shadow:inset 0 0 5px rgba(0,0,0,.65);
+}
+.radio-ready-state.ready{
+  color:#b7ff9d;
+  background:#102713;
+  border-color:#47724a;
+  text-shadow:0 0 5px rgba(122,255,109,.45);
+}
+.radio-ready-state.not-ready{
+  color:#ffd2d2;
+  background:#331516;
+  border-color:#754547;
+  text-shadow:0 0 4px rgba(255,110,110,.3);
+}
+@media(max-width:700px){
+  .radio-ready-state{
+    min-width:62px;
+    padding:3px 5px;
+    font-size:8px;
+  }
+}
+
+
+/* =========================================================
+   V3.24 READY STATUS BESIDE FK COM 1
+   ========================================================= */
+.com-brand-block{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+.com-brand-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.com-brand-row .radio-ready-state{
+  min-width:66px;
+  padding:3px 6px;
+}
+@media(max-width:700px){
+  .com-brand-row{
+    gap:6px;
+  }
+  .com-brand-row .radio-ready-state{
+    min-width:58px;
+    padding:2px 5px;
+    font-size:7px;
+  }
+}
+
+
+/* =========================================================
+   V3.25 LOCK PILOT INPUTS AFTER STAGE COMPLETION
+   ========================================================= */
+#ptt:disabled,
+#sendTyped:disabled,
+#clearText:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+  filter:grayscale(.45);
+  box-shadow:none;
+}
+#pilotText:disabled,
+#pilotText.input-disabled{
+  background:#eef1f4;
+  color:#7d8790;
+  cursor:not-allowed;
+  opacity:.72;
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1625,11 +1715,16 @@ details.setup:not([open]) .setup-bottom-toggle{
         <span class="panel-screw screw-br"></span>
 
         <div class="com-header">
-          <div>
-            <div class="com-brand">FK COM 1</div>
+          <div class="com-brand-block">
+            <div class="com-brand-row">
+              <div class="com-brand">FK COM 1</div>
+              <div id="radioReadyState" class="radio-ready-state not-ready">NOT READY</div>
+            </div>
             <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
           </div>
-          <div id="targetFrequency" class="com-target"></div>
+          <div class="com-header-right">
+            <div id="targetFrequency" class="com-target"></div>
+          </div>
         </div>
 
         <input id="frequency" type="hidden" value="121.500">
@@ -1707,7 +1802,7 @@ details.setup:not([open]) .setup-bottom-toggle{
       <button id="ptt" class="ptt" disabled>
         <span class="mic">🎙</span><span id="pttLabel">TAP TO TALK</span>
       </button>
-      <textarea id="pilotText" rows="4" placeholder="Speech transcript will appear here. You may also type a transmission."></textarea>
+      <textarea id="pilotText" rows="4" placeholder="Tune the correct frequency to enable speech or typed transmission."></textarea>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
         <button id="sendTyped" class="btn primary">SEND TYPED</button>
         <button id="clearText" class="btn">CLEAR</button>
@@ -2036,14 +2131,56 @@ function renderStage(resetFrequency=true){
   updateTuneUI();
 }
 
+
+function updatePilotInputState(){
+  const stageComplete=!!app.stageComplete;
+  const correctFrequency=tuned();
+
+  /* Pilot voice/text input is available only while the current stage
+     is active AND the correct facility frequency is tuned. */
+  const enableInputs=correctFrequency && !stageComplete;
+
+  const ptt=$("ptt");
+  const pilotText=$("pilotText");
+  const sendTyped=$("sendTyped");
+  const clearText=$("clearText");
+
+  if(ptt){
+    ptt.disabled=!enableInputs;
+    ptt.classList.toggle("disabled",!enableInputs);
+    if(!enableInputs && app.recognizer){
+      try{ app.recognizer.stop(); }catch(e){}
+    }
+  }
+  if(pilotText){
+    pilotText.disabled=!enableInputs;
+    pilotText.classList.toggle("input-disabled",!enableInputs);
+  }
+  if(sendTyped) sendTyped.disabled=!enableInputs;
+  if(clearText) clearText.disabled=!enableInputs;
+
+  if(!enableInputs){
+    if(ptt) ptt.setAttribute("aria-disabled","true");
+    if(pilotText) pilotText.setAttribute("aria-disabled","true");
+  }else{
+    if(ptt) ptt.removeAttribute("aria-disabled");
+    if(pilotText) pilotText.removeAttribute("aria-disabled");
+  }
+}
+
 function updateTuneUI(){
   if(tuned()){
     $("tuneMsg").textContent=`Tuned to ${STAGES[app.stageIndex].facility}`;
     $("tuneMsg").className="tune-msg good";
+    $("radioReadyState").textContent="READY";
+    $("radioReadyState").className="radio-ready-state ready";
   } else {
     $("tuneMsg").textContent="Tune to the active facility.";
     $("tuneMsg").className="tune-msg";
+    $("radioReadyState").textContent="NOT READY";
+    $("radioReadyState").className="radio-ready-state not-ready";
   }
+  updatePilotInputState();
   updatePTTState();
 }
 
@@ -2152,6 +2289,7 @@ function freshRecognizer(){
 }
 
 async function startPTT(e){
+  if($("ptt")?.disabled) return;
   if(e) e.preventDefault();
 
   if("speechSynthesis" in window) speechSynthesis.cancel();
@@ -2878,6 +3016,7 @@ function evaluateTransmission(text){
 function completeStage(){
   recordStageComplete();
   app.stageComplete=true;
+  updatePilotInputState();
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
   $("next").disabled=false;
