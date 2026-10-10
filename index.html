@@ -1571,6 +1571,18 @@ header h1{
   }
 }
 
+
+/* =========================================================
+   V3.29 PERSISTENT TAP-TO-TALK LISTENING
+   ========================================================= */
+#ptt.listening{
+  animation:pttPulse 1.15s ease-in-out infinite;
+}
+@keyframes pttPulse{
+  0%,100%{transform:scale(1)}
+  50%{transform:scale(1.015)}
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1972,6 +1984,8 @@ const app = {
     level:"beginner"
   },
   pttStopping:false,
+  pttActive:false,
+  recognitionText:"",
   scenario:null,
   session:{
     attempts:0,
@@ -2162,6 +2176,8 @@ function updatePilotInputState(){
     ptt.disabled=!enableInputs;
     ptt.classList.toggle("disabled",!enableInputs);
     if(!enableInputs && app.recognizer){
+      app.pttStopping=true;
+      app.pttActive=false;
       try{ app.recognizer.stop(); }catch(e){}
     }
   }
@@ -2238,21 +2254,19 @@ function freshRecognizer(){
 
   const r=new SR();
   r.lang="en-US";
-  r.continuous=false;
+  r.continuous=true;
   r.interimResults=true;
   r.maxAlternatives=1;
 
   r.onstart=()=>{
-    app.recognitionText="";
-    $("pilotText").value="";
     $("ptt").classList.add("listening");
     $("pttLabel").textContent="TAP TO END & SEND";
     $("stageState").textContent="Listening";
-    $("feedback").textContent="Listening...";
+    $("feedback").textContent="Listening... tap again when finished.";
   };
 
   r.onaudiostart=()=>{
-    $("feedback").textContent="Microphone active...";
+    $("feedback").textContent="Microphone active — keep speaking until you tap again.";
   };
 
   r.onsoundstart=()=>{
@@ -2260,34 +2274,70 @@ function freshRecognizer(){
   };
 
   r.onspeechstart=()=>{
-    $("feedback").textContent="Speech detected...";
+    $("feedback").textContent="Speech detected — listening remains active.";
   };
 
   r.onresult=event=>{
-    let text="";
-    for(let i=event.resultIndex;i<event.results.length;i++){
-      text += event.results[i][0].transcript + " ";
+    let finalText="";
+    let interimText="";
+
+    for(let i=0;i<event.results.length;i++){
+      const piece=(event.results[i][0].transcript||"").trim();
+      if(!piece) continue;
+      if(event.results[i].isFinal) finalText += piece + " ";
+      else interimText += piece + " ";
     }
-    app.recognitionText=text.trim();
-    $("pilotText").value=app.recognitionText;
+
+    const combined=(finalText + interimText).trim();
+    if(combined){
+      app.recognitionText=combined;
+      $("pilotText").value=combined;
+    }
   };
 
   r.onerror=event=>{
+    /* "no-speech" and "aborted" can occur during a long open microphone.
+       Keep the PTT session alive unless the user explicitly ended it. */
+    if(app.pttActive && !app.pttStopping &&
+       (event.error==="no-speech" || event.error==="aborted" || event.error==="network")){
+      $("feedback").textContent="Listening... tap again when finished.";
+      return;
+    }
+
     $("ptt").classList.remove("listening");
     $("stageState").textContent="Speech error";
     $("feedback").textContent="Speech recognition error: "+event.error;
     app.recognizer=null;
+    app.pttActive=false;
     app.pttStopping=false;
     updatePTTState();
   };
 
   r.onend=()=>{
+    /* Some browsers end SpeechRecognition automatically after a pause.
+       As long as the user has NOT tapped to end, immediately restart it. */
+    if(app.pttActive && !app.pttStopping){
+      try{
+        r.start();
+        $("feedback").textContent="Listening... tap again when finished.";
+        return;
+      }catch(err){
+        setTimeout(()=>{
+          if(app.pttActive && !app.pttStopping){
+            try{ r.start(); }catch(e){}
+          }
+        },150);
+        return;
+      }
+    }
+
     $("ptt").classList.remove("listening");
     $("stageState").textContent="Ready";
     $("pttLabel").textContent=tuned() ? "TAP TO TALK" : "TUNE RADIO FIRST";
 
     const text=$("pilotText").value.trim();
     app.recognizer=null;
+    app.pttActive=false;
     app.pttStopping=false;
     updatePTTState();
 
@@ -2312,7 +2362,7 @@ async function startPTT(e){
     return;
   }
 
-  if(app.recognizer) return;
+  if(app.pttActive) return;
 
   const ok=await ensureMicrophonePermission();
   if(!ok) return;
@@ -2323,27 +2373,40 @@ async function startPTT(e){
     return;
   }
 
+  app.recognitionText="";
+  $("pilotText").value="";
   app.pttStopping=false;
+  app.pttActive=true;
   app.recognizer=recognizer;
 
   try{
     recognizer.start();
   }catch(err){
     app.recognizer=null;
+    app.pttActive=false;
     app.pttStopping=false;
     $("feedback").textContent="Could not start speech recognition. Try again.";
+    updatePTTState();
   }
 }
 
 function stopPTT(e){
   if(e) e.preventDefault();
 
-  if(app.recognizer && !app.pttStopping){
+  if(app.recognizer && app.pttActive && !app.pttStopping){
     app.pttStopping=true;
+    app.pttActive=false;
+    $("feedback").textContent="Ending transmission...";
     try{
       app.recognizer.stop();
     }catch(err){
       app.pttStopping=false;
+      app.recognizer=null;
+      updatePTTState();
+
+      const text=$("pilotText").value.trim();
+      if(text) evaluateTransmission(text);
+      else $("feedback").textContent="No speech was recognized. Try again.";
     }
   }
 }
@@ -3230,7 +3293,7 @@ document.querySelectorAll(".digit-btn").forEach(btn=>{
 $("ptt").addEventListener("click",e=>{
   e.preventDefault();
 
-  if(app.recognizer){
+  if(app.pttActive){
     stopPTT(e);
   }else{
     startPTT(e);
