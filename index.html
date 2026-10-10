@@ -2757,6 +2757,30 @@ function containsSpecificAltitude(text,altitude){
   return (variants[target]||[]).some(v=>n.includes(v));
 }
 
+function containsDownwind(text,side=""){
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const compacted=n.replace(/\s+/g,"");
+  const sideNorm=String(side||"").toLowerCase().trim();
+
+  if(sideNorm){
+    const sideForms=[
+      `${sideNorm} downwind`,
+      `${sideNorm} down wind`
+    ];
+    if(sideForms.some(v=>n.includes(v))) return true;
+  }
+
+  return (
+    n.includes("downwind") ||
+    n.includes("down wind") ||
+    compacted.includes("downwind")
+  );
+}
+
 function wrongAltitudeMention(text){
   const target=app.config.altitude.replace(/\D/g,"");
   const candidates=["2500","3500","4500","5500"].filter(a=>a!==target);
@@ -3258,10 +3282,10 @@ function evaluateTransmission(text){
       }
     }else if(app.phase==="destTowerPatternReadback"){
       checks={
-        downwind:n.includes(`${app.scenario.patternSide} downwind`)||n.includes("downwind"),
+        downwind:containsDownwind(text,app.scenario.patternSide),
         runway:containsDestRunway(text),
-        extend:n.includes("extend")||n.includes("extending"),
-        base:n.includes("base"),
+        extend:n.includes("extend")||n.includes("extending")||n.includes("extended"),
+        base:n.includes("base")||n.includes("call base")||n.includes("call my base"),
         callsign:hasCallsign(text)
       };
       const essential=checks.downwind&&checks.runway&&checks.extend&&checks.base;
