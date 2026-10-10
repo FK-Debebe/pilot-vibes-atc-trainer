@@ -1986,6 +1986,9 @@ const app = {
   pttStopping:false,
   pttActive:false,
   recognitionText:"",
+  recognitionCommitted:"",
+  recognitionSegment:"",
+  recognitionRestartTimer:null,
   scenario:null,
   session:{
     attempts:0,
@@ -2178,6 +2181,8 @@ function updatePilotInputState(){
     if(!enableInputs && app.recognizer){
       app.pttStopping=true;
       app.pttActive=false;
+      clearTimeout(app.recognitionRestartTimer);
+      app.recognitionRestartTimer=null;
       try{ app.recognizer.stop(); }catch(e){}
     }
   }
@@ -2248,15 +2253,51 @@ async function ensureMicrophonePermission(){
   }
 }
 
-function freshRecognizer(){
+function joinRecognitionText(base,addition){
+  base=(base||"").trim();
+  addition=(addition||"").trim();
+  if(!addition) return base;
+  if(!base) return addition;
+
+  /* Prevent overlap duplication at automatic recognition restarts.
+     Compare the last words of the committed text with the first words
+     of the new segment and keep only the non-overlapping portion. */
+  const a=base.split(/\s+/);
+  const b=addition.split(/\s+/);
+  const max=Math.min(8,a.length,b.length);
+  let overlap=0;
+
+  for(let size=max;size>=1;size--){
+    const left=a.slice(-size).join(" ").toLowerCase();
+    const right=b.slice(0,size).join(" ").toLowerCase();
+    if(left===right){
+      overlap=size;
+      break;
+    }
+  }
+
+  return [...a,...b.slice(overlap)].join(" ");
+}
+
+function startRecognitionSegment(){
+  if(!app.pttActive || app.pttStopping) return;
+
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR) return null;
+  if(!SR){
+    $("feedback").textContent="Speech recognition is unavailable in this browser.";
+    app.pttActive=false;
+    updatePTTState();
+    return;
+  }
 
   const r=new SR();
   r.lang="en-US";
-  r.continuous=true;
+  r.continuous=false;
   r.interimResults=true;
   r.maxAlternatives=1;
+
+  app.recognizer=r;
+  app.recognitionSegment="";
 
   r.onstart=()=>{
     $("ptt").classList.add("listening");
@@ -2269,38 +2310,38 @@ function freshRecognizer(){
     $("feedback").textContent="Microphone active — keep speaking until you tap again.";
   };
 
-  r.onsoundstart=()=>{
-    $("feedback").textContent="Sound detected...";
-  };
-
   r.onspeechstart=()=>{
     $("feedback").textContent="Speech detected — listening remains active.";
   };
 
   r.onresult=event=>{
-    let finalText="";
-    let interimText="";
+    let finalPart="";
+    let interimPart="";
 
-    for(let i=0;i<event.results.length;i++){
+    for(let i=event.resultIndex;i<event.results.length;i++){
       const piece=(event.results[i][0].transcript||"").trim();
       if(!piece) continue;
-      if(event.results[i].isFinal) finalText += piece + " ";
-      else interimText += piece + " ";
+
+      if(event.results[i].isFinal) finalPart += piece + " ";
+      else interimPart += piece + " ";
     }
 
-    const combined=(finalText + interimText).trim();
-    if(combined){
-      app.recognitionText=combined;
-      $("pilotText").value=combined;
+    if(finalPart.trim()){
+      app.recognitionSegment=joinRecognitionText(app.recognitionSegment,finalPart.trim());
     }
+
+    const display=joinRecognitionText(
+      app.recognitionCommitted,
+      joinRecognitionText(app.recognitionSegment,interimPart.trim())
+    );
+
+    app.recognitionText=display;
+    $("pilotText").value=display;
   };
 
   r.onerror=event=>{
-    /* "no-speech" and "aborted" can occur during a long open microphone.
-       Keep the PTT session alive unless the user explicitly ended it. */
     if(app.pttActive && !app.pttStopping &&
-       (event.error==="no-speech" || event.error==="aborted" || event.error==="network")){
-      $("feedback").textContent="Listening... tap again when finished.";
+       (event.error==="no-speech" || event.error==="aborted")){
       return;
     }
 
@@ -2314,41 +2355,55 @@ function freshRecognizer(){
   };
 
   r.onend=()=>{
-    /* Some browsers end SpeechRecognition automatically after a pause.
-       As long as the user has NOT tapped to end, immediately restart it. */
+    /* Commit only the completed segment once. */
+    if(app.recognitionSegment){
+      app.recognitionCommitted=joinRecognitionText(
+        app.recognitionCommitted,
+        app.recognitionSegment
+      );
+      app.recognitionText=app.recognitionCommitted;
+      $("pilotText").value=app.recognitionCommitted;
+      app.recognitionSegment="";
+    }
+
+    app.recognizer=null;
+
+    /* Natural pause: start a fresh recognition segment, but do not
+       evaluate or send anything until the user taps the button again. */
     if(app.pttActive && !app.pttStopping){
-      try{
-        r.start();
-        $("feedback").textContent="Listening... tap again when finished.";
-        return;
-      }catch(err){
-        setTimeout(()=>{
-          if(app.pttActive && !app.pttStopping){
-            try{ r.start(); }catch(e){}
-          }
-        },150);
-        return;
-      }
+      clearTimeout(app.recognitionRestartTimer);
+      app.recognitionRestartTimer=setTimeout(()=>{
+        if(app.pttActive && !app.pttStopping){
+          startRecognitionSegment();
+        }
+      },180);
+      return;
     }
 
     $("ptt").classList.remove("listening");
     $("stageState").textContent="Ready";
-    $("pttLabel").textContent=tuned() ? "TAP TO TALK" : "TUNE RADIO FIRST";
-
-    const text=$("pilotText").value.trim();
-    app.recognizer=null;
     app.pttActive=false;
     app.pttStopping=false;
     updatePTTState();
 
+    const text=(app.recognitionCommitted||$("pilotText").value||"").trim();
     if(text){
+      $("pilotText").value=text;
       evaluateTransmission(text);
     }else{
       $("feedback").textContent="No speech was recognized. Try again.";
     }
   };
 
-  return r;
+  try{
+    r.start();
+  }catch(err){
+    app.recognizer=null;
+    if(app.pttActive && !app.pttStopping){
+      clearTimeout(app.recognitionRestartTimer);
+      app.recognitionRestartTimer=setTimeout(startRecognitionSegment,250);
+    }
+  }
 }
 
 async function startPTT(e){
@@ -2367,47 +2422,45 @@ async function startPTT(e){
   const ok=await ensureMicrophonePermission();
   if(!ok) return;
 
-  const recognizer=freshRecognizer();
-  if(!recognizer){
-    $("feedback").textContent="Speech recognition is unavailable in this browser.";
-    return;
-  }
-
   app.recognitionText="";
+  app.recognitionCommitted="";
+  app.recognitionSegment="";
   $("pilotText").value="";
   app.pttStopping=false;
   app.pttActive=true;
-  app.recognizer=recognizer;
 
-  try{
-    recognizer.start();
-  }catch(err){
-    app.recognizer=null;
-    app.pttActive=false;
-    app.pttStopping=false;
-    $("feedback").textContent="Could not start speech recognition. Try again.";
-    updatePTTState();
-  }
+  startRecognitionSegment();
 }
 
 function stopPTT(e){
   if(e) e.preventDefault();
 
-  if(app.recognizer && app.pttActive && !app.pttStopping){
-    app.pttStopping=true;
-    app.pttActive=false;
-    $("feedback").textContent="Ending transmission...";
+  if(!app.pttActive || app.pttStopping) return;
+
+  app.pttStopping=true;
+  app.pttActive=false;
+  clearTimeout(app.recognitionRestartTimer);
+  app.recognitionRestartTimer=null;
+  $("feedback").textContent="Ending transmission...";
+
+  if(app.recognizer){
     try{
       app.recognizer.stop();
     }catch(err){
-      app.pttStopping=false;
       app.recognizer=null;
+      app.pttStopping=false;
       updatePTTState();
 
-      const text=$("pilotText").value.trim();
+      const text=(app.recognitionCommitted||$("pilotText").value||"").trim();
       if(text) evaluateTransmission(text);
       else $("feedback").textContent="No speech was recognized. Try again.";
     }
+  }else{
+    app.pttStopping=false;
+    updatePTTState();
+    const text=(app.recognitionCommitted||$("pilotText").value||"").trim();
+    if(text) evaluateTransmission(text);
+    else $("feedback").textContent="No speech was recognized. Try again.";
   }
 }
 
@@ -3292,7 +3345,6 @@ document.querySelectorAll(".digit-btn").forEach(btn=>{
 });
 $("ptt").addEventListener("click",e=>{
   e.preventDefault();
-
   if(app.pttActive){
     stopPTT(e);
   }else{
