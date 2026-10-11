@@ -98,15 +98,35 @@ h2{margin:4px 0 12px;color:var(--navy)}
 .msg.pilot .bubble{background:#edf6ff;border:1px solid #c7e2fa}
 .msg.atc .bubble{background:#f0f7ee;border:1px solid #cee3c9}
 .msg.system .bubble{background:#f6f7f9;border:1px solid #e2e5e9}
-.scorebar{margin-top:16px;display:grid;grid-template-columns:120px 1fr;gap:16px;align-items:center}
+.scorebar{margin-top:16px;display:grid;grid-template-columns:1fr;gap:10px;align-items:start}
 .score{font-size:34px;font-weight:900;color:var(--navy)}
+.radio-exchange-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.stage-score-radio{
+  text-align:right;
+  flex:0 0 auto;
+  line-height:1;
+}
+.stage-score-radio .score{
+  font-size:30px;
+  line-height:1;
+}
+.stage-score-radio .small{
+  margin-top:3px;
+  white-space:nowrap;
+}
 .feedback{background:#f7fafc;border:1px solid var(--line);border-radius:11px;padding:13px;line-height:1.45}
 .nav-row{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
 .small{font-size:11px;color:var(--muted)}
 .good{color:var(--green)}
 .warn{color:var(--amber)}
-header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-columns:1fr}.stage-nav{grid-template-columns:repeat(2,1fr)}.freq-grid{grid-template-columns:46px 1fr 46px}.frequency{font-size:25px}.scorebar{grid-template-columns:1fr}}
+header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-columns:1fr}.stage-nav{grid-template-columns:repeat(2,1fr)}.freq-grid{grid-template-columns:46px 1fr 46px}.frequency{font-size:25px}}
 
 @media(max-width:700px){
   html,body{width:100%;max-width:100%;overflow-x:hidden}
@@ -154,7 +174,7 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   .frequency{font-size:21px}
   .freq-grid{grid-template-columns:38px minmax(0,1fr) 38px}
   .stage-chip{min-width:84px}
-  .scorebar{grid-template-columns:1fr}
+  
 }
 
 
@@ -503,6 +523,15 @@ input,select,textarea{
 
   .radio-exchange-card{
     touch-action:pan-y;
+  }
+  .radio-exchange-head{
+    margin-bottom:8px;
+  }
+  .stage-score-radio .score{
+    font-size:25px;
+  }
+  .stage-score-radio .small{
+    font-size:9px;
   }
 }
 
@@ -1882,7 +1911,6 @@ header h1{
     </div>
 
     <div class="scorebar">
-      <div><div id="score" class="score">—</div><div class="small">STAGE SCORE</div></div>
       <div id="feedback" class="feedback">Tune the radio to begin.</div>
     </div>
 
@@ -1890,7 +1918,13 @@ header h1{
   </section>
 
   <section class="card radio-exchange-card">
-    <div class="eyebrow">RADIO EXCHANGE</div>
+    <div class="radio-exchange-head">
+      <div class="eyebrow">RADIO EXCHANGE</div>
+      <div class="stage-score-radio">
+        <div id="score" class="score">—</div>
+        <div class="small">STAGE SCORE</div>
+      </div>
+    </div>
     <div id="transcript" class="transcript"></div>
   </section>
 </div>
