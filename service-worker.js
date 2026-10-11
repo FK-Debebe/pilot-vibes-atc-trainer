@@ -1,4 +1,4 @@
-const CACHE_NAME="fk-atc-com-trainer-v3-46";
+const CACHE_NAME="fk-atc-com-trainer-v3-47";
 const APP_SHELL=[
   "./",
   "./index.html",

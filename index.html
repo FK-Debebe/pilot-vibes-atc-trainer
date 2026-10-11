@@ -1975,6 +1975,7 @@ const AIRPORTS = {
     frequencies:{atis:"120.150",clearance:"121.800",ground:"121.800",tower:"118.600",departure:"127.300",approach:"127.300"},
     facilities:{clearance:"Palomar Clearance",ground:"Palomar Ground",tower:"Palomar Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     runways:["24","6"], preferredRunway:"24",
+    trafficPatternByRunway:{"24":"right","6":"left"},
     taxiwaysByRunway:{"24":"Alpha","6":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
   },
@@ -2992,6 +2993,11 @@ function destinationTaxiway(){
   return ap.taxiwaysByRunway?.[app.config.destRunway] || ap.parkingTaxiway || "Alpha";
 }
 
+function destinationPatternSide(){
+  const ap=destAirport();
+  return ap.trafficPatternByRunway?.[app.config.destRunway] || app.scenario?.patternSide || "left";
+}
+
 
 const UNEXPECTED_EVENT_LABELS={
   runwayChange:"Runway change",
@@ -3341,7 +3347,7 @@ function renderFinalReport(){
     <ul>${recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>
     <div class="report-scenario">
       Scenario: squawk ${app.squawk} • departure wind ${app.scenario.depWindDir}° at ${app.scenario.depWindSpeed} kt •
-      arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • ${app.scenario.patternSide} traffic pattern
+      arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • ${destinationPatternSide()} traffic pattern
       ${app.session.unexpected?.length
         ? `<br><b>Unexpected ATC events:</b> ${app.session.unexpected.map(k=>UNEXPECTED_EVENT_LABELS[k]||k).join(" • ")}`
         : "<br><b>Unexpected ATC events:</b> None encountered"}
@@ -3640,12 +3646,12 @@ function evaluateTransmission(text){
         if(extend) markUnexpected("extendDownwind");
 
         if(unable){
-          replyVisual=`${app.config.aircraft}, unable requested runway. Enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
-          replySpoken=`${callsignSpoken()}, unable requested runway. Enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
-          $("feedback").textContent=`ATC is unable your requested runway. Read back ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, and ATC calling your base":""}.`;
+          replyVisual=`${app.config.aircraft}, unable requested runway. Enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+          replySpoken=`${callsignSpoken()}, unable requested runway. Enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+          $("feedback").textContent=`ATC is unable your requested runway. Read back ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, and ATC calling your base":""}.`;
         }else{
-          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
-          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
           $("feedback").textContent=extend
             ? "Unexpected instruction: extend downwind. Read back the full pattern instruction."
             : "Read back the pattern entry and runway.";
@@ -3659,7 +3665,7 @@ function evaluateTransmission(text){
     }else if(app.phase==="destTowerPatternReadback"){
       const extendRequired=unexpectedTriggered("extendDownwind");
       checks={
-        downwind:containsDownwind(text,app.scenario.patternSide),
+        downwind:containsDownwind(text,destinationPatternSide()),
         runway:containsDestRunway(text),
         callsign:hasCallsign(text)
       };
@@ -3671,8 +3677,8 @@ function evaluateTransmission(text){
       const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(wrongRunway){
-        replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}. Enter ${app.scenario.patternSide} downwind.`;
-        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}. Enter ${app.scenario.patternSide} downwind.`;
+        replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}. Enter ${destinationPatternSide()} downwind.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}. Enter ${destinationPatternSide()} downwind.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.destRunway}. Read back the pattern instruction again.`;
       }else if(essential){
         replyVisual=`${app.config.aircraft}, turn base. Runway ${app.config.destRunway}, cleared to land.`;
@@ -3681,8 +3687,8 @@ function evaluateTransmission(text){
         app.phase="destTowerLandingReadback";
       }else{
         const extendRequired=unexpectedTriggered("extendDownwind");
-        replyVisual=`${app.config.aircraft}, verify ${app.scenario.patternSide} downwind Runway ${app.config.destRunway}${extendRequired?", extend downwind, I will call your base":"."}`;
-        replySpoken=`${callsignSpoken()}, verify ${app.scenario.patternSide} downwind runway ${runwaySpoken(app.config.destRunway)}${extendRequired?", extend downwind, I will call your base":"."}`;
+        replyVisual=`${app.config.aircraft}, verify ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extendRequired?", extend downwind, I will call your base":"."}`;
+        replySpoken=`${callsignSpoken()}, verify ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extendRequired?", extend downwind, I will call your base":"."}`;
         $("feedback").textContent="Pattern readback not recognized. Try again.";
       }
     }else if(app.phase==="destTowerLandingReadback"){
