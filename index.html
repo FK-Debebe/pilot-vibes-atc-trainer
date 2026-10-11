@@ -1617,7 +1617,7 @@ details.setup:not([open]) .setup-bottom-toggle{
   padding:3px 7px;
   border-radius:4px;
   border:1px solid #3b4145;
-  font-size:9px;
+  font-size:12px;
   font-weight:900;
   letter-spacing:.08em;
   text-align:center;
@@ -1639,7 +1639,7 @@ details.setup:not([open]) .setup-bottom-toggle{
   .radio-ready-state{
     min-width:62px;
     padding:3px 5px;
-    font-size:8px;
+    font-size:10px;
   }
 }
 
@@ -1668,7 +1668,7 @@ details.setup:not([open]) .setup-bottom-toggle{
   .com-brand-row .radio-ready-state{
     min-width:58px;
     padding:2px 5px;
-    font-size:7px;
+    font-size:10px;
   }
 }
 
@@ -1846,7 +1846,7 @@ header h1{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. The last Flight Setup is remembered on this device. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
   </div>
 </details>
 
@@ -2028,9 +2028,12 @@ const AIRPORTS = {
   KLGB:{
     name:"Long Beach", radioName:"Long Beach",
     aliases:["long beach"],
+    coords:{lat:33.8177,lon:-118.1516},
     frequencies:{atis:"127.750",clearance:"118.150",ground:"133.000",tower:"119.400",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"Long Beach Clearance",ground:"Long Beach Ground",tower:"Long Beach Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"2500",
     runways:["26L","26R","30","12","8L","8R"], preferredRunway:"26L",
+    trafficPatternByRunway:{"26R":"right"},
     taxiwaysByRunway:{"26L":"Foxtrot","26R":"Delta","30":"Foxtrot","12":"Foxtrot","8L":"Foxtrot","8R":"Delta"},
     holdShortByRunway:{"26R":"30"},
     parkingTaxiway:"Foxtrot",
@@ -2039,8 +2042,10 @@ const AIRPORTS = {
   KFUL:{
     name:"Fullerton", radioName:"Fullerton",
     aliases:["fullerton"],
+    coords:{lat:33.872,lon:-117.9798},
     frequencies:{atis:"119.575",clearance:"121.800",ground:"121.800",tower:"119.100",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"Fullerton Clearance",ground:"Fullerton Ground",tower:"Fullerton Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"2500",
     runways:["24","6"], preferredRunway:"24",
     taxiwaysByRunway:{"24":"Alpha","6":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
@@ -2048,8 +2053,10 @@ const AIRPORTS = {
   KTOA:{
     name:"Torrance", radioName:"Torrance",
     aliases:["torrance"],
+    coords:{lat:33.8034,lon:-118.3396},
     frequencies:{atis:"125.600",clearance:"121.600",ground:"121.600",tower:"124.000",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"Torrance Clearance",ground:"Torrance Ground",tower:"Torrance Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"2500",
     runways:["29R","29L","11R","11L"], preferredRunway:"29R",
     taxiwaysByRunway:{"29R":"Alpha","29L":"Alpha","11R":"Alpha","11L":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
@@ -2057,8 +2064,10 @@ const AIRPORTS = {
   KHHR:{
     name:"Hawthorne", radioName:"Hawthorne",
     aliases:["hawthorne"],
+    coords:{lat:33.9228,lon:-118.3352},
     frequencies:{atis:"118.350",clearance:"121.100",ground:"121.100",tower:"121.100",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"Hawthorne Clearance",ground:"Hawthorne Ground",tower:"Hawthorne Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"2500",
     runways:["25","7"], preferredRunway:"25",
     taxiwaysByRunway:{"25":"Alpha","7":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
@@ -2066,8 +2075,10 @@ const AIRPORTS = {
   KSNA:{
     name:"John Wayne", radioName:"John Wayne",
     aliases:["john wayne","orange county"],
+    coords:{lat:33.6757,lon:-117.8682},
     frequencies:{atis:"126.000",clearance:"118.000",ground:"120.800",tower:"126.800",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"John Wayne Clearance",ground:"John Wayne Ground",tower:"John Wayne Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
     runways:["20R","20L","2R","2L"], preferredRunway:"20R",
     taxiwaysByRunway:{"20R":"Alpha","20L":"Alpha","2R":"Alpha","2L":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","General Aviation Ramp"]
@@ -2075,8 +2086,10 @@ const AIRPORTS = {
   KCRQ:{
     name:"McClellan-Palomar", radioName:"Palomar",
     aliases:["palomar","mcclellan palomar","mcclellan-palomar"],
+    coords:{lat:33.1283,lon:-117.2801},
     frequencies:{atis:"120.150",clearance:"121.800",ground:"121.800",tower:"118.600",departure:"127.300",approach:"127.300"},
     facilities:{clearance:"Palomar Clearance",ground:"Palomar Ground",tower:"Palomar Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"3000",
     runways:["24","6"], preferredRunway:"24",
     trafficPatternByRunway:{"24":"right","6":"left"},
     taxiwaysByRunway:{"24":"Alpha","6":"Alpha"}, parkingTaxiway:"Alpha",
@@ -2085,8 +2098,10 @@ const AIRPORTS = {
   KONT:{
     name:"Ontario", radioName:"Ontario",
     aliases:["ontario"],
+    coords:{lat:34.056,lon:-117.6012},
     frequencies:{atis:"124.250",clearance:"118.100",ground:"121.900",tower:"120.600",departure:"127.200",approach:"127.300"},
     facilities:{clearance:"Ontario Clearance",ground:"Ontario Ground",tower:"Ontario Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"5000",
     runways:["26L","26R","8L","8R"], preferredRunway:"26L",
     taxiwaysByRunway:{"26L":"Alpha","26R":"Alpha","8L":"Alpha","8R":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["General Aviation Ramp","FBO / Ramp","Transient Parking"]
@@ -2094,8 +2109,10 @@ const AIRPORTS = {
   KPSP:{
     name:"Palm Springs", radioName:"Palm Springs",
     aliases:["palm springs"],
+    coords:{lat:33.8297,lon:-116.5067},
     frequencies:{atis:"118.250",clearance:"121.650",ground:"121.900",tower:"119.700",departure:"126.700",approach:"126.700"},
     facilities:{clearance:"Palm Springs Clearance",ground:"Palm Springs Ground",tower:"Palm Springs Tower",departure:"Palm Springs Departure",approach:"Palm Springs Approach"},
+    vfrClearanceLimit:"3000",
     runways:["31L","31R","13L","13R"], preferredRunway:"31L",
     taxiwaysByRunway:{"31L":"Alpha","31R":"Alpha","13L":"Alpha","13R":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["General Aviation Ramp","FBO / Ramp","Transient Parking"]
@@ -2103,8 +2120,10 @@ const AIRPORTS = {
   KSBA:{
     name:"Santa Barbara", radioName:"Santa Barbara",
     aliases:["santa barbara"],
+    coords:{lat:34.4262,lon:-119.8404},
     frequencies:{atis:"132.650",clearance:"121.700",ground:"121.700",tower:"119.700",departure:"125.400",approach:"125.400"},
     facilities:{clearance:"Santa Barbara Clearance",ground:"Santa Barbara Ground",tower:"Santa Barbara Tower",departure:"Santa Barbara Departure",approach:"Santa Barbara Approach"},
+    vfrClearanceLimit:"4000",
     runways:["25","7","15L","15R","33L","33R"], preferredRunway:"25",
     taxiwaysByRunway:{"25":"Alpha","7":"Alpha","15L":"Alpha","15R":"Alpha","33L":"Alpha","33R":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
@@ -2112,8 +2131,10 @@ const AIRPORTS = {
   KRNM:{
     name:"Ramona", radioName:"Ramona",
     aliases:["ramona"],
+    coords:{lat:33.0392,lon:-116.9153},
     frequencies:{atis:"118.675",clearance:"121.650",ground:"121.650",tower:"119.870",departure:"127.300",approach:"127.300"},
     facilities:{clearance:"Ramona Clearance",ground:"Ramona Ground",tower:"Ramona Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
     runways:["27","9"], preferredRunway:"27",
     taxiwaysByRunway:{"27":"Alpha","9":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
@@ -2134,20 +2155,145 @@ function airportFacility(ap,key){
   return fallback[key] || n;
 }
 
+function facilityMentioned(text,ap,key){
+  const n=norm(text);
+  const full=norm(airportFacility(ap,key));
+  if(full && n.includes(full)) return true;
+
+  /* Generic facility word is acceptable when the current stage makes the
+     facility unambiguous: "Departure" or "Approach" is enough. */
+  const generic={
+    clearance:"clearance",
+    ground:"ground",
+    tower:"tower",
+    departure:"departure",
+    approach:"approach"
+  }[key];
+
+  if(generic && n.includes(generic)) return true;
+
+  /* Southern California pilots commonly address the TRACON simply as
+     "SoCal." Accept that shorthand for departure/approach check-ins. */
+  if((key==="departure" || key==="approach") &&
+     (n.includes("socal") || n.includes("so cal"))) return true;
+
+  const radioName=norm(ap?.radioName||ap?.name||"");
+  return !!(radioName && n.includes(radioName) && (!generic || n.includes(generic)));
+}
+
+function configuredAircraftType(){
+  const configured=String(app.config.aircraft||"").trim();
+  const m=configured.match(/^([A-Za-z][A-Za-z0-9-]*)\s+/);
+  return (m?.[1]||"Cessna").toLowerCase();
+}
+
+function containsAircraftType(text){
+  const n=norm(text);
+  const type=configuredAircraftType();
+  return !!(type && n.includes(type));
+}
+
+function containsStartingLocation(text){
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const location=norm(app.config.location)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  if(location && n.includes(location)) return true;
+
+  /* Permit common shortened position/location calls such as "at the ramp". */
+  const important=location.split(" ")
+    .filter(w=>w.length>=4 && !["from","with","club"].includes(w));
+
+  return important.length>0 && important.every(w=>n.includes(w));
+}
+
+function containsAltitudeValue(text,value){
+  const feet=altitudeFeet(value);
+  const target=String(feet);
+  const digits=textDigits(text);
+  if(digits.includes(target)) return true;
+
+  const n=norm(text);
+  const fullWords=altitudeSpoken(formatAltitude(feet)).toLowerCase();
+  if(fullWords && n.includes(fullWords)) return true;
+
+  if(feet>=1000 && feet%100===0){
+    const hundreds=feet/100;
+    if(hundreds<100){
+      const hundredStyle=`${numberUnderHundred(hundreds)} hundred`;
+      if(n.includes(hundredStyle)) return true;
+    }
+  }
+  return false;
+}
+
+function clearanceAltitudeLimit(){
+  return depAirport().vfrClearanceLimit || "2500";
+}
+
+function clearanceAltitudeDisplay(){
+  return `${Number(clearanceAltitudeLimit()).toLocaleString("en-US")} ft`;
+}
+
+function clearanceAltitudeSpoken(){
+  return altitudeSpoken(formatAltitude(clearanceAltitudeLimit()));
+}
+
+function routeDistanceNm(depCode,destCode){
+  const a=airportData(depCode)?.coords;
+  const b=airportData(destCode)?.coords;
+  if(!a || !b) return 0;
+
+  const toRad=d=>d*Math.PI/180;
+  const dLat=toRad(b.lat-a.lat);
+  const dLon=toRad(b.lon-a.lon);
+  const lat1=toRad(a.lat);
+  const lat2=toRad(b.lat);
+  const h=Math.sin(dLat/2)**2 +
+    Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  const central=2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
+  return 3440.065*central;
+}
+
+function enrouteFacility(dep,dest){
+  const combined=`${airportFacility(dep,"departure")} ${airportFacility(dest,"approach")}`.toLowerCase();
+  return combined.includes("socal") ? "SoCal" : airportFacility(dest,"approach");
+}
+
 function buildStages(depCode,destCode){
   const dep=airportData(depCode);
   const dest=airportData(destCode);
-  return [
+  const stages=[
     {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.radioName||dep.name} ATIS`, freq:airportFrequency(dep,"atis"), type:"atis"},
     {id:"clearance", title:"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
     {id:"ground", title:"GROUND", facility:airportFacility(dep,"ground"), freq:airportFrequency(dep,"ground"), type:"comm"},
     {id:"tower", title:"TOWER", facility:airportFacility(dep,"tower"), freq:airportFrequency(dep,"tower"), type:"comm"},
-    {id:"departure", title:"DEPARTURE", facility:airportFacility(dep,"departure"), freq:airportFrequency(dep,"departure"), type:"comm"},
+    {id:"departure", title:"DEPARTURE", facility:airportFacility(dep,"departure"), freq:airportFrequency(dep,"departure"), type:"comm"}
+  ];
+
+  if(routeDistanceNm(depCode,destCode)>50){
+    stages.push({
+      id:"enroute",
+      title:"ENROUTE",
+      facility:enrouteFacility(dep,dest),
+      freq:airportFrequency(dest,"approach"),
+      type:"comm"
+    });
+  }
+
+  stages.push(
     {id:"arrival", title:"ARRIVAL / APPROACH", facility:airportFacility(dest,"approach"), freq:airportFrequency(dest,"approach"), type:"comm"},
     {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"atis"), type:"atis"},
     {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
     {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
-  ];
+  );
+  return stages;
 }
 
 function setOptions(id,values,preferred){
@@ -2200,6 +2346,35 @@ function airportMentioned(text,code){
     (simple && n.includes(simple)) ||
     aliases.some(alias=>n.includes(norm(alias)))
   );
+}
+
+function wrongArrivalAirportMention(text,targetCode){
+  if(airportMentioned(text,targetCode)) return "";
+  const n=norm(text);
+
+  for(const [code,ap] of Object.entries(AIRPORTS)){
+    if(code===targetCode) continue;
+    const names=[
+      code.toLowerCase(),
+      code.replace(/^K/,"").toLowerCase(),
+      norm(ap.name),
+      ...(ap.aliases||[]).map(norm)
+    ].filter(Boolean);
+
+    for(const name of names){
+      if(!n.includes(name)) continue;
+      const contextual=[
+        `inbound to ${name}`,
+        `inbound ${name}`,
+        `to ${name}`,
+        `landing ${name}`,
+        `landing at ${name}`,
+        `request ${name}`
+      ];
+      if(contextual.some(x=>n.includes(x))) return code;
+    }
+  }
+  return "";
 }
 
 let STAGES = buildStages("KLGB","KCRQ");
@@ -2543,6 +2718,69 @@ $("altitude")?.addEventListener("change",normalizeAltitudeInput);
 $("altitude")?.addEventListener("blur",normalizeAltitudeInput);
 updateVfrAltitudeGuide();
 
+const LAST_SETUP_KEY="fk-atc-com-trainer-last-setup-v1";
+
+function saveLastSetup(){
+  try{
+    const saved={
+      departureAirport:$("departureAirport")?.value,
+      destinationAirport:$("destinationAirport")?.value,
+      aircraft:$("aircraft")?.value,
+      location:$("location")?.value,
+      runway:$("runway")?.value,
+      destRunway:$("destRunway")?.value,
+      direction:$("direction")?.value,
+      altitude:$("altitude")?.value,
+      level:$("level")?.value
+    };
+    localStorage.setItem(LAST_SETUP_KEY,JSON.stringify(saved));
+  }catch(e){}
+}
+
+function loadLastSetup(){
+  try{
+    const raw=localStorage.getItem(LAST_SETUP_KEY);
+    if(!raw) return false;
+    const saved=JSON.parse(raw)||{};
+
+    if(saved.level && $("level")) $("level").value=saved.level;
+    if(saved.departureAirport && AIRPORTS[saved.departureAirport]){
+      $("departureAirport").value=saved.departureAirport;
+    }
+    updateDepartureChoices(false);
+
+    if(saved.destinationAirport && AIRPORTS[saved.destinationAirport]){
+      $("destinationAirport").value=saved.destinationAirport;
+    }
+    updateDestinationChoices(false);
+
+    if(saved.aircraft && $("aircraft")) $("aircraft").value=saved.aircraft;
+    if(saved.location && [...$("location").options].some(o=>o.value===saved.location)){
+      $("location").value=saved.location;
+    }
+    if(saved.runway && [...$("runway").options].some(o=>o.value===saved.runway)){
+      $("runway").value=saved.runway;
+    }
+    if(saved.destRunway && [...$("destRunway").options].some(o=>o.value===saved.destRunway)){
+      $("destRunway").value=saved.destRunway;
+    }
+    if(saved.direction && $("direction")) $("direction").value=saved.direction;
+    if(saved.altitude && $("altitude")) $("altitude").value=saved.altitude;
+
+    updateVfrAltitudeGuide();
+    updateRouteHeading();
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function collapseSetupAfterApplyIfSmall(){
+  if(!window.matchMedia("(max-width: 900px)").matches) return;
+  const details=document.querySelector("details.setup");
+  if(details) details.open=false;
+}
+
 function readSetup(generateCodes=true){
   if(!app.scenario) newScenario();
   const depCode=$("departureAirport").value || "KLGB";
@@ -2568,6 +2806,7 @@ function readSetup(generateCodes=true){
     level:$("level").value
   };
 
+  saveLastSetup();
   STAGES=buildStages(depCode,destCode);
   configureUnexpectedEvents();
   app.stageIndex=0;
@@ -2587,10 +2826,11 @@ function instructionFor(stage){
   const dest=destAirport();
   const beginner={
     atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
-    clearance:`Contact ${airportFacility(dep,"clearance")}. Include callsign, information ${c.atis}, destination ${dest.name}, VFR request, and ${c.direction.toLowerCase()} departure.`,
+    clearance:`Call ${airportFacility(dep,"clearance")}. Include callsign, aircraft type, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
     ground:`Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
     tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure.`,
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
+    enroute:`Check in with ${stage.facility}. Include callsign and cruise altitude, for example “${stage.facility}, ${c.aircraft}, ${c.altitude} level.”`,
     arrival:`Contact ${airportFacility(dest,"approach")} for ${dest.name}. Include callsign, destination, and request.`,
     arrivalAtis:`Before calling ${airportFacility(dest,"tower")}, monitor ${dest.radioName||dest.name} ATIS and note information ${c.arrivalAtis}.`,
     destTower:`Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
@@ -2602,6 +2842,7 @@ function instructionFor(stage){
     ground:"Make the initial ground call with all essential elements.",
     tower:"Make the departure call to tower and read back the takeoff clearance.",
     departure:"Check in after handoff and read back the altitude assignment.",
+    enroute:"Make the enroute sector check-in with callsign and level altitude.",
     arrival:"Make the arrival/approach call and read back the approach instruction.",
     arrivalAtis:"Monitor the destination ATIS before contacting tower.",
     destTower:"Make the initial tower call, read back pattern instructions, then read back landing clearance.",
@@ -2618,6 +2859,7 @@ function renderStage(resetFrequency=true){
     ground:"groundInitial",
     tower:"towerInitial",
     departure:"departureInitial",
+    enroute:"enrouteInitial",
     arrival:"arrivalInitial",
     destTower:"destTowerInitial",
     destGround:"destGroundInitial"
@@ -2990,7 +3232,7 @@ function aviationCompact(text){
     foxtrot:"f",golf:"g",hotel:"h",india:"i",juliet:"j",
     kilo:"k",lima:"l",mike:"m",november:"n",oscar:"o",
     papa:"p",poppa:"p",quebec:"q",romeo:"r",
-    sierra:"s",siera:"s",sara:"s",sera:"s",tango:"t",
+    sierra:"s",siera:"s",seirra:"s",sara:"s",sera:"s",tango:"t",
     uniform:"u",victor:"v",whiskey:"w",xray:"x",yankee:"y",zulu:"z"
   };
 
@@ -3060,8 +3302,11 @@ function hasCallsign(text){
   return false;
 }
 function containsRunway(text,r=app.config.runway){
-  const n=norm(text);
-  const compactText=compact(text);
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+  const compactText=n.replace(/\s+/g,"");
   const runway=String(r).toLowerCase();
 
   if(n.includes(runway) || compactText.includes(runway)) return true;
@@ -3567,6 +3812,7 @@ function resetSessionStats(){
 const CHECK_LABELS={
   facility:"facility name",
   callsign:"aircraft callsign",
+  type:"aircraft type",
   atis:"ATIS code",
   destination:"destination",
   request:"request",
@@ -3743,46 +3989,74 @@ function evaluateTransmission(text){
   if(stage.id==="clearance"){
     if(app.phase==="clearanceInitial"){
       checks={
-        facility:n.includes("clearance")||airportMentioned(text,app.config.departureAirport),
+        facility:facilityMentioned(text,depAirport(),"clearance"),
         callsign:hasCallsign(text),
+        type:containsAircraftType(text),
+        location:containsStartingLocation(text),
         atis:n.includes(app.config.atis.toLowerCase()),
         destination:airportMentioned(text,app.config.destinationAirport),
-        request:n.includes("vfr")||n.includes("departure")||n.includes("flight following")
+        request:n.includes("flight following")||n.includes("flight-following"),
+        altitude:containsAltitude(text)
       };
-      const s=grade(checks); $("score").textContent=s+"%";
-      if(s>=60 && checks.callsign && checks.destination){
-        replyVisual=`${app.config.aircraft}, ${depAirport().name} Clearance, VFR departure approved. Departure frequency ${airportFrequency(depAirport(),"departure")}, squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, ${depAirport().name} Clearance, V F R departure approved. Departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
-        $("feedback").textContent="Clearance received. Read back departure frequency and squawk.";
+
+      const s=grade(checks);
+      $("score").textContent=s+"%";
+
+      const essential=
+        checks.facility &&
+        checks.callsign &&
+        checks.type &&
+        checks.location &&
+        checks.atis &&
+        checks.destination &&
+        checks.request &&
+        checks.altitude;
+
+      if(essential){
+        replyVisual=`${app.config.aircraft}, at or below ${clearanceAltitudeDisplay()}, departure frequency ${airportFrequency(depAirport(),"departure")}, squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, at or below ${clearanceAltitudeSpoken()}, departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        $("feedback").textContent=`Clearance received. Read back at or below ${clearanceAltitudeDisplay()}, frequency ${airportFrequency(depAirport(),"departure")}, and squawk ${app.squawk}.`;
         app.phase="clearanceReadback";
       }else{
         const missing=[];
-        if(!checks.facility) missing.push("Clearance facility");
+        if(!checks.facility) missing.push("who you're calling");
         if(!checks.callsign) missing.push("callsign");
-        if(!checks.atis) missing.push(`information ${app.config.atis}`);
+        if(!checks.type) missing.push("aircraft type");
+        if(!checks.location) missing.push("location / position");
+        if(!checks.atis) missing.push(`ATIS ${app.config.atis}`);
+        if(!checks.request) missing.push("flight following request");
         if(!checks.destination) missing.push(destAirport().radioName||destAirport().name);
-        if(!checks.request) missing.push("VFR / flight-following request");
+        if(!checks.altitude) missing.push(`requested altitude ${app.config.altitude}`);
+
         replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
         replySpoken=`${callsignSpoken()}, say again the missing information.`;
         $("feedback").textContent=`Clearance call incomplete. Missing or not recognized: ${missing.join(", ")}.`;
       }
     }else{
       checks={
-        frequency:containsFrequency(text,airportFrequency(depAirport(),"departure"))||n.includes("departure frequency"),
+        altitude:containsAltitudeValue(text,clearanceAltitudeLimit()),
+        frequency:containsFrequency(text,airportFrequency(depAirport(),"departure")),
         squawk:containsSquawk(text,app.squawk),
         callsign:hasCallsign(text)
       };
-      const essential=checks.frequency&&checks.squawk;
+
+      const essential=checks.altitude&&checks.frequency&&checks.squawk;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+
       if(essential){
         replyVisual=`${app.config.aircraft}, readback correct. Contact Ground when ready to taxi.`;
         replySpoken=`${callsignSpoken()}, readback correct. Contact Ground when ready to taxi.`;
         $("feedback").textContent="Clearance Delivery complete.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify departure frequency ${airportFrequency(depAirport(),"departure")} and squawk ${app.squawk}.`;
-        replySpoken=`${callsignSpoken()}, verify departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))} and squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
-        $("feedback").textContent="Read back the departure frequency and squawk.";
+        const missing=[];
+        if(!checks.altitude) missing.push(`at or below ${clearanceAltitudeDisplay()}`);
+        if(!checks.frequency) missing.push(`frequency ${airportFrequency(depAirport(),"departure")}`);
+        if(!checks.squawk) missing.push(`squawk ${app.squawk}`);
+
+        replyVisual=`${app.config.aircraft}, verify at or below ${clearanceAltitudeDisplay()}, departure frequency ${airportFrequency(depAirport(),"departure")}, squawk ${app.squawk}.`;
+        replySpoken=`${callsignSpoken()}, verify at or below ${clearanceAltitudeSpoken()}, departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        $("feedback").textContent=`Clearance readback incomplete. Missing or not recognized: ${missing.join(", ")}.`;
       }
     }
   }
@@ -3912,7 +4186,7 @@ function evaluateTransmission(text){
   if(stage.id==="departure"){
     if(app.phase==="departureInitial"){
       checks={
-        facility:n.includes("departure")||norm(airportFacility(depAirport(),"departure")).split(" ").some(w=>w.length>4&&n.includes(w)),
+        facility:facilityMentioned(text,depAirport(),"departure"),
         callsign:hasCallsign(text),
         altitude:containsAltitude(text)||n.includes("altitude")
       };
@@ -3940,9 +4214,14 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, climb and maintain ${altitudeSpoken()}.`;
         $("feedback").textContent=`Incorrect altitude readback: you said ${Number(wrongAltitude).toLocaleString()} feet. Assigned altitude is ${app.config.altitude}. Read it back again.`;
       }else if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct.`;
-        replySpoken=`${callsignSpoken()}, readback correct.`;
-        $("feedback").textContent="Departure stage complete.";
+        const nextStage=STAGES[app.stageIndex+1];
+        if(nextStage?.id==="enroute"){
+          replyVisual=`${app.config.aircraft}, readback correct. Contact ${nextStage.facility} ${nextStage.freq}.`;
+          replySpoken=`${callsignSpoken()}, readback correct. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
+        }else{
+          replyVisual=`${app.config.aircraft}, readback correct.`;
+          replySpoken=`${callsignSpoken()}, readback correct.`;
+        }
         complete=true;
       }else{
         replyVisual=`${app.config.aircraft}, verify climb and maintain ${app.config.altitude}.`;
@@ -3952,16 +4231,49 @@ function evaluateTransmission(text){
     }
   }
 
+  if(stage.id==="enroute"){
+    checks={
+      facility:n.includes("socal")||n.includes("so cal")||n.includes("approach")||n.includes("departure"),
+      callsign:hasCallsign(text),
+      altitude:containsAltitude(text),
+      level:n.includes("level")||n.includes("leveling")||n.includes("at ")
+    };
+
+    const essential=checks.facility&&checks.callsign&&checks.altitude;
+    $("score").textContent=(essential?(checks.level?100:90):grade(checks))+"%";
+
+    if(essential){
+      const nextStage=STAGES[app.stageIndex+1];
+      replyVisual=`${app.config.aircraft}, roger, altitude observed. Contact ${nextStage.facility} ${nextStage.freq}.`;
+      replySpoken=`${callsignSpoken()}, roger, altitude observed. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
+      complete=true;
+    }else{
+      const missing=[];
+      if(!checks.facility) missing.push("facility");
+      if(!checks.callsign) missing.push("callsign");
+      if(!checks.altitude) missing.push(`altitude ${app.config.altitude}`);
+      replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
+      replySpoken=`${callsignSpoken()}, say again enroute check-in.`;
+      $("feedback").textContent=`Enroute check-in incomplete. Missing or not recognized: ${missing.join(", ")}.`;
+    }
+  }
+
   if(stage.id==="arrival"){
     if(app.phase==="arrivalInitial"){
       checks={
-        facility:n.includes("approach")||n.includes("arrival"),
+        facility:facilityMentioned(text,destAirport(),"approach")||n.includes("arrival"),
         callsign:hasCallsign(text),
         destination:airportMentioned(text,app.config.destinationAirport),
         request:n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
       };
       const s=grade(checks); $("score").textContent=s+"%";
-      if(s>=75){
+      const wrongAirport=wrongArrivalAirportMention(text,app.config.destinationAirport);
+      if(wrongAirport){
+        const wrong=airportData(wrongAirport);
+        replyVisual=`${app.config.aircraft}, negative destination. Confirm ${destAirport().name}.`;
+        replySpoken=`${callsignSpoken()}, negative destination. Confirm ${destAirport().name}.`;
+        $("feedback").textContent=`Wrong arrival airport recognized: ${wrong.name}. Expected destination is ${destAirport().name}. Make the approach call again.`;
+      }else if(s>=75){
         if(unexpectedEnabled("standby")&&!unexpectedTriggered("standby")){
           markUnexpected("standby");
           replyVisual=`${app.config.aircraft}, stand by.`;
@@ -4220,6 +4532,22 @@ function evaluateTransmission(text){
   if(complete) completeStage();
 }
 
+function stageDisplayName(stage){
+  const map={
+    atis:"Departure ATIS",
+    clearance:"Clearance Delivery",
+    ground:"Ground",
+    tower:"Tower",
+    departure:"Departure",
+    enroute:"Enroute",
+    arrival:"Approach",
+    arrivalAtis:"Arrival ATIS",
+    destTower:"Destination Tower",
+    destGround:"Destination Ground"
+  };
+  return map[stage?.id] || stage?.title || "Stage";
+}
+
 function completeStage(){
   recordStageComplete();
   app.stageComplete=true;
@@ -4227,6 +4555,14 @@ function completeStage(){
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
   $("next").disabled=false;
+
+  const stage=STAGES[app.stageIndex];
+  const nextStage=STAGES[app.stageIndex+1];
+  if(nextStage){
+    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Switch freq to ${nextStage.facility}.`;
+  }else{
+    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
+  }
 }
 
 function monitorAtis(){
@@ -4316,7 +4652,10 @@ function previousStage(){
 $("departureAirport").addEventListener("change",()=>updateDepartureChoices(false));
 $("destinationAirport").addEventListener("change",()=>updateDestinationChoices(false));
 
-$("applySetup").addEventListener("click",()=>readSetup(true));
+$("applySetup").addEventListener("click",()=>{
+  readSetup(true);
+  collapseSetupAfterApplyIfSmall();
+});
 $("monitorAtis").addEventListener("click",monitorAtis);
 $("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
 $("clearText").addEventListener("click",()=>{$("pilotText").value=""});
@@ -4433,10 +4772,13 @@ $("ptt").addEventListener("click",e=>{
 });
 
 renderRadioDigits();
-updateDepartureChoices(false);
-updateDestinationChoices(false);
-$("runway").value="26L";
-$("destRunway").value="24";
+const restoredLastSetup=loadLastSetup();
+if(!restoredLastSetup){
+  updateDepartureChoices(false);
+  updateDestinationChoices(false);
+  $("runway").value="26L";
+  $("destRunway").value="24";
+}
 readSetup(true);
 
 
