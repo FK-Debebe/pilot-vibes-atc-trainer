@@ -803,6 +803,26 @@ details.setup:not([open]) .setup-bottom-toggle{
    V3.14 COMPACT SETUP ACTIONS
    ========================================================= */
 
+.altitude-stepper{
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 42px;
+  gap:6px;
+  align-items:stretch;
+}
+.altitude-step-btn{
+  border:1px solid var(--line);
+  border-radius:9px;
+  background:#f7fafc;
+  color:var(--navy);
+  font-size:22px;
+  font-weight:900;
+  line-height:1;
+  min-height:42px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.altitude-step-btn:hover{background:#eef5fb}
+.altitude-step-btn:active{transform:translateY(1px)}
 .altitude-input-wrap{
   position:relative;
   display:flex;
@@ -1781,9 +1801,13 @@ header h1{
       </label>
 
       <label>Requested Altitude
-        <div class="altitude-input-wrap">
-          <input id="altitude" type="number" min="0" max="18000" step="100" value="3500" inputmode="numeric" aria-describedby="vfrAltitudeGuide">
-          <span class="altitude-unit">ft MSL</span>
+        <div class="altitude-stepper">
+          <button id="altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
+          <div class="altitude-input-wrap">
+            <input id="altitude" type="number" min="0" max="18000" step="500" value="3500" inputmode="numeric" aria-describedby="vfrAltitudeGuide">
+            <span class="altitude-unit">ft MSL</span>
+          </div>
+          <button id="altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
         </div>
         <div id="vfrAltitudeGuide" class="vfr-altitude-guide">
           VFR ALTITUDE GUIDE — More than 3,000 ft above the surface: EASTBOUND (0°–179°) → Odd thousands + 500; WESTBOUND (180°–359°) → Even thousands + 500 ft MSL.
@@ -1993,6 +2017,7 @@ const AIRPORTS = {
     facilities:{clearance:"Long Beach Clearance",ground:"Long Beach Ground",tower:"Long Beach Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     runways:["26L","26R","30","12","8L","8R"], preferredRunway:"26L",
     taxiwaysByRunway:{"26L":"Foxtrot","26R":"Delta","30":"Foxtrot","12":"Foxtrot","8L":"Foxtrot","8R":"Delta"},
+    holdShortByRunway:{"26R":"30"},
     parkingTaxiway:"Foxtrot",
     locations:["Long Beach Flying Club","Signature Ramp","Atlantic Ramp","West Ramp","South Ramp"]
   },
@@ -2194,12 +2219,14 @@ const app = {
   recognitionRestartTimer:null,
   unexpectedTimer:null,
   awaitingATC:false,
+  callsignAbbreviated:false,
   lastATC:null,
   scenario:null,
   session:{
     attempts:0,
     tuningErrors:0,
     unexpected:[],
+    trafficAdvisories:0,
     stages:{},
     missing:{}
   }
@@ -2222,9 +2249,44 @@ function supportedMicContext(){
 
 function tuned(){return Math.abs(parseFloat($("frequency").value)-parseFloat(STAGES[app.stageIndex].freq))<0.001}
 
-function callsignSpoken(){
-  const raw=app.config.aircraft.replace(/^cessna\s*/i,"").replace(/\s/g,"").toUpperCase();
-  return "Cessna "+[...raw].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+function aircraftTail(){
+  return String(app.config.aircraft||"")
+    .replace(/^[A-Za-z]+\s+/,"")
+    .replace(/\s/g,"")
+    .toUpperCase();
+}
+
+function abbreviatedTail(){
+  const tail=aircraftTail();
+  return tail.length>3 ? tail.slice(-3) : tail;
+}
+
+function callsignVisual(abbreviated=!!app.callsignAbbreviated){
+  if(!abbreviated) return app.config.aircraft;
+  const type=(String(app.config.aircraft||"").match(/^([A-Za-z]+)/)||[])[1] || "Cessna";
+  return `${type} ${abbreviatedTail()}`;
+}
+
+function callsignSpoken(abbreviated=!!app.callsignAbbreviated){
+  const raw=abbreviated ? abbreviatedTail() : aircraftTail();
+  const type=(String(app.config.aircraft||"").match(/^([A-Za-z]+)/)||[])[1] || "Cessna";
+  return `${type} `+[...raw].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+}
+
+function abbreviateATCReply(visual,spoken){
+  if(!app.callsignAbbreviated) return {visual,spoken};
+  const fullVisual=String(app.config.aircraft||"");
+  const shortVisual=callsignVisual(true);
+  const fullSpoken=callsignSpoken(false);
+  const shortSpoken=callsignSpoken(true);
+
+  if(visual && visual.startsWith(fullVisual)){
+    visual=shortVisual+visual.slice(fullVisual.length);
+  }
+  if(spoken && spoken.startsWith(fullSpoken)){
+    spoken=shortSpoken+spoken.slice(fullSpoken.length);
+  }
+  return {visual,spoken};
 }
 function runwaySpoken(r=app.config.runway){
   const m=r.toUpperCase().match(/^(\d+)([LRC])?$/);
@@ -2427,6 +2489,19 @@ function updateVfrAltitudeGuide(){
   el.innerHTML=prefix;
 }
 
+function changeRequestedAltitude(delta){
+  const input=$("altitude");
+  if(!input) return;
+  let n=parseInt(input.value,10);
+  if(!Number.isFinite(n)) n=3500;
+  n=Math.max(0,Math.min(18000,n+delta));
+  input.value=String(n);
+  input.dispatchEvent(new Event("change",{bubbles:true}));
+}
+
+$("altitudeDown")?.addEventListener("click",()=>changeRequestedAltitude(-500));
+$("altitudeUp")?.addEventListener("click",()=>changeRequestedAltitude(500));
+
 function normalizeAltitudeInput(){
   const input=$("altitude");
   if(!input) return;
@@ -2524,6 +2599,7 @@ function renderStage(resetFrequency=true){
   clearTimeout(app.unexpectedTimer);
   app.unexpectedTimer=null;
   app.awaitingATC=false;
+  app.callsignAbbreviated=false;
   app.phase=phaseMap[stage.id]||"initial";
   app.stageComplete=false;
   app.recognitionText="";
@@ -2901,8 +2977,6 @@ function hasCallsign(text){
   const full=norm(configured);
   if(full && n.includes(full)) return true;
 
-  /* Accept the aircraft identification without the type prefix:
-     "Cessna 724SP" -> "724SP". */
   const tail=configured.replace(/^[A-Za-z]+\s+/,"").trim();
   const textCompact=aviationCompact(text);
   const configuredCompact=aviationCompact(configured);
@@ -2910,6 +2984,13 @@ function hasCallsign(text){
 
   if(tailCompact && textCompact.includes(tailCompact)) return true;
   if(configuredCompact && textCompact.includes(configuredCompact)) return true;
+
+  /* After ATC abbreviates the callsign, the pilot may use that same
+     abbreviation on subsequent transmissions with that facility. */
+  if(app.callsignAbbreviated){
+    const shortCompact=aviationCompact(abbreviatedTail());
+    if(shortCompact && textCompact.includes(shortCompact)) return true;
+  }
 
   return false;
 }
@@ -3066,8 +3147,9 @@ function containsDestRunway(text){
 /* Return a different runway that the pilot explicitly mentioned.
    This lets ATC correct an incorrect readback instead of treating it
    as merely missing information. */
-function wrongRunwayMention(text,target,airport){
-  const runways=(airport?.runways||[]).filter(r=>String(r)!==String(target));
+function wrongRunwayMention(text,target,airport,allowed=[]){
+  const allowedSet=new Set((allowed||[]).map(String));
+  const runways=(airport?.runways||[]).filter(r=>String(r)!==String(target) && !allowedSet.has(String(r)));
   return runways.find(r=>containsRunway(text,r)) || "";
 }
 
@@ -3142,6 +3224,70 @@ function destinationPatternSide(){
   return ap.trafficPatternByRunway?.[app.config.destRunway] || app.scenario?.patternSide || "left";
 }
 
+function departureHoldShortRunway(){
+  return depAirport().holdShortByRunway?.[app.config.runway] || "";
+}
+
+function holdShortRecognized(text,runway){
+  if(!runway) return true;
+  const n=norm(text);
+  return (n.includes("hold short") || n.includes("holding short")) && containsRunway(text,runway);
+}
+
+function trafficAdvisoryEnabled(){
+  return !!app.scenario?.trafficAdvisoryEnabled;
+}
+
+function trafficInSight(text){
+  const n=norm(text);
+  return n.includes("traffic in sight") ||
+    n.includes("traffic insight") ||
+    n.includes("have the traffic") ||
+    n.includes("traffic visual") ||
+    n.includes("got the traffic");
+}
+
+function negativeTrafficContact(text){
+  const n=norm(text);
+  return n.includes("negative contact") ||
+    n.includes("negative traffic") ||
+    n.includes("looking for traffic") ||
+    n.includes("looking");
+}
+
+function trafficDescription(){
+  const side=destinationPatternSide();
+  const position=Math.random()<.5 ? `${side} base` : "final";
+  const clock=["one","two","three","eleven"][randomBetween(0,3)];
+  const miles=randomBetween(1,3);
+  return {
+    visual:`Cessna traffic, ${clock} o'clock, ${miles} miles, ${position} Runway ${app.config.destRunway}`,
+    spoken:`Cessna traffic, ${clock} o'clock, ${DIGIT[String(miles)]||miles} miles, ${position} runway ${runwaySpoken(app.config.destRunway)}`
+  };
+}
+
+function towerPatternInstruction(prefix=""){
+  const extend=unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind");
+  if(extend) markUnexpected("extendDownwind");
+
+  const unable=unexpectedEnabled("unable")&&!unexpectedTriggered("unable")&&triggerUnableRunway();
+  const seqPrefix=prefix ? `${prefix} ` : "";
+
+  let visual,spoken,feedback;
+  if(unable){
+    visual=`${callsignVisual()}, unable requested runway. ${seqPrefix}Enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+    spoken=`${callsignSpoken()}, unable requested runway. ${seqPrefix}Enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+    feedback=`ATC is unable your requested runway. Read back ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, and ATC calling your base":""}.`;
+  }else{
+    visual=`${callsignVisual()}, ${seqPrefix}enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
+    spoken=`${callsignSpoken()}, ${seqPrefix}enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
+    feedback=extend
+      ? "Unexpected instruction: extend downwind. Read back the full pattern instruction."
+      : "Read back the pattern entry and runway.";
+  }
+  return {visual,spoken,feedback};
+}
+
 
 const UNEXPECTED_EVENT_LABELS={
   runwayChange:"Runway change",
@@ -3190,6 +3336,10 @@ function configureUnexpectedEvents(){
   }
 
   const active=new Set(shuffled.slice(0,counts[level]||2));
+  const trafficProbability={beginner:.30,intermediate:.55,advanced:.75}[level]||.30;
+  app.scenario.trafficAdvisoryEnabled=Math.random()<trafficProbability;
+  app.scenario.trafficAdvisoryHandled=false;
+  app.scenario.traffic=null;
   app.scenario.unexpected={};
   for(const key of pool){
     app.scenario.unexpected[key]={enabled:active.has(key),triggered:false};
@@ -3338,6 +3488,7 @@ function resetSessionStats(){
     attempts:0,
     tuningErrors:0,
     unexpected:[],
+    trafficAdvisories:0,
     stages:{},
     missing:{}
   };
@@ -3370,7 +3521,9 @@ const CHECK_LABELS={
   extend:"extend-downwind instruction",
   base:"base instruction",
   landing:"landing clearance",
-  parking:"parking request"
+  parking:"parking request",
+  traffic:"traffic advisory response",
+  holdshort:"hold-short instruction"
 };
 
 function missingItems(checks){
@@ -3452,6 +3605,7 @@ function renderFinalReport(){
     <div><b>${app.session.attempts}</b><span>Radio Calls</span></div>
     <div><b>${retries}</b><span>Retries</span></div>
     <div><b>${app.session.tuningErrors}</b><span>Tuning Errors</span></div>
+    <div><b>${app.session.trafficAdvisories||0}</b><span>Traffic Advisories</span></div>
   `;
 
   $("reportStages").innerHTML=`
@@ -3516,6 +3670,7 @@ function evaluateTransmission(text){
   }
 
   const stage=STAGES[app.stageIndex];
+  const phaseAtStart=app.phase;
   append("pilot","PILOT",text);
   const n=norm(text);
   let checks={}, replyVisual="", replySpoken="", complete=false;
@@ -3583,25 +3738,38 @@ function evaluateTransmission(text){
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
       }else{
         const changed=unexpectedEnabled("runwayChange")&&!unexpectedTriggered("runwayChange")&&triggerRunwayChange();
+        const holdShort=departureHoldShortRunway();
+        const holdVisual=holdShort?`, hold short Runway ${holdShort}`:"";
+        const holdSpoken=holdShort?`, hold short runway ${runwaySpoken(holdShort)}`:"";
         if(changed){
-          replyVisual=`${app.config.aircraft}, runway change. Runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
-          replySpoken=`${callsignSpoken()}, runway change. Runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
-          $("feedback").textContent=`Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, and callsign.`;
+          replyVisual=`${app.config.aircraft}, runway change. Runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdVisual}.`;
+          replySpoken=`${callsignSpoken()}, runway change. Runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdSpoken}.`;
+          $("feedback").textContent=holdShort
+            ? `Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.`
+            : `Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, and callsign.`;
         }else{
-          replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
-          replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
-          $("feedback").textContent=`Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
+          replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdVisual}.`;
+          replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdSpoken}.`;
+          $("feedback").textContent=holdShort
+            ? `Ground responded. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.`
+            : `Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
         }
         app.phase="groundReadback";
       }
     }else{
-      const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
-      checks={runway:containsRunway(text),taxiway:n.includes(departureTaxiway().toLowerCase()),callsign:hasCallsign(text)};
-      const essential=checks.runway&&checks.taxiway;
+      const holdShort=departureHoldShortRunway();
+      const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport(),holdShort?[holdShort]:[]);
+      checks={
+        runway:containsRunway(text),
+        taxiway:n.includes(departureTaxiway().toLowerCase()),
+        callsign:hasCallsign(text)
+      };
+      if(holdShort) checks.holdshort=holdShortRecognized(text,holdShort);
+      const essential=checks.runway&&checks.taxiway&&(!holdShort||checks.holdshort);
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(wrongRunway){
-        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}. Taxi via ${departureTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
+        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}. Taxi via ${departureTaxiway()}${holdShort?`, hold short Runway ${holdShort}`:""}.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdShort?`, hold short runway ${runwaySpoken(holdShort)}`:""}.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.runway}. Read it back again.`;
       }else if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
@@ -3609,9 +3777,11 @@ function evaluateTransmission(text){
         $("feedback").textContent="Ground stage complete.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}, taxi via ${departureTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}, taxi via ${departureTaxiway()}.`;
-        $("feedback").textContent="Readback incomplete. Try again.";
+        replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdShort?`, hold short Runway ${holdShort}`:""}.`;
+        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdShort?`, hold short runway ${runwaySpoken(holdShort)}`:""}.`;
+        $("feedback").textContent=holdShort && !checks.holdshort
+          ? `Hold-short readback required: hold short Runway ${holdShort}. Try again.`
+          : "Readback incomplete. Try again.";
       }
     }
   }
@@ -3791,26 +3961,48 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}.`;
         $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.destRunway}. Make the tower call again.`;
       }else if(s>=60 && checks.callsign && checks.inbound){
-        const unable=unexpectedEnabled("unable")&&!unexpectedTriggered("unable")&&triggerUnableRunway();
-        const extend=unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind");
-        if(extend) markUnexpected("extendDownwind");
-
-        if(unable){
-          replyVisual=`${app.config.aircraft}, unable requested runway. Enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
-          replySpoken=`${callsignSpoken()}, unable requested runway. Enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
-          $("feedback").textContent=`ATC is unable your requested runway. Read back ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, and ATC calling your base":""}.`;
+        if(trafficAdvisoryEnabled()&&!app.scenario.trafficAdvisoryHandled){
+          app.scenario.trafficAdvisoryHandled=true;
+          app.scenario.traffic=trafficDescription();
+          app.session.trafficAdvisories=(app.session.trafficAdvisories||0)+1;
+          replyVisual=`${app.config.aircraft}, ${app.scenario.traffic.visual}. Report traffic in sight.`;
+          replySpoken=`${callsignSpoken()}, ${app.scenario.traffic.spoken}. Report traffic in sight.`;
+          $("feedback").textContent='Traffic advisory received. Respond “traffic in sight” or “negative contact.”';
+          app.phase="destTowerTrafficResponse";
         }else{
-          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"tower")}, enter ${destinationPatternSide()} downwind Runway ${app.config.destRunway}${extend?", extend downwind, I will call your base":"."}`;
-          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"tower")}, enter ${destinationPatternSide()} downwind runway ${runwaySpoken(app.config.destRunway)}${extend?", extend downwind, I will call your base":"."}`;
-          $("feedback").textContent=extend
-            ? "Unexpected instruction: extend downwind. Read back the full pattern instruction."
-            : "Read back the pattern entry and runway.";
+          const instruction=towerPatternInstruction();
+          replyVisual=instruction.visual;
+          replySpoken=instruction.spoken;
+          $("feedback").textContent=instruction.feedback;
+          app.phase="destTowerPatternReadback";
         }
-        app.phase="destTowerPatternReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say again callsign, ATIS, position, and landing request.`;
         replySpoken=`${callsignSpoken()}, say again callsign, A T I S, position, and landing request.`;
         $("feedback").textContent=`Initial ${airportFacility(destAirport(),"tower")} call incomplete. Try again.`;
+      }
+    }else if(app.phase==="destTowerTrafficResponse"){
+      checks={
+        traffic:trafficInSight(text)||negativeTrafficContact(text),
+        callsign:hasCallsign(text)
+      };
+      const responded=checks.traffic;
+      $("score").textContent=(responded?(checks.callsign?100:90):grade(checks))+"%";
+
+      if(responded){
+        const inSight=trafficInSight(text);
+        const prefix=inSight ? "Follow that traffic, number two." : "Roger, continue. Traffic no factor.";
+        const instruction=towerPatternInstruction(prefix);
+        replyVisual=instruction.visual;
+        replySpoken=instruction.spoken;
+        $("feedback").textContent=inSight
+          ? `Traffic acknowledged. You are number two. ${instruction.feedback}`
+          : `Negative contact acknowledged. ${instruction.feedback}`;
+        app.phase="destTowerPatternReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, report traffic in sight or negative contact.`;
+        replySpoken=`${callsignSpoken()}, report traffic in sight or negative contact.`;
+        $("feedback").textContent='Respond to the traffic advisory with “traffic in sight” or “negative contact.”';
       }
     }else if(app.phase==="destTowerPatternReadback"){
       const extendRequired=unexpectedTriggered("extendDownwind");
@@ -3941,6 +4133,17 @@ function evaluateTransmission(text){
     if(detail && !currentFeedback.includes("Missing:")){
       $("feedback").textContent=currentFeedback.replace(/\.$/,"")+ "." + detail;
     }
+  }
+
+  /* Once ATC accepts the initial contact with a facility, it may abbreviate
+     the callsign. The pilot may then use that abbreviation with that facility. */
+  if(/Initial$/.test(phaseAtStart) && app.phase!==phaseAtStart){
+    app.callsignAbbreviated=true;
+  }
+  if(replyVisual && app.callsignAbbreviated){
+    const abbreviated=abbreviateATCReply(replyVisual,replySpoken);
+    replyVisual=abbreviated.visual;
+    replySpoken=abbreviated.spoken;
   }
 
   if(replyVisual){
