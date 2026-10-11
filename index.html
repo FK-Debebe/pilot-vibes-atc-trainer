@@ -485,13 +485,20 @@ input,select,textarea{
   }
 
   .scorebar{
-    grid-template-columns:72px minmax(0,1fr);
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    width:100%;
+    max-width:100%;
     gap:8px;
   }
   .score{
     font-size:26px;
   }
   .feedback{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
     font-size:12px;
   }
 
@@ -561,7 +568,8 @@ input,select,textarea{
     font-size:9px;
   }
   .scorebar{
-    grid-template-columns:1fr;
+    grid-template-columns:minmax(0,1fr);
+    width:100%;
   }
 }
 
