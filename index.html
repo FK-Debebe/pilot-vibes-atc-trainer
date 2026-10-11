@@ -212,30 +212,39 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   display:none;
 }
 .setup-summary::after{
-  content:"▲";
-  font-size:14px;
-  font-weight:700;
-  flex:0 0 auto;
-}
-details.setup:not([open]) .setup-summary::after{
-  content:"▼";
+  content:none;
 }
 .setup-summary-hint{
   margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:38px;
+  padding:8px 12px;
+  border:1px solid #c7d7e6;
+  border-radius:9px;
+  background:#f4f8fc;
+  color:#173a5e;
   font-size:11px;
-  opacity:.75;
+  font-weight:700;
+  line-height:1;
+  opacity:1;
+  white-space:nowrap;
 }
 .setup-summary-hint::before{
-  content:"Tap to Collapse";
+  content:"Tap to Collapse ▲";
 }
 details.setup:not([open]) .setup-summary-hint::before{
-  content:"Tap to Expand";
+  content:"Tap to Expand ▼";
+}
+.setup-summary:hover .setup-summary-hint{
+  background:#eaf2f9;
 }
 .setup-content{
   margin-top:12px;
 }
 details.setup:not([open]) .setup-summary-hint{
-  opacity:.9;
+  opacity:1;
 }
 @media(max-width:700px){
   .setup-summary{
@@ -246,7 +255,10 @@ details.setup:not([open]) .setup-summary-hint{
     margin-right:4px;
   }
   .setup-summary-hint{
-    display:none;
+    display:inline-flex;
+    min-height:34px;
+    padding:7px 9px;
+    font-size:10px;
   }
 }
 
@@ -1732,6 +1744,14 @@ header h1{
 
   <div class="setup-content">
     <div class="setup-grid">
+      <label>Training Level
+        <select id="level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </label>
+
       <label>Departure Airport
         <select id="departureAirport">
           <option value="KLGB" selected>KLGB — Long Beach</option>
@@ -1816,13 +1836,6 @@ header h1{
         </div>
       </label>
 
-      <label>Training Level
-        <select id="level">
-          <option value="beginner">Beginner</option>
-          <option value="intermediate">Intermediate</option>
-          <option value="advanced">Advanced</option>
-        </select>
-      </label>
     </div>
 
     <div class="setup-action-row">
