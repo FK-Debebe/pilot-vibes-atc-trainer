@@ -802,6 +802,34 @@ details.setup:not([open]) .setup-bottom-toggle{
 /* =========================================================
    V3.14 COMPACT SETUP ACTIONS
    ========================================================= */
+
+.altitude-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.altitude-input-wrap input{
+  width:100%;
+  padding-right:62px;
+}
+.altitude-unit{
+  position:absolute;
+  right:10px;
+  font-size:11px;
+  font-weight:800;
+  color:var(--muted);
+  pointer-events:none;
+}
+.vfr-altitude-guide{
+  margin-top:6px;
+  font-size:10px;
+  line-height:1.4;
+  color:var(--muted);
+  font-weight:600;
+}
+.vfr-altitude-guide strong{
+  color:var(--navy);
+}
 .setup-action-row{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -1753,12 +1781,13 @@ header h1{
       </label>
 
       <label>Requested Altitude
-        <select id="altitude">
-          <option>2,500 ft</option>
-          <option selected>3,500 ft</option>
-          <option>4,500 ft</option>
-          <option>5,500 ft</option>
-        </select>
+        <div class="altitude-input-wrap">
+          <input id="altitude" type="number" min="0" max="18000" step="100" value="3500" inputmode="numeric" aria-describedby="vfrAltitudeGuide">
+          <span class="altitude-unit">ft MSL</span>
+        </div>
+        <div id="vfrAltitudeGuide" class="vfr-altitude-guide">
+          VFR ALTITUDE GUIDE — More than 3,000 ft above the surface: EASTBOUND (0°–179°) → Odd thousands + 500; WESTBOUND (180°–359°) → Even thousands + 500 ft MSL.
+        </div>
       </label>
 
       <label>Training Level
@@ -1778,7 +1807,7 @@ header h1{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device. Incorrect runway or altitude readbacks trigger an ATC-style correction and must be read back again. Each training flight may also include unexpected ATC changes such as runway or altitude amendments, a different departure direction, stand by, unable, extended downwind, or a go-around. Frequencies and procedures are training defaults only — verify current FAA/airport information before flight.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Ground, Tower, Departure, and Approach use distinct ATC voice profiles when supported by the device.</div>
   </div>
 </details>
 
@@ -2204,10 +2233,42 @@ function runwaySpoken(r=app.config.runway){
   if(m[2]) s+=" "+({L:"left",R:"right",C:"center"}[m[2]]);
   return s;
 }
-function altitudeSpoken(){
-  const n=app.config.altitude.replace(/\D/g,"");
-  const map={"2500":"two thousand five hundred","3500":"three thousand five hundred","4500":"four thousand five hundred","5500":"five thousand five hundred"};
-  return map[n]||[...n].map(d=>DIGIT[d]).join(" ");
+function altitudeFeet(value=app.config.altitude){
+  const n=parseInt(String(value||"").replace(/\D/g,""),10);
+  return Number.isFinite(n) ? Math.max(0,Math.min(18000,n)) : 3500;
+}
+
+function formatAltitude(value){
+  return `${altitudeFeet(value).toLocaleString("en-US")} ft`;
+}
+
+function numberUnderTwenty(n){
+  const words=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+  return words[n]||"";
+}
+
+function numberUnderHundred(n){
+  if(n<20) return numberUnderTwenty(n);
+  const tens=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+  return `${tens[Math.floor(n/10)]}${n%10?" "+numberUnderTwenty(n%10):""}`;
+}
+
+function numberUnderThousand(n){
+  if(n<100) return numberUnderHundred(n);
+  const h=Math.floor(n/100);
+  const r=n%100;
+  return `${numberUnderTwenty(h)} hundred${r?" "+numberUnderHundred(r):""}`;
+}
+
+function altitudeSpoken(value=app.config.altitude){
+  const n=altitudeFeet(value);
+  if(n===0) return "zero";
+  const thousands=Math.floor(n/1000);
+  const remainder=n%1000;
+  let parts=[];
+  if(thousands) parts.push(`${numberUnderTwenty(thousands)} thousand`);
+  if(remainder) parts.push(numberUnderThousand(remainder));
+  return parts.join(" ");
 }
 function append(type,speaker,text){
   const el=document.createElement("div");
@@ -2346,6 +2407,40 @@ function speak(text,role=currentVoiceRole()){
   speechSynthesis.speak(u);
 }
 
+
+function vfrDirectionGroup(direction=app.config?.direction || $("direction")?.value || ""){
+  const d=String(direction).toLowerCase();
+  return (d.includes("east")) ? "east" : (d.includes("west") ? "west" : "");
+}
+
+function updateVfrAltitudeGuide(){
+  const el=$("vfrAltitudeGuide");
+  if(!el) return;
+
+  const group=vfrDirectionGroup($("direction")?.value);
+  const prefix=group==="east"
+    ? "<strong>EASTBOUND (0°–179°): Odd thousands + 500 ft MSL</strong>"
+    : group==="west"
+      ? "<strong>WESTBOUND (180°–359°): Even thousands + 500 ft MSL</strong>"
+      : "<strong>VFR cruising altitude rule</strong>";
+
+  el.innerHTML=prefix;
+}
+
+function normalizeAltitudeInput(){
+  const input=$("altitude");
+  if(!input) return;
+  let n=parseInt(input.value,10);
+  if(!Number.isFinite(n)) n=3500;
+  n=Math.max(0,Math.min(18000,n));
+  input.value=String(n);
+}
+
+$("direction")?.addEventListener("change",updateVfrAltitudeGuide);
+$("altitude")?.addEventListener("change",normalizeAltitudeInput);
+$("altitude")?.addEventListener("blur",normalizeAltitudeInput);
+updateVfrAltitudeGuide();
+
 function readSetup(generateCodes=true){
   if(!app.scenario) newScenario();
   const depCode=$("departureAirport").value || "KLGB";
@@ -2367,7 +2462,7 @@ function readSetup(generateCodes=true){
     runway:$("runway").value,
     destRunway:$("destRunway").value,
     direction:$("direction").value,
-    altitude:$("altitude").value,
+    altitude:formatAltitude($("altitude").value),
     level:$("level").value
   };
 
@@ -2873,18 +2968,33 @@ function textDigits(text){
 }
 
 function containsAltitude(text){
-  const target=app.config.altitude.replace(/\D/g,"");
+  const target=String(altitudeFeet()).replace(/\D/g,"");
   const digits=textDigits(text);
   if(digits.includes(target)) return true;
+
   const n=norm(text);
-  if(n.includes(altitudeSpoken().toLowerCase())) return true;
-  const variants={
-    "2500":["twenty five hundred","twenty-five hundred"],
-    "3500":["thirty five hundred","thirty-five hundred"],
-    "4500":["forty five hundred","forty-five hundred"],
-    "5500":["fifty five hundred","fifty-five hundred"]
-  };
-  return (variants[target]||[]).some(v=>n.includes(v));
+  const fullWords=altitudeSpoken().toLowerCase();
+  if(fullWords && n.includes(fullWords)) return true;
+
+  const feet=altitudeFeet();
+  if(feet>=1000 && feet%100===0){
+    const hundreds=feet/100;
+    if(hundreds<100){
+      const hundredStyle=`${numberUnderHundred(hundreds)} hundred`;
+      if(n.includes(hundredStyle)) return true;
+    }
+  }
+
+  /* Accept aviation-style digit grouping such as "one seven thousand five hundred". */
+  const thousands=Math.floor(feet/1000);
+  const remainder=feet%1000;
+  if(thousands>=10){
+    const splitThousands=[...String(thousands)].map(d=>DIGIT[d]).join(" ");
+    const splitPhrase=`${splitThousands} thousand${remainder?" "+numberUnderThousand(remainder):""}`;
+    if(n.includes(splitPhrase)) return true;
+  }
+
+  return false;
 }
 
 function containsDirection(text){
@@ -3055,10 +3165,16 @@ function alternateDirection(current){
 }
 
 function alternateAltitude(current){
-  const currentDigits=String(current||"").replace(/\D/g,"");
-  const choices=["2,500 ft","3,500 ft","4,500 ft","5,500 ft"]
-    .filter(a=>a.replace(/\D/g,"")!==currentDigits);
-  return choices[randomBetween(0,choices.length-1)] || current;
+  const currentFeet=altitudeFeet(current);
+  const candidates=[];
+  for(let a=2500;a<=17500;a+=1000) candidates.push(a);
+  for(let a=3500;a<=16500;a+=1000) candidates.push(a);
+
+  const unique=[...new Set(candidates)]
+    .filter(a=>a!==currentFeet && a<=18000);
+
+  const next=unique.length ? unique[randomBetween(0,unique.length-1)] : currentFeet;
+  return formatAltitude(next);
 }
 
 function configureUnexpectedEvents(){
@@ -3114,7 +3230,7 @@ function triggerAltitudeAmendment(){
   const newAltitude=alternateAltitude(app.config.altitude);
   if(newAltitude===app.config.altitude) return false;
   app.config.altitude=newAltitude;
-  if($("altitude")) $("altitude").value=newAltitude;
+  if($("altitude")) $("altitude").value=String(altitudeFeet(newAltitude));
   markUnexpected("amendedAltitude");
   return true;
 }
