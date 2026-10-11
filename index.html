@@ -2226,7 +2226,16 @@ const app = {
   }
 };
 
-function norm(s){return (s||"").toLowerCase().replace(/[.,!?]/g," ").replace(/\s+/g," ").trim()}
+function norm(s){
+  return (s||"")
+    .toLowerCase()
+    /* SpeechRecognition sometimes renders spoken runway digits as a fraction,
+       e.g. "one three" -> "1/3". For runway-style digit groups, collapse the slash. */
+    .replace(/\b(\d)\s*\/\s*(\d)\b/g,"$1$2")
+    .replace(/[.,!?]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
 function compact(s){return norm(s).replace(/\s+/g,"")}
 function clampFreq(v){return Math.min(136.975,Math.max(118,Math.round(v*1000)/1000))}
 function formatFreq(v){return Number(v).toFixed(3)}
@@ -2960,12 +2969,50 @@ function aviationCompact(text){
     foxtrot:"f",golf:"g",hotel:"h",india:"i",juliet:"j",
     kilo:"k",lima:"l",mike:"m",november:"n",oscar:"o",
     papa:"p",poppa:"p",quebec:"q",romeo:"r",
-    sierra:"s",sara:"s",sera:"s",tango:"t",
+    sierra:"s",siera:"s",sara:"s",sera:"s",tango:"t",
     uniform:"u",victor:"v",whiskey:"w",xray:"x",yankee:"y",zulu:"z"
   };
 
   const words=n.split(/\s+/).map(w=>wordMap[w] ?? w);
   return words.join("").replace(/[^a-z0-9]/g,"");
+}
+
+const TAXIWAY_PHONETIC={
+  Alpha:"alpha", Bravo:"bravo", Charlie:"charlie", Delta:"delta", Echo:"echo",
+  Foxtrot:"foxtrot", Golf:"golf", Hotel:"hotel", India:"india", Juliet:"juliet",
+  Kilo:"kilo", Lima:"lima", Mike:"mike", November:"november", Oscar:"oscar",
+  Papa:"papa", Quebec:"quebec", Romeo:"romeo", Sierra:"sierra", Tango:"tango",
+  Uniform:"uniform", Victor:"victor", Whiskey:"whiskey", "X-ray":"xray",
+  Yankee:"yankee", Zulu:"zulu"
+};
+
+function containsTaxiway(text,taxiway){
+  const expected=String(taxiway||"").trim();
+  if(!expected) return false;
+
+  const n=norm(text);
+  const expectedWord=(TAXIWAY_PHONETIC[expected]||expected).toLowerCase();
+  if(n.includes(expectedWord)) return true;
+
+  const letter=expectedWord.charAt(0);
+  const compactText=aviationCompact(text);
+
+  /* Accept a standalone taxiway letter, such as "taxi via A". */
+  const standaloneLetter=new RegExp(`\\b(?:taxi\\s+via\\s+|via\\s+)${letter}\\b`,"i");
+  if(standaloneLetter.test(n)) return true;
+
+  /* SpeechRecognition can glue taxiway Alpha to the following callsign:
+     "taxi via Alpha, 724 Sierra Papa" -> "taxi via A724 Sara Papa".
+     Accept that form only when the expected taxiway letter directly precedes
+     the configured callsign, keeping the match contextual and conservative. */
+  const tailCompact=aviationCompact(aircraftTail());
+  if(tailCompact){
+    const glued=`${letter}${tailCompact}`;
+    const viaCompact=aviationCompact(n.match(/(?:taxi\s+via|via)\s+(.+)/i)?.[1]||"");
+    if(viaCompact.includes(glued)) return true;
+  }
+
+  return false;
 }
 
 function hasCallsign(text){
@@ -3758,7 +3805,7 @@ function evaluateTransmission(text){
       const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport(),holdShort?[holdShort]:[]);
       checks={
         runway:containsRunway(text),
-        taxiway:n.includes(departureTaxiway().toLowerCase()),
+        taxiway:containsTaxiway(text,departureTaxiway()),
         callsign:hasCallsign(text)
       };
       if(holdShort) checks.holdshort=holdShortRecognized(text,holdShort);
@@ -4102,7 +4149,7 @@ function evaluateTransmission(text){
       }
     }else{
       checks={
-        taxiway:n.includes(destinationTaxiway().toLowerCase()),
+        taxiway:containsTaxiway(text,destinationTaxiway()),
         parking:n.includes("parking")||n.includes("taxi"),
         callsign:hasCallsign(text)
       };
