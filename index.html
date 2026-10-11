@@ -1709,15 +1709,9 @@ header h1{
 <header>
   <div><h1>FK ATC COM Trainer</h1></div>
   <div class="header-actions">
-    <button id="trainingModeBtn" class="btn training-mode-btn" type="button">FULL SCREEN</button>
     <button id="installApp" class="btn install-app-btn hidden" type="button">INSTALL APP</button>
   </div>
 </header>
-
-
-
-<button id="exitTrainingMode" class="training-exit hidden" type="button" aria-label="Exit full-screen training mode">EXIT</button>
-
 <div class="trainer-shell">
 <details class="card setup">
   <summary class="setup-summary">
@@ -2480,13 +2474,16 @@ function updateVfrAltitudeGuide(){
   if(!el) return;
 
   const group=vfrDirectionGroup($("direction")?.value);
-  const prefix=group==="east"
-    ? "<strong>EASTBOUND (0°–179°): Odd thousands + 500 ft MSL</strong>"
-    : group==="west"
-      ? "<strong>WESTBOUND (180°–359°): Even thousands + 500 ft MSL</strong>"
-      : "<strong>VFR cruising altitude rule</strong>";
+  const east='<strong>EASTBOUND (0°–179°): Odd thousands + 500 ft MSL</strong>';
+  const west='<strong>WESTBOUND (180°–359°): Even thousands + 500 ft MSL</strong>';
 
-  el.innerHTML=prefix;
+  if(group==="east"){
+    el.innerHTML=`${east}<br>${west}`;
+  }else if(group==="west"){
+    el.innerHTML=`${west}<br>${east}`;
+  }else{
+    el.innerHTML=`${east}<br>${west}`;
+  }
 }
 
 function changeRequestedAltitude(delta){
@@ -4387,79 +4384,6 @@ readSetup(true);
 
 
 
-
-/* =========================================================
-   V3.45 MOBILE FULL-SCREEN TRAINING MODE
-   ========================================================= */
-let trainingModeActive=false;
-
-function updateTrainingModeUI(){
-  const btn=$("trainingModeBtn");
-  const exit=$("exitTrainingMode");
-  document.body.classList.toggle("training-mode",trainingModeActive);
-
-  if(btn){
-    btn.textContent=trainingModeActive ? "EXIT FULL SCREEN" : "FULL SCREEN";
-    btn.setAttribute("aria-pressed",trainingModeActive ? "true" : "false");
-  }
-  if(exit){
-    exit.classList.toggle("hidden",!trainingModeActive);
-  }
-}
-
-async function enterTrainingMode(){
-  trainingModeActive=true;
-  updateTrainingModeUI();
-
-  try{
-    const root=document.documentElement;
-    if(root.requestFullscreen && !document.fullscreenElement){
-      await root.requestFullscreen({navigationUI:"hide"});
-    }else if(root.webkitRequestFullscreen && !document.webkitFullscreenElement){
-      root.webkitRequestFullscreen();
-    }
-  }catch(e){
-    /* CSS training mode remains active if browser fullscreen is unavailable. */
-  }
-
-  window.scrollTo({top:0,left:0,behavior:"smooth"});
-}
-
-async function exitTrainingMode(){
-  trainingModeActive=false;
-  updateTrainingModeUI();
-
-  try{
-    if(document.fullscreenElement && document.exitFullscreen){
-      await document.exitFullscreen();
-    }else if(document.webkitFullscreenElement && document.webkitExitFullscreen){
-      document.webkitExitFullscreen();
-    }
-  }catch(e){}
-}
-
-async function toggleTrainingMode(){
-  if(trainingModeActive) await exitTrainingMode();
-  else await enterTrainingMode();
-}
-
-$("trainingModeBtn")?.addEventListener("click",toggleTrainingMode);
-$("exitTrainingMode")?.addEventListener("click",exitTrainingMode);
-
-document.addEventListener("fullscreenchange",()=>{
-  if(trainingModeActive && !document.fullscreenElement){
-    trainingModeActive=false;
-    updateTrainingModeUI();
-  }
-});
-document.addEventListener("webkitfullscreenchange",()=>{
-  if(trainingModeActive && !document.webkitFullscreenElement){
-    trainingModeActive=false;
-    updateTrainingModeUI();
-  }
-});
-
-updateTrainingModeUI();
 
 /* =========================================================
    V3.43 PWA / INSTALLABLE WEB APP
