@@ -2325,6 +2325,33 @@ function enrouteFacility(dep,dest){
   return combined.includes("socal") ? "SoCal" : airportFacility(dest,"approach");
 }
 
+function enrouteFacilityMentioned(text){
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const variants=[
+    "socal",
+    "so cal",
+    "so-called",
+    "so called",
+    "southern california",
+    "south california",
+    "so cow",
+    "socal approach",
+    "socal departure",
+    "so cal approach",
+    "so cal departure"
+  ];
+
+  if(variants.some(v=>n.includes(v))) return true;
+
+  /* During the ENROUTE stage, the controller identity is already defined by
+     the active frequency. Permit the generic facility words as well. */
+  return n.includes("approach") || n.includes("departure") || n.includes("center");
+}
+
 function buildStages(depCode,destCode){
   const dep=airportData(depCode);
   const dest=airportData(destCode);
@@ -3455,7 +3482,14 @@ function containsTaxiway(text,taxiway){
 }
 
 function hasCallsign(text){
-  const textCompact=aviationCompact(text);
+  /* Speech recognition commonly renders aviation digits phonetically:
+     "724 Sierra Papa" -> "72 for SP".  Normalize these variants only for
+     callsign matching so other phrase recognition is not affected. */
+  const callsignText=norm(text)
+    .replace(/\bfor\b/g,"four")
+    .replace(/\bfore\b/g,"four");
+  const textCompact=aviationCompact(callsignText);
+
   const tail=aircraftTail();
   const tailCompact=aviationCompact(tail);
   const fullCompact=aviationCompact(callsignVisual(false));
@@ -3473,6 +3507,7 @@ function hasCallsign(text){
   return false;
 }
 function containsRunway(text,r=app.config.runway){
+  /* norm() already collapses ASR fraction forms such as "2/6" -> "26". */
   const n=norm(text)
     .replace(/[-_/]/g," ")
     .replace(/\s+/g," ")
@@ -3527,6 +3562,54 @@ function textDigits(text){
     .replace(/\bzero\b/g,"0")
     .replace(/\boh\b/g,"0");
   return n.replace(/\D/g,"");
+}
+
+function reportedAltitudeFeet(text){
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  /* First handle numeric ASR forms such as:
+     7,500 / 7500 / 7 500 / 7.5 thousand. */
+  const direct=n.match(/\b(\d{1,2})\s*(?:,\s*|\s+)?(\d{3})\b/);
+  if(direct){
+    const v=parseInt(direct[1]+direct[2],10);
+    if(v>=500 && v<=18000) return v;
+  }
+
+  const compactDigits=textDigits(text);
+  /* Prefer the trailing plausible altitude-sized number so callsign digits
+     earlier in the transmission do not interfere. */
+  for(let len=5;len>=3;len--){
+    for(let i=compactDigits.length-len;i>=0;i--){
+      const v=parseInt(compactDigits.slice(i,i+len),10);
+      if(v>=500 && v<=18000 && v%100===0) return v;
+    }
+  }
+
+  /* Worded altitude forms such as "seven thousand five hundred". */
+  for(let feet=500;feet<=18000;feet+=100){
+    const spoken=altitudeSpoken(formatAltitude(feet)).toLowerCase();
+    if(spoken && n.includes(spoken)) return feet;
+
+    if(feet>=1000 && feet%100===0){
+      const hundreds=feet/100;
+      if(hundreds<100){
+        const hundredStyle=`${numberUnderHundred(hundreds)} hundred`;
+        if(n.includes(hundredStyle)) return feet;
+      }
+    }
+  }
+
+  return 0;
+}
+
+function containsReportedAltitude(text,expectedValue=app.config.altitude){
+  const reported=reportedAltitudeFeet(text);
+  if(!reported) return false;
+  const expected=altitudeFeet(expectedValue);
+  return reported===expected;
 }
 
 function containsAltitude(text){
@@ -3623,6 +3706,37 @@ function containsSquawk(text,squawk){
 
 function containsDestRunway(text){
   return containsRunway(text,app.config.destRunway);
+}
+
+function containsArrivalPosition(text){
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+
+  const directionWords=[
+    "north","south","east","west",
+    "northeast","northwest","southeast","southwest",
+    "north east","north west","south east","south west",
+    "ne","nw","se","sw"
+  ];
+
+  const positionWords=[
+    "miles","mile","over","abeam","off","near","at","from"
+  ];
+
+  /* Typical tower inbound position reports:
+     "10 miles east", "five miles northwest", "over Signal Hill",
+     "abeam the airport", etc.  This is deliberately independent of ATIS order. */
+  const hasDirection=directionWords.some(v=>{
+    if(v.length<=2) return new RegExp(`\\b${v}\\b`,"i").test(n);
+    return n.includes(v);
+  });
+  const hasPositionWord=positionWords.some(v=>n.includes(v));
+  const hasMiles=/\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty)\s+(?:mile|miles)\b/.test(n);
+
+  return hasMiles || (hasDirection && hasPositionWord) ||
+    n.includes("over ") || n.includes("abeam ") || n.includes("position ");
 }
 
 /* Return a different runway that the pilot explicitly mentioned.
@@ -4064,6 +4178,7 @@ const CHECK_LABELS={
   base:"base instruction",
   landing:"landing clearance",
   parking:"parking request",
+  position:"position report",
   traffic:"traffic advisory response",
   holdshort:"hold-short instruction"
 };
@@ -4463,11 +4578,13 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="enroute"){
+    const reportedAltitude=reportedAltitudeFeet(text);
     checks={
-      facility:n.includes("socal")||n.includes("so cal")||n.includes("approach")||n.includes("departure"),
+      facility:enrouteFacilityMentioned(text),
       callsign:hasCallsign(text),
-      altitude:containsAltitude(text),
-      level:n.includes("level")||n.includes("leveling")||n.includes("at ")
+      altitude:reportedAltitude>0,
+      altitudeMatch:reportedAltitude===altitudeFeet(app.config.altitude),
+      level:n.includes("level")||n.includes("leveling")||n.includes("level at")||n.includes("at ")
     };
 
     const essential=checks.facility&&checks.callsign&&checks.altitude;
@@ -4475,14 +4592,15 @@ function evaluateTransmission(text){
 
     if(essential){
       const nextStage=STAGES[app.stageIndex+1];
-      replyVisual=`${app.config.aircraft}, roger, altitude observed. Contact ${nextStage.facility} ${nextStage.freq}.`;
-      replySpoken=`${callsignSpoken()}, roger, altitude observed. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
+      const altitudeText=`${reportedAltitude.toLocaleString("en-US")} ft`;
+      replyVisual=`${app.config.aircraft}, roger, ${altitudeText}. Contact ${nextStage.facility} ${nextStage.freq}.`;
+      replySpoken=`${callsignSpoken()}, roger, ${altitudeSpoken(altitudeText)}. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
       complete=true;
     }else{
       const missing=[];
-      if(!checks.facility) missing.push("facility");
+      if(!checks.facility) missing.push("facility (e.g. SoCal / SoCal Approach / Approach)");
       if(!checks.callsign) missing.push("callsign");
-      if(!checks.altitude) missing.push(`altitude ${app.config.altitude}`);
+      if(!checks.altitude) missing.push("altitude");
       replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
       replySpoken=`${callsignSpoken()}, say again enroute check-in.`;
       $("feedback").textContent=`Enroute check-in incomplete. Missing or not recognized: ${missing.join(", ")}.`;
@@ -4559,16 +4677,19 @@ function evaluateTransmission(text){
         facility:n.includes("tower")||airportMentioned(text,app.config.destinationAirport),
         callsign:hasCallsign(text),
         atis:n.includes(app.config.arrivalAtis.toLowerCase()),
+        position:containsArrivalPosition(text),
         inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
         runway:containsDestRunway(text)
       };
       const s=grade(checks); $("score").textContent=s+"%";
       const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
+      const essential=checks.facility&&checks.callsign&&checks.atis&&checks.position&&checks.inbound;
+
       if(wrongRunway){
         replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}.`;
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}.`;
         $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.destRunway}. Make the tower call again.`;
-      }else if(s>=60 && checks.callsign && checks.inbound){
+      }else if(essential){
         if(trafficAdvisoryEnabled()&&!app.scenario.trafficAdvisoryHandled){
           app.scenario.trafficAdvisoryHandled=true;
           app.scenario.traffic=trafficDescription();
@@ -4585,9 +4706,16 @@ function evaluateTransmission(text){
           app.phase="destTowerPatternReadback";
         }
       }else{
-        replyVisual=`${app.config.aircraft}, say again callsign, ATIS, position, and landing request.`;
-        replySpoken=`${callsignSpoken()}, say again callsign, A T I S, position, and landing request.`;
-        $("feedback").textContent=`Initial ${airportFacility(destAirport(),"tower")} call incomplete. Try again.`;
+        const missing=[];
+        if(!checks.facility) missing.push("facility");
+        if(!checks.callsign) missing.push("callsign");
+        if(!checks.atis) missing.push(`ATIS ${app.config.arrivalAtis}`);
+        if(!checks.position) missing.push("position");
+        if(!checks.inbound) missing.push("landing request");
+
+        replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
+        replySpoken=`${callsignSpoken()}, say again ${missing.join(", ")}.`;
+        $("feedback").textContent=`Initial ${airportFacility(destAirport(),"tower")} call incomplete. Missing or not recognized: ${missing.join(", ")}. ATIS and position may be stated in either order.`;
       }
     }else if(app.phase==="destTowerTrafficResponse"){
       checks={
