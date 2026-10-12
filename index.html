@@ -171,6 +171,12 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   #environmentText{font-size:11px}
 }
 @media(max-width:390px){
+  .runway-pair{
+    gap:6px;
+  }
+  .runway-pair label{
+    font-size:10px;
+  }
   .frequency{font-size:21px}
   .freq-grid{grid-template-columns:38px minmax(0,1fr) 38px}
   .stage-chip{min-width:84px}
@@ -664,6 +670,19 @@ summary:focus-visible{
 .setup-grid{
   grid-template-columns:1fr;
   gap:9px;
+}
+.runway-pair{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  width:100%;
+}
+.runway-pair label{
+  min-width:0;
+}
+.runway-pair select{
+  width:100%;
+  min-width:0;
 }
 .setup-note{
   margin-top:8px;
@@ -1782,7 +1801,28 @@ header h1{
         </select>
       </label>
 
-      <label>Aircraft<input id="aircraft" value="Cessna 724SP"></label>
+      <label>Aircraft Type
+        <select id="aircraftType">
+          <option value="Cessna 152">Cessna 152</option>
+          <option value="Cessna 172" selected>Cessna 172</option>
+          <option value="Skyhawk">Skyhawk</option>
+          <option value="Piper Archer">Piper Archer</option>
+          <option value="Piper Warrior">Piper Warrior</option>
+          <option value="Cirrus SR20">Cirrus SR20</option>
+          <option value="Cirrus SR22">Cirrus SR22</option>
+          <option value="Diamond DA40">Diamond DA40</option>
+          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label id="otherAircraftTypeLabel" class="hidden">Other Aircraft Type
+        <input id="otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
+      </label>
+
+      <label>Call Sign
+        <input id="callsign" value="724SP" autocomplete="off" spellcheck="false">
+      </label>
 
       <label>Starting Location
         <select id="location">
@@ -1794,24 +1834,26 @@ header h1{
         </select>
       </label>
 
-      <label>Destination Runway
-        <select id="destRunway">
-          <option selected>24</option>
-          <option>6</option>
-          <option>25</option>
-        </select>
-      </label>
+      <div class="runway-pair">
+        <label>Expected Takeoff Runway
+          <select id="runway">
+            <option>26L</option>
+            <option>26R</option>
+            <option>30</option>
+            <option>12</option>
+            <option>8L</option>
+            <option>8R</option>
+          </select>
+        </label>
 
-      <label>Expected Takeoff Runway
-        <select id="runway">
-          <option>26L</option>
-          <option>26R</option>
-          <option>30</option>
-          <option>12</option>
-          <option>8L</option>
-          <option>8R</option>
-        </select>
-      </label>
+        <label>Destination Runway
+          <select id="destRunway">
+            <option selected>24</option>
+            <option>6</option>
+            <option>25</option>
+          </select>
+        </label>
+      </div>
 
       <label>Departure Direction
         <select id="direction">
@@ -2192,15 +2234,22 @@ function facilityMentioned(text,ap,key){
 }
 
 function configuredAircraftType(){
-  const configured=String(app.config.aircraft||"").trim();
-  const m=configured.match(/^([A-Za-z][A-Za-z0-9-]*)\s+/);
-  return (m?.[1]||"Cessna").toLowerCase();
+  return app.config.aircraftType || "Cessna 172";
 }
 
 function containsAircraftType(text){
-  const n=norm(text);
-  const type=configuredAircraftType();
-  return !!(type && n.includes(type));
+  const n=norm(text)
+    .replace(/[-_/]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+  const compactN=n.replace(/[^a-z0-9]/g,"");
+  const profile=aircraftTypeProfile(configuredAircraftType());
+
+  return profile.aliases.some(alias=>{
+    const a=norm(alias).replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+    const compactA=a.replace(/[^a-z0-9]/g,"");
+    return (a && n.includes(a)) || (compactA && compactN.includes(compactA));
+  });
 }
 
 function containsStartingLocation(text){
@@ -2387,6 +2436,84 @@ function wrongArrivalAirportMention(text,targetCode){
   return "";
 }
 
+const AIRCRAFT_TYPES={
+  "Cessna 172":{
+    radioPrefix:"Cessna",
+    aliases:["cessna","cessna 172","cessna one seventy two","c172","c 172","172","skyhawk"]
+  },
+  "Cessna 152":{
+    radioPrefix:"Cessna",
+    aliases:["cessna","cessna 152","cessna one fifty two","c152","c 152","152"]
+  },
+  "Skyhawk":{
+    radioPrefix:"Cessna",
+    aliases:["skyhawk","cessna","cessna 172","cessna one seventy two","c172","c 172","172"]
+  },
+  "Piper Archer":{
+    radioPrefix:"Piper",
+    aliases:["piper","piper archer","archer","pa28","pa 28","p a 28"]
+  },
+  "Piper Warrior":{
+    radioPrefix:"Piper",
+    aliases:["piper","piper warrior","warrior","pa28","pa 28","p a 28"]
+  },
+  "Cirrus SR20":{
+    radioPrefix:"Cirrus",
+    aliases:["cirrus","cirrus sr20","sr20","s r 20","sr 20"]
+  },
+  "Cirrus SR22":{
+    radioPrefix:"Cirrus",
+    aliases:["cirrus","cirrus sr22","sr22","s r 22","sr 22"]
+  },
+  "Diamond DA40":{
+    radioPrefix:"Diamond",
+    aliases:["diamond","diamond da40","da40","d a 40","da 40"]
+  },
+  "Beechcraft Bonanza":{
+    radioPrefix:"Bonanza",
+    aliases:["beechcraft","beechcraft bonanza","bonanza","beech bonanza"]
+  }
+};
+
+function customAircraftTypeValue(){
+  return String($("otherAircraftType")?.value||"").trim();
+}
+
+function selectedAircraftType(){
+  const selected=$("aircraftType")?.value || "Cessna 172";
+  if(selected==="Other"){
+    return customAircraftTypeValue() || "Other";
+  }
+  return selected;
+}
+
+function aircraftTypeProfile(type){
+  const selected=type || (typeof app!=="undefined" ? app.config?.aircraftType : "") || "Cessna 172";
+  if(AIRCRAFT_TYPES[selected]) return AIRCRAFT_TYPES[selected];
+
+  /* Custom "Other" aircraft types use the text itself as the radio prefix
+     and as the recognition phrase so it remains usable through all stages. */
+  const custom=String(selected||"Other").trim();
+  return {
+    radioPrefix:custom,
+    aliases:[custom]
+  };
+}
+
+function radioPrefixForType(type){
+  return aircraftTypeProfile(type).radioPrefix;
+}
+
+function updateOtherAircraftTypeVisibility(){
+  const isOther=$("aircraftType")?.value==="Other";
+  $("otherAircraftTypeLabel")?.classList.toggle("hidden",!isOther);
+}
+
+function buildAircraftCallsign(type,callsign){
+  const clean=String(callsign||"724SP").replace(/\s+/g,"").toUpperCase();
+  return `${radioPrefixForType(type)} ${clean}`;
+}
+
 let STAGES = buildStages("KLGB","KCRQ");
 
 const app = {
@@ -2401,6 +2528,9 @@ const app = {
   config: {
     departureAirport:"KLGB",
     destinationAirport:"KCRQ",
+    aircraftType:"Cessna 172",
+    otherAircraftType:"",
+    callsign:"724SP",
     aircraft:"Cessna 724SP",
     location:"Long Beach Flying Club",
     atis:"",
@@ -2459,7 +2589,7 @@ function supportedMicContext(){
 function tuned(){return Math.abs(parseFloat($("frequency").value)-parseFloat(STAGES[app.stageIndex].freq))<0.001}
 
 function aircraftTail(){
-  return String(app.config.aircraft||"")
+  return String(app.config.callsign || app.config.aircraft || "")
     .replace(/^[A-Za-z]+\s+/,"")
     .replace(/\s/g,"")
     .toUpperCase();
@@ -2471,20 +2601,20 @@ function abbreviatedTail(){
 }
 
 function callsignVisual(abbreviated=!!app.callsignAbbreviated){
-  if(!abbreviated) return app.config.aircraft;
-  const type=(String(app.config.aircraft||"").match(/^([A-Za-z]+)/)||[])[1] || "Cessna";
-  return `${type} ${abbreviatedTail()}`;
+  const prefix=radioPrefixForType(app.config.aircraftType);
+  if(!abbreviated) return `${prefix} ${aircraftTail()}`;
+  return `${prefix} ${abbreviatedTail()}`;
 }
 
 function callsignSpoken(abbreviated=!!app.callsignAbbreviated){
   const raw=abbreviated ? abbreviatedTail() : aircraftTail();
-  const type=(String(app.config.aircraft||"").match(/^([A-Za-z]+)/)||[])[1] || "Cessna";
-  return `${type} `+[...raw].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+  const prefix=radioPrefixForType(app.config.aircraftType);
+  return `${prefix} `+[...raw].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
 }
 
 function abbreviateATCReply(visual,spoken){
   if(!app.callsignAbbreviated) return {visual,spoken};
-  const fullVisual=String(app.config.aircraft||"");
+  const fullVisual=callsignVisual(false);
   const shortVisual=callsignVisual(true);
   const fullSpoken=callsignSpoken(false);
   const shortSpoken=callsignSpoken(true);
@@ -2724,9 +2854,11 @@ function normalizeAltitudeInput(){
 }
 
 $("direction")?.addEventListener("change",updateVfrAltitudeGuide);
+$("aircraftType")?.addEventListener("change",updateOtherAircraftTypeVisibility);
 $("altitude")?.addEventListener("change",normalizeAltitudeInput);
 $("altitude")?.addEventListener("blur",normalizeAltitudeInput);
 updateVfrAltitudeGuide();
+updateOtherAircraftTypeVisibility();
 
 const LAST_SETUP_KEY="fk-atc-com-trainer-last-setup-v1";
 
@@ -2735,7 +2867,9 @@ function saveLastSetup(){
     const saved={
       departureAirport:$("departureAirport")?.value,
       destinationAirport:$("destinationAirport")?.value,
-      aircraft:$("aircraft")?.value,
+      aircraftType:$("aircraftType")?.value,
+      otherAircraftType:$("otherAircraftType")?.value,
+      callsign:$("callsign")?.value,
       location:$("location")?.value,
       runway:$("runway")?.value,
       destRunway:$("destRunway")?.value,
@@ -2764,7 +2898,29 @@ function loadLastSetup(){
     }
     updateDestinationChoices(false);
 
-    if(saved.aircraft && $("aircraft")) $("aircraft").value=saved.aircraft;
+    if(saved.aircraftType && $("aircraftType")){
+      if(AIRCRAFT_TYPES[saved.aircraftType]){
+        $("aircraftType").value=saved.aircraftType;
+      }else if(saved.aircraftType==="Other" || saved.otherAircraftType){
+        $("aircraftType").value="Other";
+      }
+    }else if(saved.aircraft && $("aircraftType")){
+      /* Migrate the old combined field, e.g. "Cessna 724SP". */
+      const oldPrefix=String(saved.aircraft).trim().split(/\s+/)[0].toLowerCase();
+      const match=Object.entries(AIRCRAFT_TYPES).find(([,profile])=>profile.radioPrefix.toLowerCase()===oldPrefix);
+      if(match) $("aircraftType").value=match[0];
+    }
+
+    if(saved.otherAircraftType && $("otherAircraftType")){
+      $("otherAircraftType").value=saved.otherAircraftType;
+    }
+    updateOtherAircraftTypeVisibility();
+
+    if(saved.callsign && $("callsign")){
+      $("callsign").value=saved.callsign;
+    }else if(saved.aircraft && $("callsign")){
+      $("callsign").value=String(saved.aircraft).trim().replace(/^[A-Za-z]+\s+/,"") || "724SP";
+    }
     if(saved.location && [...$("location").options].some(o=>o.value===saved.location)){
       $("location").value=saved.location;
     }
@@ -2811,7 +2967,9 @@ function readSetup(generateCodes=true){
   app.config={
     departureAirport:depCode,
     destinationAirport:destCode,
-    aircraft:$("aircraft").value.trim()||"Cessna 724SP",
+    aircraftType:selectedAircraftType(),
+    callsign:($("callsign").value.trim()||"724SP").replace(/\s+/g,"").toUpperCase(),
+    aircraft:"",
     location:$("location").value,
     atis:app.config.atis || randomAtisCode(),
     arrivalAtis:app.config.arrivalAtis || randomAtisCode(),
@@ -2821,6 +2979,8 @@ function readSetup(generateCodes=true){
     altitude:formatAltitude($("altitude").value),
     level:$("level").value
   };
+  app.config.otherAircraftType=$("aircraftType").value==="Other" ? customAircraftTypeValue() : "";
+  app.config.aircraft=buildAircraftCallsign(app.config.aircraftType,app.config.callsign);
 
   saveLastSetup();
   STAGES=buildStages(depCode,destCode);
@@ -2842,7 +3002,7 @@ function instructionFor(stage){
   const dest=destAirport();
   const beginner={
     atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
-    clearance:`Call ${airportFacility(dep,"clearance")}. Include callsign, aircraft type, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
+    clearance:`Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
     ground:`Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
     tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure.`,
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
@@ -3295,18 +3455,13 @@ function containsTaxiway(text,taxiway){
 }
 
 function hasCallsign(text){
-  const n=norm(text);
-  const configured=String(app.config.aircraft||"").trim();
-  const full=norm(configured);
-  if(full && n.includes(full)) return true;
-
-  const tail=configured.replace(/^[A-Za-z]+\s+/,"").trim();
   const textCompact=aviationCompact(text);
-  const configuredCompact=aviationCompact(configured);
+  const tail=aircraftTail();
   const tailCompact=aviationCompact(tail);
+  const fullCompact=aviationCompact(callsignVisual(false));
 
   if(tailCompact && textCompact.includes(tailCompact)) return true;
-  if(configuredCompact && textCompact.includes(configuredCompact)) return true;
+  if(fullCompact && textCompact.includes(fullCompact)) return true;
 
   /* After ATC abbreviates the callsign, the pilot may use that same
      abbreviation on subsequent transmissions with that facility. */
