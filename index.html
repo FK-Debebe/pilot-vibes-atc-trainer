@@ -1738,6 +1738,18 @@ header h1{
 }
 
 
+
+/* V3.74: stage-complete NEXT cue — blink twice before activation. */
+#next.next-complete-blink{
+  animation:nextCompleteBlink 1.05s ease-in-out 1;
+}
+@keyframes nextCompleteBlink{
+  0%,100%{opacity:1;transform:scale(1);}
+  15%{opacity:.25;transform:scale(.98);}
+  30%{opacity:1;transform:scale(1.03);}
+  55%{opacity:.25;transform:scale(.98);}
+  70%{opacity:1;transform:scale(1.03);}
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3104,6 +3116,7 @@ function renderStage(resetFrequency=true){
   $("score").textContent="—";
   $("feedback").textContent="Tune the radio to begin.";
   $("next").disabled=true;
+  $("next").classList.remove("next-complete-blink");
   $("next").textContent=app.stageIndex===STAGES.length-1?"FINISH":"NEXT →";
   $("previous").disabled=app.stageIndex===0;
   $("reset").classList.add("hidden");
@@ -4968,7 +4981,10 @@ function completeStage(){
   updatePilotInputState();
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
-  $("next").disabled=false;
+
+  const nextButton=$("next");
+  nextButton.disabled=true;
+  nextButton.classList.remove("next-complete-blink");
 
   const stage=STAGES[app.stageIndex];
   const nextStage=STAGES[app.stageIndex+1];
@@ -4977,6 +4993,18 @@ function completeStage(){
   }else{
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
+
+  /* On completion, return the pilot to the top of the page, flash NEXT twice,
+     and only then make the button available. */
+  window.scrollTo({top:0,left:0,behavior:"smooth"});
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>nextButton.classList.add("next-complete-blink"));
+  });
+
+  setTimeout(()=>{
+    nextButton.classList.remove("next-complete-blink");
+    if(app.stageComplete) nextButton.disabled=false;
+  },1100);
 }
 
 function monitorAtis(){
