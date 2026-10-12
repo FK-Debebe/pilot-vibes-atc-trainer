@@ -2036,6 +2036,16 @@ const AIRPORTS = {
     trafficPatternByRunway:{"26R":"right"},
     taxiwaysByRunway:{"26L":"Foxtrot","26R":"Delta","30":"Foxtrot","12":"Foxtrot","8L":"Foxtrot","8R":"Delta"},
     holdShortByRunway:{"26R":"30"},
+    arrivalTaxiRoutes:{
+      "26R":{
+        parking:"Long Beach Flying Club",
+        turn:"left",
+        route:["Kilo","Charlie","Lima 4"],
+        holdShort:"30",
+        afterCross:["Lima 4"]
+      }
+    },
+    defaultArrivalParking:"Long Beach Flying Club",
     parkingTaxiway:"Foxtrot",
     locations:["Long Beach Flying Club","Signature Ramp","Atlantic Ramp","West Ramp","South Ramp"]
   },
@@ -3529,6 +3539,63 @@ function destinationTaxiway(){
   return ap.taxiwaysByRunway?.[app.config.destRunway] || ap.parkingTaxiway || "Alpha";
 }
 
+function destinationArrivalTaxiRoute(){
+  return destAirport().arrivalTaxiRoutes?.[app.config.destRunway] || null;
+}
+
+function destinationParkingName(){
+  const route=destinationArrivalTaxiRoute();
+  return route?.parking || destAirport().defaultArrivalParking || "parking";
+}
+
+function taxiwayElementSpoken(element){
+  const raw=String(element||"").trim();
+  const m=raw.match(/^([A-Za-z-]+)\s*(\d+)?$/);
+  if(!m) return raw;
+  const base=TAXIWAY_PHONETIC[m[1]] || m[1].toLowerCase();
+  if(!m[2]) return base;
+  return `${base} ${[...m[2]].map(d=>DIGIT[d]||d).join(" ")}`;
+}
+
+function containsTaxiwayElement(text,element){
+  const raw=String(element||"").trim();
+  if(!raw) return false;
+  const m=raw.match(/^([A-Za-z-]+)\s*(\d+)?$/);
+  if(!m) return norm(text).includes(norm(raw));
+
+  const base=m[1];
+  const suffix=m[2]||"";
+  if(!suffix) return containsTaxiway(text,base);
+
+  const n=norm(text).replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+  const baseWord=(TAXIWAY_PHONETIC[base]||base).toLowerCase();
+  const suffixWords=[...suffix].map(d=>({0:"zero",1:"one",2:"two",3:"three",4:"four",5:"five",6:"six",7:"seven",8:"eight",9:"nine"}[d]||d)).join(" ");
+
+  const patterns=[
+    `${baseWord} ${suffix}`,
+    `${baseWord} ${suffixWords}`,
+    `${base.toLowerCase()} ${suffix}`,
+    `${base.toLowerCase()} ${suffixWords}`
+  ];
+  if(patterns.some(v=>n.includes(v))) return true;
+
+  const compact=aviationCompact(text);
+  const baseLetter=aviationCompact(baseWord);
+  return compact.includes(`${baseLetter}${suffix}`);
+}
+
+function containsTaxiRoute(text,route){
+  return (route||[]).every(element=>containsTaxiwayElement(text,element));
+}
+
+function taxiRouteVisual(route){
+  return (route||[]).join(", ");
+}
+
+function taxiRouteSpoken(route){
+  return (route||[]).map(taxiwayElementSpoken).join(", ");
+}
+
 function destinationPatternSide(){
   const ap=destAirport();
   return ap.trafficPatternByRunway?.[app.config.destRunway] || app.scenario?.patternSide || "left";
@@ -3812,6 +3879,9 @@ function resetSessionStats(){
 const CHECK_LABELS={
   facility:"facility name",
   callsign:"aircraft callsign",
+  route:"taxi route",
+  holdshort:"hold short instruction",
+  cross:"runway crossing clearance",
   type:"aircraft type",
   atis:"ATIS code",
   destination:"destination",
@@ -4463,27 +4533,75 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="destGround"){
+    const route=destinationArrivalTaxiRoute();
+    const parking=destinationParkingName();
+
     if(app.phase==="destGroundInitial"){
       checks={
         facility:n.includes("ground"),
         callsign:hasCallsign(text),
-        request:n.includes("taxi")||n.includes("parking")
+        request:n.includes("taxi")||n.includes("parking")||norm(text).includes(norm(parking))
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=67){
-        replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"ground")}, taxi to parking via ${destinationTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"ground")}, taxi to parking via ${destinationTaxiway()}.`;
-        $("feedback").textContent=`Read back taxi to parking via ${destinationTaxiway()}.`;
-        app.phase="destGroundReadback";
+        if(route){
+          const turnText=route.turn ? `turn ${route.turn}, ` : "";
+          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"ground")}, ${turnText}taxi to ${parking} via ${taxiRouteVisual(route.route)}, hold short Runway ${route.holdShort}.`;
+          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"ground")}, ${turnText}taxi to ${parking} via ${taxiRouteSpoken(route.route)}, hold short runway ${runwaySpoken(route.holdShort)}.`;
+          $("feedback").textContent=`Read back ${taxiRouteVisual(route.route)} and hold short Runway ${route.holdShort}.`;
+          app.phase="destGroundHoldShortReadback";
+        }else{
+          replyVisual=`${app.config.aircraft}, ${airportFacility(destAirport(),"ground")}, taxi to ${parking} via ${destinationTaxiway()}.`;
+          replySpoken=`${callsignSpoken()}, ${airportFacility(destAirport(),"ground")}, taxi to ${parking} via ${destinationTaxiway()}.`;
+          $("feedback").textContent=`Read back taxi to ${parking} via ${destinationTaxiway()}.`;
+          app.phase="destGroundReadback";
+        }
       }else{
         replyVisual=`${app.config.aircraft}, say parking request.`;
         replySpoken=`${callsignSpoken()}, say parking request.`;
         $("feedback").textContent="Ground call incomplete. Try again.";
       }
+    }else if(app.phase==="destGroundHoldShortReadback" && route){
+      checks={
+        route:containsTaxiRoute(text,route.route),
+        holdshort:holdShortRecognized(text,route.holdShort),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.route&&checks.holdshort;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        const after=route.afterCross||[];
+        const via=after.length ? `, continue via ${taxiRouteVisual(after)}` : "";
+        const viaSpoken=after.length ? `, continue via ${taxiRouteSpoken(after)}` : "";
+        replyVisual=`${app.config.aircraft}, cross Runway ${route.holdShort}${via} to ${parking}.`;
+        replySpoken=`${callsignSpoken()}, cross runway ${runwaySpoken(route.holdShort)}${viaSpoken} to ${parking}.`;
+        $("feedback").textContent=`Read back cross Runway ${route.holdShort}.`;
+        app.phase="destGroundCrossingReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, verify taxi via ${taxiRouteVisual(route.route)}, hold short Runway ${route.holdShort}.`;
+        replySpoken=`${callsignSpoken()}, verify taxi via ${taxiRouteSpoken(route.route)}, hold short runway ${runwaySpoken(route.holdShort)}.`;
+        $("feedback").textContent=`Taxi readback incomplete. Include ${taxiRouteVisual(route.route)} and hold short Runway ${route.holdShort}.`;
+      }
+    }else if(app.phase==="destGroundCrossingReadback" && route){
+      checks={
+        cross:(n.includes("cross")||n.includes("crossing"))&&containsRunway(text,route.holdShort),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.cross;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct. Taxi to ${parking}.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Taxi to ${parking}.`;
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify cross Runway ${route.holdShort}.`;
+        replySpoken=`${callsignSpoken()}, verify cross runway ${runwaySpoken(route.holdShort)}.`;
+        $("feedback").textContent=`Runway crossing readback not recognized. Read back cross Runway ${route.holdShort}.`;
+      }
     }else{
       checks={
         taxiway:containsTaxiway(text,destinationTaxiway()),
-        parking:n.includes("parking")||n.includes("taxi"),
+        parking:n.includes("parking")||n.includes("taxi")||norm(text).includes(norm(parking)),
         callsign:hasCallsign(text)
       };
       const essential=checks.taxiway&&checks.parking;
@@ -4491,11 +4609,10 @@ function evaluateTransmission(text){
       if(essential){
         replyVisual=`${app.config.aircraft}, readback correct.`;
         replySpoken=`${callsignSpoken()}, readback correct.`;
-        $("feedback").textContent="Destination Ground complete.";
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify taxi to parking via ${destinationTaxiway()}.`;
-        replySpoken=`${callsignSpoken()}, verify taxi to parking via ${destinationTaxiway()}.`;
+        replyVisual=`${app.config.aircraft}, verify taxi to ${parking} via ${destinationTaxiway()}.`;
+        replySpoken=`${callsignSpoken()}, verify taxi to ${parking} via ${destinationTaxiway()}.`;
         $("feedback").textContent="Taxi readback not recognized. Try again.";
       }
     }
