@@ -2334,6 +2334,7 @@ function enrouteFacilityMentioned(text){
   const variants=[
     "socal",
     "so cal",
+    "sokal",
     "so-called",
     "so called",
     "southern california",
@@ -2342,10 +2343,17 @@ function enrouteFacilityMentioned(text){
     "socal approach",
     "socal departure",
     "so cal approach",
-    "so cal departure"
+    "so cal departure",
+    "sokal approach",
+    "sokal departure"
   ];
 
   if(variants.some(v=>n.includes(v))) return true;
+
+  /* Common speech recognizers may turn "SoCal" into "Sokal"/"So Cal".
+     Compare a compact form too, without changing the visible transcript. */
+  const compactFacility=n.replace(/[^a-z0-9]/g,"");
+  if(compactFacility.includes("socal") || compactFacility.includes("sokal")) return true;
 
   /* During the ENROUTE stage, the controller identity is already defined by
      the active frequency. Permit the generic facility words as well. */
