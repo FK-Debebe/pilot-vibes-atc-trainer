@@ -2789,6 +2789,12 @@ function collapseSetupAfterApplyIfSmall(){
   if(!window.matchMedia("(max-width: 900px)").matches) return;
   const details=document.querySelector("details.setup");
   if(details) details.open=false;
+
+  /* After collapsing on mobile/smaller screens, bring the top of the trainer
+     back into view so the user immediately sees the progress/current-stage area. */
+  requestAnimationFrame(()=>{
+    window.scrollTo({top:0,left:0,behavior:"smooth"});
+  });
 }
 
 function readSetup(generateCodes=true){
