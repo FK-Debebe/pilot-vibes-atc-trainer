@@ -1761,6 +1761,140 @@ header h1{
     gap:0 !important;
   }
 }
+
+/* V3.82: Flight Setup summary stacked layout
+   1) FLIGHT SETUP
+   2) FROM → TO Training Flight on one line
+   3) Tap to Collapse / Expand button below */
+.setup-summary{
+  display:block !important;
+}
+.setup-summary > div{
+  width:100%;
+  min-width:0;
+}
+.setup-summary h2#routeHeading{
+  display:block;
+  width:100%;
+  margin:5px 0 0 !important;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.2;
+}
+.setup-summary-hint{
+  display:flex !important;
+  width:100%;
+  margin:8px 0 0 0 !important;
+  justify-content:center;
+  box-sizing:border-box;
+}
+@media(max-width:700px){
+  .setup-summary{
+    display:block !important;
+  }
+  .setup-summary h2#routeHeading{
+    font-size:15px !important;
+    white-space:nowrap;
+  }
+  .setup-summary-hint{
+    width:100%;
+    margin-top:7px !important;
+  }
+}
+
+/* V3.84: Put route and collapse/expand control on the same row. */
+.setup-summary{
+  display:block !important;
+}
+.setup-summary-title{
+  width:100%;
+  min-width:0;
+}
+.setup-route-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  margin-top:5px;
+  width:100%;
+  min-width:0;
+}
+.setup-route-row h2#routeHeading{
+  margin:0 !important;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.2;
+}
+.setup-route-row .setup-summary-hint{
+  width:auto !important;
+  margin:0 !important;
+  min-height:34px;
+  padding:7px 10px;
+  flex:0 0 auto;
+}
+@media(max-width:420px){
+  .setup-route-row{
+    gap:6px;
+  }
+  .setup-route-row h2#routeHeading{
+    font-size:14px !important;
+  }
+  .setup-route-row .setup-summary-hint{
+    min-height:32px;
+    padding:6px 8px;
+    font-size:9px;
+  }
+}
+
+/* V3.85: Put collapse/expand control next to FLIGHT SETUP,
+   with the route on its own line below. */
+.setup-summary{
+  display:block !important;
+}
+.setup-summary-title{
+  width:100%;
+  min-width:0;
+}
+.setup-title-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  width:100%;
+  min-width:0;
+}
+.setup-title-row .setup-summary-hint{
+  width:auto !important;
+  margin:0 !important;
+  min-height:34px;
+  padding:7px 10px;
+}
+.setup-summary h2#routeHeading{
+  display:block;
+  width:100%;
+  margin:6px 0 0 !important;
+  min-width:0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  line-height:1.2;
+}
+@media(max-width:420px){
+  .setup-title-row{
+    gap:6px;
+  }
+  .setup-title-row .setup-summary-hint{
+    min-height:32px;
+    padding:6px 8px;
+    font-size:9px;
+  }
+  .setup-summary h2#routeHeading{
+    font-size:14px !important;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1777,11 +1911,13 @@ header h1{
 <div class="trainer-shell">
 <details class="card setup">
   <summary class="setup-summary">
-    <div>
-      <div class="eyebrow">FLIGHT SETUP</div>
-      <h2 id="routeHeading">KLGB → KCRQ Training Flight</h2>
+    <div class="setup-summary-title">
+      <div class="setup-title-row">
+        <div class="eyebrow">FLIGHT SETUP</div>
+        <span class="setup-summary-hint"></span>
+      </div>
+      <h2 id="routeHeading">KLGB → KCRQ</h2>
     </div>
-    <span class="setup-summary-hint"></span>
   </summary>
 
   <div class="setup-content">
@@ -2459,7 +2595,7 @@ function updateDestinationChoices(preserve=true){
 function updateRouteHeading(){
   const dep=$("departureAirport")?.value || "KLGB";
   const dest=$("destinationAirport")?.value || "KCRQ";
-  if($("routeHeading")) $("routeHeading").textContent=`${dep} → ${dest} Training Flight`;
+  if($("routeHeading")) $("routeHeading").textContent=`${dep} → ${dest}`;
 }
 
 const AIRPORT_ALIASES=Object.fromEntries(Object.entries(AIRPORTS).map(([code,ap])=>[code,ap.aliases||[]]));
@@ -5278,6 +5414,17 @@ $("ptt").addEventListener("click",e=>{
     startPTT(e);
   }
 });
+
+function applyInitialSetupOpenState(){
+  const details=document.querySelector("details.setup");
+  if(!details) return;
+
+  /* Start expanded on large screens, collapsed on tablets/phones.
+     Keep the existing 900px breakpoint used by the Apply Setup collapse behavior. */
+  details.open=!window.matchMedia("(max-width: 900px)").matches;
+}
+
+applyInitialSetupOpenState();
 
 renderRadioDigits();
 const restoredLastSetup=loadLastSetup();
