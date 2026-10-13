@@ -3075,14 +3075,14 @@ function instructionFor(stage){
   const dep=depAirport();
   const dest=destAirport();
   const beginner={
-    atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Note information ${c.atis} and expected runway ${c.runway}.`,
+    atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Record the ATIS information and runway after you receive the broadcast.`,
     clearance:`Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
     ground:`Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
     tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure.`,
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
     enroute:`Check in with ${stage.facility}. Include callsign and cruise altitude, for example “${stage.facility}, ${c.aircraft}, ${c.altitude} level.”`,
     arrival:`Contact ${airportFacility(dest,"approach")} for ${dest.name}. Include callsign, destination, and request.`,
-    arrivalAtis:`Before calling ${airportFacility(dest,"tower")}, monitor ${dest.radioName||dest.name} ATIS and note information ${c.arrivalAtis}.`,
+    arrivalAtis:`Before calling ${airportFacility(dest,"tower")}, tune ${stage.freq} and monitor ${dest.radioName||dest.name} ATIS. Record the information code and landing runway after you receive the broadcast.`,
     destTower:`Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
     destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to parking.`
   };
@@ -3137,6 +3137,7 @@ function renderStage(resetFrequency=true){
   $("atisPanel").classList.toggle("hidden",stage.type!=="atis");
   $("commPanel").classList.toggle("hidden",stage.type!=="comm");
   $("monitorAtis").textContent="MONITOR ATIS";
+  $("monitorAtis").disabled=true;
 
   $("atisText").textContent="";
   $("pilotText").value="";
@@ -3171,6 +3172,7 @@ function updatePilotInputState(){
   const pilotText=$("pilotText");
   const sendTyped=$("sendTyped");
   const clearText=$("clearText");
+  const monitorAtisBtn=$("monitorAtis");
 
   if(ptt){
     ptt.disabled=!enableInputs;
@@ -3189,6 +3191,16 @@ function updatePilotInputState(){
   }
   if(sendTyped) sendTyped.disabled=!enableInputs;
   if(clearText) clearText.disabled=!enableInputs;
+
+  /* ATIS can only be monitored when the active stage is an ATIS stage,
+     the correct ATIS frequency is tuned, and the stage is not complete. */
+  if(monitorAtisBtn){
+    const atisStage=STAGES?.[app.stageIndex]?.type==="atis";
+    const enableAtis=atisStage && correctFrequency && !stageComplete;
+    monitorAtisBtn.disabled=!enableAtis;
+    monitorAtisBtn.classList.toggle("disabled",!enableAtis);
+    monitorAtisBtn.setAttribute("aria-disabled",enableAtis?"false":"true");
+  }
 
   if(!enableInputs){
     if(ptt) ptt.setAttribute("aria-disabled","true");
@@ -5059,14 +5071,17 @@ function completeStage(){
 }
 
 function monitorAtis(){
+  const stage=STAGES[app.stageIndex];
+  if(stage?.type!=="atis") return;
+
   if(!tuned()){
     app.session.tuningErrors++;
-    $("feedback").textContent=`Tune the radio to ${STAGES[app.stageIndex].freq} MHz before monitoring ATIS.`;
+    $("feedback").textContent=`Tune the radio to ${stage.freq} MHz before monitoring ATIS.`;
+    updatePilotInputState();
     return;
   }
 
   const c=app.config;
-  const stage=STAGES[app.stageIndex];
   const dep=depAirport();
   const dest=destAirport();
   let visual="",spoken="",label="",code="";
