@@ -1733,6 +1733,34 @@ header h1{
   margin:0 0 12px 0;
   width:100%;
 }
+
+/* V3.78: Feedback/status box always owns the full width of Column 2.
+   Stage Score lives only in the Radio Exchange column and must not reserve
+   horizontal space beside this box at any viewport width. */
+.scorebar{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  margin-top:16px;
+}
+.scorebar .feedback,
+#feedback{
+  display:block;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:700px){
+  .scorebar{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    grid-template-columns:none !important;
+    gap:0 !important;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
