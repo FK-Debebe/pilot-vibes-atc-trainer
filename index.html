@@ -34,30 +34,7 @@ button{cursor:pointer}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .mic-status{font-size:12px;padding:8px 10px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.18)}
 .mic-status.ok{background:rgba(54,190,100,.18)}
-.install-app-btn{
-  background:#fff;
-  color:var(--navy);
-  border-color:rgba(255,255,255,.7);
-  min-height:36px;
-  padding:7px 11px;
-  font-size:11px;
-}
-@media(max-width:700px){
-  header{
-    display:flex!important;
-    align-items:center!important;
-    justify-content:space-between;
-    gap:8px;
-  }
-  .install-app-btn{
-    width:auto!important;
-    min-height:34px;
-    margin:0!important;
-    padding:6px 9px!important;
-    font-size:10px!important;
-    flex:0 0 auto;
-  }
-}
+
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow)}
 .setup{margin-top:16px}
 .setup-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -1750,6 +1727,12 @@ header h1{
   55%{opacity:.25;transform:scale(.98);}
   70%{opacity:1;transform:scale(1.03);}
 }
+
+/* V3.76: progress bar lives inside the Radio Exchange column. */
+.radio-exchange-progress{
+  margin:0 0 12px 0;
+  width:100%;
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1760,7 +1743,7 @@ header h1{
 <header>
   <div><h1>FK ATC COM Trainer</h1></div>
   <div class="header-actions">
-    <button id="installApp" class="btn install-app-btn hidden" type="button">INSTALL APP</button>
+    
   </div>
 </header>
 <div class="trainer-shell">
@@ -1900,13 +1883,10 @@ header h1{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. The last Flight Setup is remembered on this device. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. The last Flight Setup is remembered on this device. Enroute sector frequencies are training defaults and are kept separate from Arrival/Approach frequencies. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
   </div>
 </details>
 
-
-
-<div class="progress"><div id="progressFill"></div></div>
 
 
 <div class="main-grid">
@@ -2040,6 +2020,7 @@ header h1{
   </section>
 
   <section class="card radio-exchange-card">
+    <div class="progress radio-exchange-progress"><div id="progressFill"></div></div>
     <div class="radio-exchange-head">
       <div class="eyebrow">RADIO EXCHANGE</div>
       <div class="stage-score-radio">
@@ -2337,6 +2318,24 @@ function enrouteFacility(dep,dest){
   return combined.includes("socal") ? "SoCal" : airportFacility(dest,"approach");
 }
 
+const TRAINING_ENROUTE_FREQUENCIES={
+  "KPSP-KLGB":"125.500",
+  "KLGB-KPSP":"124.400"
+};
+
+function enrouteFrequency(depCode,destCode){
+  const routeKey=`${depCode}-${destCode}`;
+  const approach=String(airportFrequency(airportData(destCode),"approach"));
+  const preferred=TRAINING_ENROUTE_FREQUENCIES[routeKey];
+
+  if(preferred && preferred!==approach) return preferred;
+
+  /* Training-only sector frequencies. Pick a value distinct from the
+     destination Approach frequency so the pilot practices a real handoff. */
+  const pool=["125.500","124.400","128.100","126.700"];
+  return pool.find(freq=>freq!==approach) || "125.500";
+}
+
 function enrouteFacilityMentioned(text){
   const n=norm(text)
     .replace(/[-_/]/g," ")
@@ -2388,7 +2387,7 @@ function buildStages(depCode,destCode){
       id:"enroute",
       title:"ENROUTE",
       facility:enrouteFacility(dep,dest),
-      freq:airportFrequency(dest,"approach"),
+      freq:enrouteFrequency(depCode,destCode),
       type:"comm"
     });
   }
@@ -5262,65 +5261,8 @@ readSetup(true);
 
 
 /* =========================================================
-   V3.43 PWA / INSTALLABLE WEB APP
+   PWA SERVICE WORKER
    ========================================================= */
-let deferredInstallPrompt=null;
-
-function isIOSDevice(){
-  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
-}
-
-function isStandaloneMode(){
-  return window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone===true;
-}
-
-function updateInstallButton(){
-  const btn=$("installApp");
-  if(!btn) return;
-
-  if(isStandaloneMode()){
-    btn.classList.add("hidden");
-    return;
-  }
-
-  /* Android/Chromium exposes beforeinstallprompt.
-     iPhone/iPad uses Safari Share -> Add to Home Screen. */
-  if(deferredInstallPrompt || isIOSDevice()){
-    btn.classList.remove("hidden");
-    btn.textContent=isIOSDevice() ? "ADD TO HOME" : "INSTALL APP";
-  }else{
-    btn.classList.add("hidden");
-  }
-}
-
-window.addEventListener("beforeinstallprompt",e=>{
-  e.preventDefault();
-  deferredInstallPrompt=e;
-  updateInstallButton();
-});
-
-window.addEventListener("appinstalled",()=>{
-  deferredInstallPrompt=null;
-  updateInstallButton();
-});
-
-$("installApp")?.addEventListener("click",async()=>{
-  if(isIOSDevice()){
-    alert('On iPhone/iPad: open this page in Safari, tap the Share button, then choose “Add to Home Screen.”');
-    return;
-  }
-
-  if(!deferredInstallPrompt) return;
-  deferredInstallPrompt.prompt();
-  try{
-    await deferredInstallPrompt.userChoice;
-  }catch(e){}
-  deferredInstallPrompt=null;
-  updateInstallButton();
-});
-
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
     navigator.serviceWorker.register("./service-worker.js").catch(err=>{
@@ -5328,8 +5270,6 @@ if("serviceWorker" in navigator){
     });
   });
 }
-
-updateInstallButton();
 
 function collapseSetupAndTop(button){
   const details=button.closest("details");
