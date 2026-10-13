@@ -4195,6 +4195,8 @@ const CHECK_LABELS={
   visual:"visual approach",
   inbound:"inbound / landing request",
   downwind:"downwind instruction",
+  patternSide:"traffic-pattern side",
+  pattern:"remain-in-pattern instruction",
   extend:"extend-downwind instruction",
   base:"base instruction",
   landing:"landing clearance",
@@ -4825,19 +4827,41 @@ function evaluateTransmission(text){
       checks={
         goaround:n.includes("go around")||n.includes("going around"),
         heading:n.includes("runway heading")||containsDestRunway(text),
+        pattern:n.includes("remain in the pattern")||n.includes("remain pattern")||n.includes("pattern"),
         callsign:hasCallsign(text)
       };
-      const essential=checks.goaround;
+      const essential=checks.goaround&&checks.heading;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, roger. Remain in the pattern.`;
-        replySpoken=`${callsignSpoken()}, roger. Remain in the pattern.`;
-        $("feedback").textContent="Go-around readback correct. Destination Tower stage complete.";
-        complete=true;
+        const side=destinationPatternSide();
+        replyVisual=`${app.config.aircraft}, roger. Make ${side} traffic Runway ${app.config.destRunway}.`;
+        replySpoken=`${callsignSpoken()}, roger. Make ${side} traffic runway ${runwaySpoken(app.config.destRunway)}.`;
+        $("feedback").textContent=`Continue the go-around. Read back ${side} traffic Runway ${app.config.destRunway}.`;
+        app.phase="destTowerGoAroundPatternReadback";
       }else{
-        replyVisual=`${app.config.aircraft}, verify go around, fly runway heading.`;
-        replySpoken=`${callsignSpoken()}, verify go around, fly runway heading.`;
-        $("feedback").textContent="Go-around readback not recognized. Try again.";
+        replyVisual=`${app.config.aircraft}, verify go around, fly runway heading, remain in the pattern.`;
+        replySpoken=`${callsignSpoken()}, verify go around, fly runway heading, remain in the pattern.`;
+        $("feedback").textContent="Go-around readback not recognized. Include go around and runway heading.";
+      }
+    }else if(app.phase==="destTowerGoAroundPatternReadback"){
+      const side=destinationPatternSide();
+      checks={
+        patternSide:n.includes(side),
+        traffic:n.includes("traffic")||n.includes("pattern")||containsDownwind(text,side),
+        runway:containsDestRunway(text),
+        callsign:hasCallsign(text)
+      };
+      const essential=checks.patternSide&&checks.traffic&&checks.runway;
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, Runway ${app.config.destRunway}, cleared to land.`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken(app.config.destRunway)}, cleared to land.`;
+        $("feedback").textContent=`You are back in the pattern. Read back the new landing clearance for Runway ${app.config.destRunway}.`;
+        app.phase="destTowerLandingReadback";
+      }else{
+        replyVisual=`${app.config.aircraft}, verify ${side} traffic Runway ${app.config.destRunway}.`;
+        replySpoken=`${callsignSpoken()}, verify ${side} traffic runway ${runwaySpoken(app.config.destRunway)}.`;
+        $("feedback").textContent=`Pattern readback incomplete. Include ${side} traffic and Runway ${app.config.destRunway}.`;
       }
     }
   }
