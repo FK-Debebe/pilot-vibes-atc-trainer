@@ -2241,7 +2241,9 @@ const AIRPORTS = {
         turn:"left",
         route:["Kilo","Charlie","Lima 4"],
         holdShort:"30",
-        afterCross:["Lima 4"]
+        afterCross:["Delta 4","Juliet 2"],
+        nextHoldShort:"26L",
+        afterSecondCross:["Foxtrot"]
       }
     },
     defaultArrivalParking:"Long Beach Flying Club",
@@ -4251,11 +4253,13 @@ function triggerUnableRunway(){
   return true;
 }
 
-function scheduleATCFollowup({stageId,phase,visual,spoken,feedback,nextPhase,role}){
+function scheduleATCFollowup({stageId,phase,visual,spoken,feedback,nextPhase,role,delayMs=3500}){
   clearTimeout(app.unexpectedTimer);
   app.awaitingATC=true;
   updatePilotInputState();
 
+  /* Give "stand by" time to sound natural before the controller calls back.
+     A short pause also reinforces that the pilot should not transmit. */
   app.unexpectedTimer=setTimeout(()=>{
     const stage=STAGES?.[app.stageIndex];
     if(!stage || stage.id!==stageId || app.phase!==phase) return;
@@ -4267,7 +4271,7 @@ function scheduleATCFollowup({stageId,phase,visual,spoken,feedback,nextPhase,rol
     speak(spoken,role||currentVoiceRole());
     $("feedback").textContent=feedback;
     updatePilotInputState();
-  },1800);
+  },delayMs);
 }
 
 function containsDirectionValue(text,direction){
@@ -4834,7 +4838,8 @@ function evaluateTransmission(text){
             spoken:`${callsignSpoken()}, proceed direct ${destAirport().name}. Expect visual approach.`,
             feedback:`ATC called back. Read back direct ${destAirport().name} and the visual approach.`,
             nextPhase:"arrivalReadback",
-            role:"approach"
+            role:"approach",
+            delayMs:3500
           });
         }else{
           replyVisual=`${app.config.aircraft}, proceed direct ${destAirport().name}. Expect visual approach.`;
@@ -5082,9 +5087,14 @@ function evaluateTransmission(text){
         const after=route.afterCross||[];
         const via=after.length ? `, continue via ${taxiRouteVisual(after)}` : "";
         const viaSpoken=after.length ? `, continue via ${taxiRouteSpoken(after)}` : "";
-        replyVisual=`${app.config.aircraft}, cross Runway ${route.holdShort}${via} to ${parking}.`;
-        replySpoken=`${callsignSpoken()}, cross runway ${runwaySpoken(route.holdShort)}${viaSpoken} to ${parking}.`;
-        $("feedback").textContent=`Read back cross Runway ${route.holdShort}.`;
+        const nextHold=route.nextHoldShort;
+        const nextHoldVisual=nextHold ? `, hold short Runway ${nextHold}` : ` to ${parking}`;
+        const nextHoldSpoken=nextHold ? `, hold short runway ${runwaySpoken(nextHold)}` : ` to ${parking}`;
+        replyVisual=`${app.config.aircraft}, cross Runway ${route.holdShort}${via}${nextHoldVisual}.`;
+        replySpoken=`${callsignSpoken()}, cross runway ${runwaySpoken(route.holdShort)}${viaSpoken}${nextHoldSpoken}.`;
+        $("feedback").textContent=nextHold
+          ? `Read back cross Runway ${route.holdShort} and hold short Runway ${nextHold}.`
+          : `Read back cross Runway ${route.holdShort}.`;
         app.phase="destGroundCrossingReadback";
       }else{
         replyVisual=`${app.config.aircraft}, verify taxi via ${taxiRouteVisual(route.route)}, hold short Runway ${route.holdShort}.`;
@@ -5092,20 +5102,66 @@ function evaluateTransmission(text){
         $("feedback").textContent=`Taxi readback incomplete. Include ${taxiRouteVisual(route.route)} and hold short Runway ${route.holdShort}.`;
       }
     }else if(app.phase==="destGroundCrossingReadback" && route){
+      const nextHold=route.nextHoldShort;
       checks={
         cross:(n.includes("cross")||n.includes("crossing"))&&containsRunway(text,route.holdShort),
         callsign:hasCallsign(text)
       };
-      const essential=checks.cross;
+      if(nextHold){
+        checks.route=containsTaxiRoute(text,route.afterCross||[]);
+        checks.holdshort=holdShortRecognized(text,nextHold);
+      }
+      const essential=checks.cross&&(!nextHold||(checks.route&&checks.holdshort));
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct. Taxi to ${parking}.`;
-        replySpoken=`${callsignSpoken()}, readback correct. Taxi to ${parking}.`;
+        if(nextHold){
+          const afterSecond=route.afterSecondCross||[];
+          const viaSecond=afterSecond.length ? ` via ${taxiRouteVisual(afterSecond)}` : "";
+          const viaSecondSpoken=afterSecond.length ? ` via ${taxiRouteSpoken(afterSecond)}` : "";
+          replyVisual=`${app.config.aircraft}, cross Runway ${nextHold}, continue to ${parking}${viaSecond}.`;
+          replySpoken=`${callsignSpoken()}, cross runway ${runwaySpoken(nextHold)}, continue to ${parking}${viaSecondSpoken}.`;
+          $("feedback").textContent=afterSecond.length
+            ? `Read back cross Runway ${nextHold} and continue via ${taxiRouteVisual(afterSecond)}.`
+            : `Read back cross Runway ${nextHold}.`;
+          app.phase="destGroundSecondCrossingReadback";
+        }else{
+          replyVisual=`${app.config.aircraft}, readback correct. Taxi to ${parking}.`;
+          replySpoken=`${callsignSpoken()}, readback correct. Taxi to ${parking}.`;
+          complete=true;
+        }
+      }else{
+        if(nextHold){
+          replyVisual=`${app.config.aircraft}, verify cross Runway ${route.holdShort}, hold short Runway ${nextHold}.`;
+          replySpoken=`${callsignSpoken()}, verify cross runway ${runwaySpoken(route.holdShort)}, hold short runway ${runwaySpoken(nextHold)}.`;
+          $("feedback").textContent=`Runway crossing readback incomplete. Include cross Runway ${route.holdShort}, continue via ${taxiRouteVisual(route.afterCross||[])}, and hold short Runway ${nextHold}.`;
+        }else{
+          replyVisual=`${app.config.aircraft}, verify cross Runway ${route.holdShort}.`;
+          replySpoken=`${callsignSpoken()}, verify cross runway ${runwaySpoken(route.holdShort)}.`;
+          $("feedback").textContent=`Runway crossing readback not recognized. Read back cross Runway ${route.holdShort}.`;
+        }
+      }
+    }else if(app.phase==="destGroundSecondCrossingReadback" && route?.nextHoldShort){
+      const secondRunway=route.nextHoldShort;
+      checks={
+        cross:(n.includes("cross")||n.includes("crossing"))&&containsRunway(text,secondRunway),
+        callsign:hasCallsign(text)
+      };
+      const afterSecond=route.afterSecondCross||[];
+      if(afterSecond.length){
+        checks.route=containsTaxiRoute(text,afterSecond);
+      }
+      const essential=checks.cross&&(!afterSecond.length||checks.route);
+      $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
+      if(essential){
+        replyVisual=`${app.config.aircraft}, readback correct. Continue to ${parking}.`;
+        replySpoken=`${callsignSpoken()}, readback correct. Continue to ${parking}.`;
         complete=true;
       }else{
-        replyVisual=`${app.config.aircraft}, verify cross Runway ${route.holdShort}.`;
-        replySpoken=`${callsignSpoken()}, verify cross runway ${runwaySpoken(route.holdShort)}.`;
-        $("feedback").textContent=`Runway crossing readback not recognized. Read back cross Runway ${route.holdShort}.`;
+        replyVisual=`${app.config.aircraft}, verify cross Runway ${secondRunway}.`;
+        replySpoken=`${callsignSpoken()}, verify cross runway ${runwaySpoken(secondRunway)}.`;
+        $("feedback").textContent=afterSecond.length
+          ? `Second runway crossing readback incomplete. Include cross Runway ${secondRunway} and continue via ${taxiRouteVisual(afterSecond)}.`
+          : `Second runway crossing readback not recognized. Read back cross Runway ${secondRunway}.`;
       }
     }else{
       checks={
