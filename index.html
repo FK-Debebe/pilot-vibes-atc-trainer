@@ -4569,15 +4569,14 @@ function hasCallsign(text){
   return false;
 }
 function containsRunway(text,r=app.config.runway){
-  /* norm() already collapses ASR fraction forms such as "2/6" -> "26". */
+  /* norm() already collapses ASR fraction forms such as "2/6" -> "26".
+     Runway digits must be matched as their own token, not as a substring
+     inside a callsign. Example: callsign 724SP must NOT look like Runway 24. */
   const n=norm(text)
     .replace(/[-_/]/g," ")
     .replace(/\s+/g," ")
     .trim();
-  const compactText=n.replace(/\s+/g,"");
-  const runway=String(r).toLowerCase();
-
-  if(n.includes(runway) || compactText.includes(runway)) return true;
+  const runway=String(r).toLowerCase().trim();
 
   const match=runway.match(/^(\d+)([lrc])?$/);
   if(!match) return false;
@@ -4588,18 +4587,42 @@ function containsRunway(text,r=app.config.runway){
     "0":"zero","1":"one","2":"two","3":"three","4":"four",
     "5":"five","6":"six","7":"seven","8":"eight","9":"nine"
   };
-
   const spokenDigits=[...digits].map(d=>digitWords[d]).join(" ");
   const sideWord={l:"left",r:"right",c:"center"}[side] || "";
 
-  const variants=[
-    digits + side,
-    digits + (sideWord ? " "+sideWord : ""),
+  /* Numeric forms:
+     6
+     runway 6
+     26R / 26 R / 26 right
+     The alphanumeric boundaries prevent 24 from matching 724SP. */
+  const escapedDigits=digits.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const numericSide=side
+    ? `(?:\\s*(?:${side}|${sideWord}))`
+    : "";
+  const numericPattern=new RegExp(
+    `(?:^|[^a-z0-9])${escapedDigits}${numericSide}(?=$|[^a-z0-9])`,
+    "i"
+  );
+  if(numericPattern.test(n)) return true;
+
+  /* Spoken digit forms such as "two six right". */
+  const spokenForms=[
     spokenDigits + (sideWord ? " "+sideWord : ""),
     spokenDigits + (side ? " "+side : "")
-  ];
+  ].filter(Boolean);
 
-  return variants.some(v=>v && n.includes(v));
+  if(spokenForms.some(v=>{
+    const escaped=v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`,"i").test(n);
+  })) return true;
+
+  /* Common no-space ASR/UI forms when preceded by an explicit runway label,
+     e.g. "runway26right". */
+  const compact=n.replace(/\s+/g,"");
+  const compactTarget=`runway${digits}${sideWord||side}`;
+  if(compactTarget && compact.includes(compactTarget)) return true;
+
+  return false;
 }
 
 const ATIS_CODES=["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliet","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","X-ray","Yankee","Zulu"];
