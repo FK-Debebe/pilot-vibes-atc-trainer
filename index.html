@@ -4082,13 +4082,18 @@ body{overflow-x:hidden}
   }
 
   #page-trainer{
-    display:block !important;
     width:100% !important;
     max-width:100% !important;
     min-width:0 !important;
     margin:0 !important;
     padding:0 !important;
     box-sizing:border-box !important;
+  }
+  #page-trainer:not(.active){
+    display:none !important;
+  }
+  #page-trainer.active{
+    display:block !important;
   }
 
   #page-trainer .trainer-page-shell{
@@ -4247,6 +4252,25 @@ body{overflow-x:hidden}
 
   .top-nav .side-nav-footer{
     margin-top:auto !important;
+  }
+}
+
+/* =========================================================
+   V4.21 MOBILE MENU PAGE-SWITCH FIX
+   ========================================================= */
+@media(max-width:700px){
+  /* Only the selected app page may be visible on mobile. */
+  .app-page:not(.active){
+    display:none !important;
+  }
+  .app-page.active{
+    display:block !important;
+  }
+
+  /* Preserve IFR/VFR internal grid layouts only inside the active page. */
+  #page-trainer.active .trainer-page-shell,
+  #page-ifr-trainer.active .trainer-page-shell{
+    visibility:visible !important;
   }
 }
 </style>
@@ -8727,7 +8751,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.20 navigation alignment fix */
+/* V4.21 mobile menu page-switch fix */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
