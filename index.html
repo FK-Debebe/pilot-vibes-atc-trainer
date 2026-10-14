@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="FK ATC Trainer">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>FK ATC COM Trainer V3.5 Mobile Responsive</title>
+<title>FK ATC COM Trainer</title>
 <style>
 :root{
   --navy:#0a2f57; --blue:#1767b1; --blue2:#2d82cf; --bg:#edf4f9; --card:#fff;
@@ -269,7 +269,7 @@ details.setup:not([open]) .setup-summary-hint{
 
 
 /* =========================================================
-   V3.5 MOBILE RESPONSIVE
+   V3.5 RESPONSIVE LAYOUT
    Layout/touch improvements only — ATC and microphone logic unchanged.
    ========================================================= */
 
@@ -1895,6 +1895,826 @@ header h1{
     font-size:14px !important;
   }
 }
+
+/* =========================================================
+   V3.89 VISUAL POLISH — avionics training aesthetic
+   ========================================================= */
+:root{
+  --fk-navy:#0b2e4f;
+  --fk-blue:#1769aa;
+  --fk-blue-soft:#eaf3fb;
+  --fk-ink:#18324a;
+  --fk-muted:#66798b;
+  --fk-line:#d6e0e8;
+  --fk-panel:#f7f9fb;
+}
+
+/* Product header */
+header{
+  background:linear-gradient(180deg,#0b3156 0%,#092845 100%);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 22px rgba(20,52,79,.16);
+}
+.app-title-block h1{
+  letter-spacing:.01em;
+}
+.app-subtitle{
+  margin-top:4px;
+  font-size:9px;
+  letter-spacing:.17em;
+  font-weight:800;
+  color:rgba(255,255,255,.68);
+}
+
+/* Slightly more technical cards: less rounded, quieter shadows. */
+.card{
+  border-radius:12px;
+  border-color:var(--fk-line);
+  box-shadow:0 4px 14px rgba(30,63,90,.07);
+}
+.current-stage-card,
+.radio-exchange-card{
+  background:#fff;
+}
+
+/* Flight Setup — visually grouped without changing any behavior. */
+.setup{
+  background:#fbfcfd;
+}
+.setup-content{
+  border-top:1px solid #e1e8ee;
+  padding-top:12px;
+}
+.setup-section-label{
+  margin:5px 0 -1px;
+  padding-top:9px;
+  border-top:1px solid #e4ebf1;
+  color:#4f6a80;
+  font-size:9px;
+  line-height:1;
+  letter-spacing:.16em;
+  font-weight:900;
+}
+.setup-section-label:first-child{
+  border-top:0;
+  padding-top:0;
+}
+.setup-grid label{
+  color:#5b6d7e;
+}
+.setup-grid select,
+.setup-grid input{
+  border-color:#c9d6e1;
+  background:#fff;
+  box-shadow:inset 0 1px 2px rgba(24,50,74,.03);
+}
+.setup-grid select:focus,
+.setup-grid input:focus{
+  border-color:#6fa8d2;
+}
+.setup-note{
+  border-top:1px solid #e5ebf0;
+  padding-top:9px;
+  color:#748493;
+}
+
+/* Current stage — compact avionics-style status strip. */
+.stage-heading{
+  align-items:center;
+  padding:10px 12px;
+  margin:-4px -4px 10px;
+  border:1px solid #d9e4ec;
+  border-radius:9px;
+  background:linear-gradient(180deg,#f9fbfd,#f1f6fa);
+}
+.stage-heading .eyebrow{
+  color:#567086;
+}
+.stage-title-row{
+  gap:9px;
+}
+.stage-title-row h2{
+  color:var(--fk-navy);
+  letter-spacing:.015em;
+}
+#stageState{
+  min-width:88px;
+  text-align:center;
+  padding:6px 9px;
+  border:1px solid #cbd8e2;
+  border-radius:999px;
+  background:#fff;
+  font-weight:900;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+#stageState.good{
+  background:#eef8f1;
+  border-color:#b9d8c0;
+}
+
+/* Feedback/instruction areas — cleaner and more distinct. */
+.stage-instruction{
+  background:#f2f7fb;
+  border-left:3px solid #4b8fc2;
+  border-radius:7px;
+}
+.feedback{
+  background:#f7f9fb;
+  border-color:#d5dfe7;
+  border-radius:8px;
+}
+.atis-box{
+  border-radius:8px;
+  background:#fbfcfd;
+}
+
+/* Button hierarchy */
+.btn{
+  border-radius:8px;
+  box-shadow:none;
+}
+.btn.primary{
+  background:#1769aa;
+  border-color:#1769aa;
+}
+#previous,
+#clearText,
+#sayAgain{
+  background:#fff;
+  border-color:#cbd7e1;
+}
+#next:not(:disabled),
+#applySetup{
+  box-shadow:0 2px 5px rgba(23,105,170,.18);
+}
+
+/* READY / NOT READY as an annunciator */
+.radio-ready-state{
+  border-radius:3px !important;
+  letter-spacing:.09em;
+  padding:4px 7px !important;
+  border:1px solid rgba(255,255,255,.16);
+  box-shadow:inset 0 0 7px rgba(0,0,0,.28);
+}
+.radio-ready-state.ready{
+  text-shadow:0 0 6px rgba(125,255,157,.55);
+}
+.radio-ready-state.not-ready{
+  text-shadow:0 0 5px rgba(255,170,110,.35);
+}
+
+/* Radio Exchange — flatter transmission log rather than chat bubbles. */
+.radio-exchange-card{
+  border-top:3px solid #214f73;
+}
+.radio-exchange-head{
+  padding-bottom:8px;
+  border-bottom:1px solid #dce5ec;
+}
+.radio-exchange-head .eyebrow{
+  color:#355d7b;
+  font-size:10px;
+}
+.stage-score-radio{
+  padding-left:10px;
+  border-left:1px solid #dce5ec;
+}
+.transcript{
+  padding:3px 1px 0;
+}
+.msg{
+  margin:0;
+  padding:10px 0;
+  border-bottom:1px solid #e5ebf0;
+}
+.msg:last-child{
+  border-bottom:0;
+}
+.speaker{
+  margin-bottom:5px;
+  color:#60778b;
+  font-size:9px;
+  letter-spacing:.13em;
+}
+.bubble,
+.msg.pilot .bubble,
+.msg.atc .bubble,
+.msg.system .bubble{
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  line-height:1.5;
+}
+.msg.atc .bubble{
+  color:#183f28;
+}
+.msg.pilot .bubble{
+  color:#174d7a;
+}
+.msg.system .bubble{
+  color:#71808d;
+  font-style:italic;
+}
+
+/* Progress — quieter, instrument-like. */
+.radio-exchange-progress{
+  height:6px;
+  background:#e4eaf0;
+  border-radius:3px;
+}
+.radio-exchange-progress > div{
+  border-radius:3px;
+  background:#2a78b5;
+}
+
+/* Mobile: preserve compact usable layout. */
+@media(max-width:700px){
+  .card{
+    border-radius:10px;
+  }
+  .stage-heading{
+    padding:9px 10px;
+  }
+  #stageState{
+    min-width:auto;
+    padding:5px 7px;
+    font-size:9px;
+  }
+  .setup-section-label{
+    margin-top:4px;
+  }
+  .radio-exchange-card{
+    border-top-width:2px;
+  }
+}
+
+/* =========================================================
+   V3.90 REFINEMENTS
+   ========================================================= */
+
+/* Stage status is informational text, not a button/chip. */
+#stageState,
+#stageState.good{
+  min-width:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  color:#697b8b;
+  font-weight:800;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+#stageState.good{
+  color:#2f6d43;
+}
+
+/* Large screens: keep Radio Exchange visually aligned to the middle column.
+   The card fills the same grid-row height as Current Stage and its log scrolls internally. */
+@media(min-width:1051px){
+  .main-grid{
+    align-items:stretch;
+  }
+  .main-grid>.current-stage-card,
+  .main-grid>.radio-exchange-card{
+    height:100%;
+  }
+  .radio-exchange-card{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+  }
+  .radio-exchange-card .transcript{
+    flex:1 1 auto;
+    min-height:0;
+    height:auto;
+    overflow-y:auto;
+  }
+}
+
+/* =========================================================
+   V3.91 STAGE STRIP + PROGRESS MARKERS + RADIO LOG
+   ========================================================= */
+
+/* One-scan current-stage strip */
+.stage-heading{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.stage-heading-main{
+  min-width:0;
+  flex:1 1 auto;
+}
+.stage-strip-main{
+  display:flex;
+  align-items:baseline;
+  flex-wrap:wrap;
+  gap:6px;
+  color:#0b2e4f;
+  font-weight:900;
+  letter-spacing:.025em;
+  line-height:1.2;
+}
+#stageCounter{
+  color:#62798c;
+  font-size:10px;
+  letter-spacing:.09em;
+}
+#stageTitle{
+  font-size:18px;
+}
+#stageFrequency{
+  font-family:"Courier New",monospace;
+  font-size:17px;
+  color:#1769aa;
+  letter-spacing:.03em;
+}
+.stage-strip-sep{
+  color:#9badbb;
+  font-weight:700;
+}
+.next-stage-text{
+  display:block;
+  margin-top:4px;
+  color:#7a8b99;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+
+/* Tiny numbered markers: complete, current, future. */
+.progress-wrap{
+  margin-bottom:10px;
+}
+.progress-markers{
+  display:grid;
+  grid-template-columns:repeat(var(--stage-count,10),minmax(0,1fr));
+  gap:3px;
+  margin-top:5px;
+  width:100%;
+}
+.progress-marker{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  height:16px;
+  border-radius:3px;
+  background:#edf1f4;
+  color:#8a99a5;
+  font-size:8px;
+  font-weight:900;
+  line-height:1;
+  user-select:none;
+}
+.progress-marker.complete{
+  background:#dbeaf5;
+  color:#245c84;
+}
+.progress-marker.current{
+  background:#1769aa;
+  color:#fff;
+  box-shadow:0 0 0 1px rgba(23,105,170,.12);
+}
+
+/* Radio-log treatment */
+.transcript{
+  background:#f8fafb;
+  border:1px solid #e0e7ec;
+  border-radius:7px;
+  padding:0 10px !important;
+}
+.msg{
+  margin:0 !important;
+  padding:10px 0 !important;
+  border-bottom:1px solid #e0e7ec;
+}
+.msg:last-child{
+  border-bottom:0;
+}
+.log-head{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:5px;
+}
+.log-direction{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:27px;
+  height:16px;
+  padding:0 5px;
+  border:1px solid #cbd7df;
+  border-radius:3px;
+  background:#fff;
+  color:#687d8e;
+  font-family:"Courier New",monospace;
+  font-size:8px;
+  line-height:1;
+  font-weight:900;
+  letter-spacing:.06em;
+}
+.msg.atc .log-direction{
+  border-color:#bfd4c5;
+  color:#356847;
+  background:#f6fbf7;
+}
+.msg.pilot .log-direction{
+  border-color:#bed6e9;
+  color:#285e87;
+  background:#f5faff;
+}
+.log-head .speaker{
+  margin:0 !important;
+  color:#486478;
+  font-size:9px;
+  line-height:1;
+  letter-spacing:.11em;
+  font-weight:900;
+}
+.msg.atc .speaker{
+  color:#315e40;
+}
+.msg.pilot .speaker{
+  color:#285e87;
+}
+.bubble,
+.msg.pilot .bubble,
+.msg.atc .bubble,
+.msg.system .bubble{
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  font-size:13px;
+  line-height:1.48;
+}
+.msg.system{
+  opacity:.78;
+}
+.msg.system .bubble{
+  font-size:11px;
+}
+
+/* Set marker grid count dynamically via equal flexible tracks. */
+.progress-markers{
+  display:flex;
+}
+.progress-marker{
+  flex:1 1 0;
+}
+
+@media(max-width:700px){
+  .stage-heading{
+    gap:8px;
+  }
+  #stageTitle{
+    font-size:15px;
+  }
+  #stageFrequency{
+    font-size:14px;
+  }
+  #stageCounter{
+    font-size:9px;
+  }
+  .next-stage-text{
+    font-size:8px;
+  }
+  .progress-markers{
+    gap:2px;
+  }
+  .progress-marker{
+    height:15px;
+    font-size:7px;
+  }
+  .transcript{
+    padding:0 8px !important;
+  }
+}
+
+/* =========================================================
+   V3.92 STUDY HISTORY
+   ========================================================= */
+.trainer-shell>.main-grid>.study-history-card{
+  grid-area:history;
+}
+
+.study-history-card{
+  padding:12px 14px;
+  background:#fbfcfd;
+  border-top:3px solid #5f7890;
+}
+.study-history-head{
+  padding-bottom:8px;
+  border-bottom:1px solid #dfe7ed;
+}
+.study-history-list{
+  display:flex;
+  flex-direction:column;
+}
+.study-history-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:12px;
+  align-items:center;
+  padding:9px 0;
+  border-bottom:1px solid #e5ebef;
+}
+.study-history-row:last-child{
+  border-bottom:0;
+}
+.study-history-route{
+  color:#24465f;
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.02em;
+}
+.study-history-date{
+  color:#758593;
+  font-size:10px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.study-history-empty{
+  padding:10px 0 2px;
+  color:#8a98a4;
+  font-size:11px;
+  font-style:italic;
+}
+
+/* Legacy Study History grid placement; superseded by V3.94 standalone Training Log. */
+@media(min-width:1051px){
+  .trainer-shell{
+    grid-template-areas:
+      ". progress progress"
+      "setup stage transcript"
+      ". . history";
+  }
+}
+@media(min-width:701px) and (max-width:1050px){
+  .trainer-shell{
+    grid-template-areas:
+      ". progress"
+      "setup stage"
+      "transcript transcript"
+      "history history";
+  }
+}
+@media(max-width:700px){
+  .trainer-shell{
+    grid-template-areas:
+      "setup"
+      "progress"
+      "stage"
+      "transcript"
+      "history";
+  }
+  .study-history-card{
+    padding:11px 12px;
+  }
+}
+
+/* =========================================================
+   V3.93 STAGE HEADER + FULL-WIDTH STUDY HISTORY
+   ========================================================= */
+
+/* Stage header:
+   line 1: STAGE X OF Y ·
+   line 2: STAGE NAME   FREQUENCY */
+.stage-strip-main{
+  display:block !important;
+}
+.stage-strip-line1{
+  display:flex;
+  align-items:baseline;
+  gap:2px;
+  line-height:1.1;
+}
+.stage-strip-line2{
+  display:flex;
+  align-items:baseline;
+  gap:14px;
+  margin-top:4px;
+  line-height:1.15;
+}
+.stage-strip-line2 #stageTitle{
+  flex:0 1 auto;
+}
+.stage-strip-line2 #stageFrequency{
+  flex:0 0 auto;
+}
+#stageCounter{
+  font-size:10px;
+  color:#62798c;
+  letter-spacing:.09em;
+  font-weight:900;
+}
+.stage-strip-line1 .stage-strip-sep{
+  color:#9badbb;
+  font-weight:800;
+}
+#stageTitle{
+  font-size:18px;
+  color:#0b2e4f;
+  font-weight:900;
+  letter-spacing:.025em;
+}
+#stageFrequency{
+  font-family:"Courier New",monospace;
+  font-size:17px;
+  color:#1769aa;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+
+/* Legacy full-width Study History grid rule; superseded by V3.94 standalone Training Log. */
+@media(min-width:1051px){
+  .trainer-shell{
+    grid-template-areas:
+      "setup stage transcript"
+      "history history history" !important;
+  }
+  .trainer-shell>.main-grid>.study-history-card{
+    grid-area:history;
+    width:100%;
+  }
+}
+
+/* Keep existing tablet/mobile placement. */
+@media(max-width:700px){
+  #stageTitle{
+    font-size:15px;
+  }
+  #stageFrequency{
+    font-size:14px;
+  }
+  #stageCounter{
+    font-size:9px;
+  }
+  .stage-strip-line2{
+    gap:10px;
+  }
+}
+
+/* =========================================================
+   V3.94 TRAINING LOG — OUTSIDE TRAINER GRID
+   ========================================================= */
+
+/* The Training Log is intentionally outside .trainer-shell.
+   This prevents the sticky Flight Setup column from overlapping it. */
+.training-log-card{
+  display:block;
+  width:100%;
+  margin:14px 0 0;
+  position:relative;
+  z-index:1;
+  clear:both;
+}
+
+/* Neutralize legacy grid-area rules from prior Study History layouts. */
+.trainer-shell .study-history-card{
+  grid-area:auto !important;
+}
+
+/* Restore the trainer itself to only the three main columns on large screens. */
+@media(min-width:1051px){
+  .trainer-shell{
+    grid-template-areas:
+      "setup stage transcript" !important;
+  }
+}
+
+/* Keep a clean standalone full-width log on tablet and mobile as well. */
+@media(max-width:1050px){
+  .training-log-card{
+    margin-top:12px;
+  }
+}
+
+/* =========================================================
+   V3.95 CENTER TOP STAGE PANEL LAYOUT
+   ========================================================= */
+.stage-heading-grid{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:
+    "topLeft topRight"
+    "bottomLeft bottomRight";
+  column-gap:14px;
+  row-gap:6px;
+  align-items:baseline;
+}
+
+.stage-top-left{
+  grid-area:topLeft;
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  gap:0;
+  text-align:left;
+}
+
+.stage-top-right{
+  grid-area:topRight;
+  display:flex;
+  align-items:baseline;
+  justify-content:flex-end;
+  white-space:nowrap;
+  text-align:right;
+}
+
+.stage-bottom-left{
+  grid-area:bottomLeft;
+  margin:0 !important;
+  text-align:left;
+}
+
+.stage-bottom-right{
+  grid-area:bottomRight;
+  justify-self:end;
+  text-align:right;
+  white-space:nowrap;
+}
+
+.stage-top-left #stageTitle{
+  font-size:18px;
+  color:#0b2e4f;
+  font-weight:900;
+  letter-spacing:.025em;
+}
+
+.stage-top-left #stageFrequency{
+  margin-left:0;
+  font-family:"Courier New",monospace;
+  font-size:17px;
+  color:#1769aa;
+  font-weight:900;
+  letter-spacing:.03em;
+}
+
+.stage-top-right #stageCounter{
+  font-size:10px;
+  color:#62798c;
+  letter-spacing:.09em;
+  font-weight:900;
+}
+
+.stage-top-right .stage-strip-sep{
+  color:#9badbb;
+  font-weight:800;
+}
+
+.stage-bottom-left.next-stage-text{
+  display:block;
+  color:#7a8b99;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+
+@media(max-width:700px){
+  .stage-heading-grid{
+    column-gap:8px;
+    row-gap:5px;
+  }
+  .stage-top-left #stageTitle{
+    font-size:15px;
+  }
+  .stage-top-left #stageFrequency{
+    font-size:14px;
+  }
+  .stage-top-right #stageCounter{
+    font-size:9px;
+  }
+  .stage-bottom-left.next-stage-text{
+    font-size:8px;
+  }
+  .stage-bottom-right{
+    font-size:9px;
+  }
+}
+
+/* V3.96: visually separate stage name and frequency. */
+.stage-top-left{
+  gap:12px !important;
+}
+.stage-top-left #stageFrequency{
+  margin-left:0 !important;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  .stage-top-left{
+    gap:9px !important;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1903,7 +2723,7 @@ header h1{
 <body>
 <div class="app">
 <header>
-  <div><h1>FK ATC COM Trainer</h1></div>
+  <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div class="app-subtitle">RADIO COMMUNICATION TRAINING</div></div>
   <div class="header-actions">
     
   </div>
@@ -1922,6 +2742,7 @@ header h1{
 
   <div class="setup-content">
     <div class="setup-grid">
+      <div class="setup-section-label">FLIGHT</div>
       <label>Training Level
         <select id="level">
           <option value="beginner">Beginner</option>
@@ -1930,6 +2751,7 @@ header h1{
         </select>
       </label>
 
+      <div class="setup-section-label">ROUTE</div>
       <label>Departure Airport
         <select id="departureAirport">
           <option value="KLGB" selected>KLGB — Long Beach</option>
@@ -1960,6 +2782,7 @@ header h1{
         </select>
       </label>
 
+      <div class="setup-section-label">AIRCRAFT</div>
       <label>Aircraft Type
         <select id="aircraftType">
           <option value="Cessna 152">Cessna 152</option>
@@ -1983,6 +2806,7 @@ header h1{
         <input id="callsign" value="724SP" autocomplete="off" spellcheck="false">
       </label>
 
+      <div class="setup-section-label">DEPARTURE / ARRIVAL</div>
       <label>Starting Location
         <select id="location">
           <option>Long Beach Flying Club</option>
@@ -1994,7 +2818,7 @@ header h1{
       </label>
 
       <div class="runway-pair">
-        <label>Expected Takeoff Runway
+        <label>Takeoff Runway
           <select id="runway">
             <option>26L</option>
             <option>26R</option>
@@ -2033,7 +2857,7 @@ header h1{
           <button id="altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
         </div>
         <div id="vfrAltitudeGuide" class="vfr-altitude-guide">
-          VFR ALTITUDE GUIDE — More than 3,000 ft above the surface: EASTBOUND (0°–179°) → Odd thousands + 500; WESTBOUND (180°–359°) → Even thousands + 500 ft MSL.
+          VFR ALTITUDE GUIDE — More than 3,000 ft above the surface: EASTBOUND → Odd thousands + 500; WESTBOUND → Even thousands + 500 ft MSL.
         </div>
       </label>
 
@@ -2054,16 +2878,16 @@ header h1{
 
 
 <div class="main-grid">
-  <section class="card">
-    <div class="heading stage-heading">
-      <div class="stage-heading-main">
-        <div id="stageCounter" class="eyebrow">STAGE 1 OF 9</div>
-        <div class="stage-title-row">
-          <h2 id="stageTitle">DEPARTURE ATIS</h2>
-          <span id="nextStageText" class="next-stage-text"></span>
-        </div>
+  <section class="card current-stage-card">
+    <div class="heading stage-heading stage-heading-grid">
+      <div class="stage-top-left">
+        <span id="stageTitle">DEPARTURE ATIS</span><span id="stageFrequency">127.750</span>
       </div>
-      <div id="stageState" class="small">Not started</div>
+      <div class="stage-top-right">
+        <span id="stageCounter">STAGE 1 OF 9</span><span class="stage-strip-sep"> ·</span>
+      </div>
+      <div id="nextStageText" class="next-stage-text stage-bottom-left"></div>
+      <div id="stageState" class="small stage-bottom-right">Not completed</div>
     </div>
 
     <div id="navRow" class="nav-row">
@@ -2184,7 +3008,10 @@ header h1{
   </section>
 
   <section class="card radio-exchange-card">
-    <div class="progress radio-exchange-progress"><div id="progressFill"></div></div>
+    <div class="progress-wrap">
+      <div class="progress radio-exchange-progress"><div id="progressFill"></div></div>
+      <div id="progressMarkers" class="progress-markers" aria-label="Training stage progress"></div>
+    </div>
     <div class="radio-exchange-head">
       <div class="eyebrow">RADIO EXCHANGE</div>
       <div class="stage-score-radio">
@@ -2194,9 +3021,16 @@ header h1{
     </div>
     <div id="transcript" class="transcript"></div>
   </section>
+
 </div>
 </div>
 
+<section class="card study-history-card training-log-card">
+  <div class="study-history-head">
+    <div class="eyebrow">TRAINING LOG</div>
+  </div>
+  <div id="studyHistoryList" class="study-history-list"></div>
+</section>
 
 <section id="finalReport" class="card final-report hidden">
   <div class="report-head">
@@ -2770,7 +3604,8 @@ const app = {
     unexpected:[],
     trafficAdvisories:0,
     stages:{},
-    missing:{}
+    missing:{},
+    historyRecorded:false
   }
 };
 
@@ -2886,7 +3721,18 @@ function altitudeSpoken(value=app.config.altitude){
 function append(type,speaker,text){
   const el=document.createElement("div");
   el.className="msg "+type;
-  el.innerHTML=`<div class="speaker">${speaker}</div><div class="bubble">${text}</div>`;
+
+  let displaySpeaker=String(speaker||"").toUpperCase();
+  let direction="LOG";
+  if(type==="pilot"){
+    direction="TX";
+    const configured=(typeof app!=="undefined" && app?.config?.aircraft) ? app.config.aircraft : "";
+    if(configured) displaySpeaker=configured.toUpperCase();
+  }else if(type==="atc"){
+    direction="RX";
+  }
+
+  el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker">${displaySpeaker}</span></div><div class="bubble">${text}</div>`;
   $("transcript").appendChild(el);
   $("transcript").scrollTop=$("transcript").scrollHeight;
 }
@@ -3031,8 +3877,8 @@ function updateVfrAltitudeGuide(){
   if(!el) return;
 
   const group=vfrDirectionGroup($("direction")?.value);
-  const east='<strong>EASTBOUND (0°–179°): Odd thousands + 500 ft MSL</strong>';
-  const west='<strong>WESTBOUND (180°–359°): Even thousands + 500 ft MSL</strong>';
+  const east='<strong>EASTBOUND: Odd thousands + 500 ft MSL</strong>';
+  const west='<strong>WESTBOUND: Even thousands + 500 ft MSL</strong>';
 
   if(group==="east"){
     el.innerHTML=`${east}<br>${west}`;
@@ -3240,6 +4086,20 @@ function instructionFor(stage){
   return (c.level==="beginner"?beginner:intermediate)[stage.id];
 }
 
+function renderProgressMarkers(currentComplete=false){
+  const holder=$("progressMarkers");
+  if(!holder || !Array.isArray(STAGES)) return;
+
+  holder.innerHTML=STAGES.map((stage,index)=>{
+    let state="future";
+    if(index<app.stageIndex || (currentComplete && index===app.stageIndex)) state="complete";
+    else if(index===app.stageIndex) state="current";
+
+    const label=`Stage ${index+1}: ${stage.title}`;
+    return `<span class="progress-marker ${state}" title="${label}" aria-label="${label}">${index+1}</span>`;
+  }).join("");
+}
+
 function renderStage(resetFrequency=true){
   const stage=STAGES[app.stageIndex];
   const phaseMap={
@@ -3264,11 +4124,15 @@ function renderStage(resetFrequency=true){
 
   $("stageCounter").textContent=`STAGE ${app.stageIndex+1} OF ${STAGES.length}`;
   $("stageTitle").textContent=stage.title;
+  $("stageFrequency").textContent=stage.freq;
   const nextStage = STAGES[app.stageIndex+1];
-  $("nextStageText").textContent = nextStage ? `Next: ${nextStage.title}` : "Final Stage";
+  $("nextStageText").textContent = nextStage
+    ? `NEXT · ${nextStage.title} · ${nextStage.freq}`
+    : "FINAL STAGE";
   $("stageState").textContent="Not completed";
   $("stageState").className="small";
   $("progressFill").style.width=`${((app.stageIndex+1)/STAGES.length)*100}%`;
+  renderProgressMarkers(false);
   $("targetFrequency").textContent=app.config.level==="beginner" ? `Target ${stage.freq} MHz` : "";
   $("instruction").textContent=instructionFor(stage);
 
@@ -4335,6 +5199,69 @@ function newScenario(){
   };
 }
 
+
+const STUDY_HISTORY_KEY="fk-atc-com-trainer-study-history-v1";
+
+function loadStudyHistory(){
+  try{
+    const raw=localStorage.getItem(STUDY_HISTORY_KEY);
+    const parsed=raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  }catch(e){
+    return [];
+  }
+}
+
+function formatStudyHistoryDate(iso){
+  const d=new Date(iso);
+  if(Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined,{
+    year:"numeric",
+    month:"short",
+    day:"numeric"
+  });
+}
+
+function renderStudyHistory(){
+  const holder=$("studyHistoryList");
+  if(!holder) return;
+
+  const history=loadStudyHistory();
+  if(!history.length){
+    holder.innerHTML='<div class="study-history-empty">Completed trainings will appear here.</div>';
+    return;
+  }
+
+  holder.innerHTML=history.slice().reverse().map(item=>`
+    <div class="study-history-row">
+      <div class="study-history-route">${item.route||"Completed training"}</div>
+      <div class="study-history-date">${formatStudyHistoryDate(item.completedAt)}</div>
+    </div>
+  `).join("");
+}
+
+function recordCompletedTraining(){
+  if(app.session?.historyRecorded) return;
+
+  const dep=app.config?.departureAirport || "";
+  const dest=app.config?.destinationAirport || "";
+  if(!dep || !dest) return;
+
+  const history=loadStudyHistory();
+  history.push({
+    route:`${dep} → ${dest}`,
+    completedAt:new Date().toISOString()
+  });
+
+  try{
+    localStorage.setItem(STUDY_HISTORY_KEY,JSON.stringify(history));
+    app.session.historyRecorded=true;
+    renderStudyHistory();
+  }catch(e){
+    /* Study history is optional; training completion should never fail if storage is unavailable. */
+  }
+}
+
 function resetSessionStats(){
   app.session={
     attempts:0,
@@ -5236,6 +6163,7 @@ function completeStage(){
   updatePilotInputState();
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
+  renderProgressMarkers(true);
 
   const nextButton=$("next");
   nextButton.disabled=true;
@@ -5316,6 +6244,7 @@ function nextStage(){
     $("reset").classList.remove("hidden");
     $("stageState").textContent="Flight complete";
     $("stageState").className="small good";
+    recordCompletedTraining();
     renderFinalReport();
     setTimeout(()=>$("finalReport").scrollIntoView({behavior:"smooth",block:"start"}),150);
   }
@@ -5491,6 +6420,7 @@ if(!restoredLastSetup){
   $("destRunway").value="24";
 }
 readSetup(true);
+renderStudyHistory();
 
 
 
