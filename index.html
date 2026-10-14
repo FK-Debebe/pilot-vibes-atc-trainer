@@ -215,7 +215,7 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   white-space:nowrap;
 }
 .setup-summary-hint::before{
-  content:"Tap to Collapse ▲";
+  content:"Tap To Collapse ▲";
 }
 details.setup:not([open]) .setup-summary-hint::before{
   content:"Tap to Expand ▼";
@@ -2715,25 +2715,1390 @@ header{
     gap:9px !important;
   }
 }
+
+/* =========================================================
+   V4.02 SIDE NAVIGATION + MULTI-PAGE APPLICATION SHELL
+   ========================================================= */
+html,body{min-height:100%}
+body{overflow-x:hidden}
+
+.product-layout{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:250px minmax(0,1fr);
+  background:#edf3f7;
+}
+.side-nav{
+  position:sticky;
+  top:0;
+  height:100vh;
+  align-self:start;
+  display:flex;
+  flex-direction:column;
+  background:#0b2f50;
+  color:#fff;
+  border-right:1px solid rgba(255,255,255,.08);
+  box-shadow:4px 0 18px rgba(10,35,55,.08);
+  z-index:100;
+}
+.side-nav-brand{padding:24px 20px 19px;border-bottom:1px solid rgba(255,255,255,.12)}
+.side-nav-title{font-size:18px;font-weight:900;letter-spacing:.01em}
+.side-nav-subtitle{margin-top:5px;font-size:8px;letter-spacing:.14em;font-weight:800;color:#a9c5d9}
+.side-nav-menu{display:flex;flex-direction:column;padding:14px 10px;gap:5px}
+.side-nav-item{
+  width:100%;display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:8px;
+  min-height:46px;padding:9px 11px;border:0;border-radius:8px;background:transparent;color:#dbe8f1;
+  text-align:left;font:inherit;font-size:12px;font-weight:800;cursor:pointer
+}
+.side-nav-item:hover{background:rgba(255,255,255,.08)}
+.side-nav-item.active{background:#1769aa;color:#fff;box-shadow:inset 3px 0 0 #8bd0ff}
+.side-nav-number{font-size:9px;letter-spacing:.08em;color:#8fb2ca}
+.side-nav-item.active .side-nav-number{color:#d8f0ff}
+.side-nav-footer{margin-top:auto;padding:16px 20px;font-size:9px;color:#88a9bf;border-top:1px solid rgba(255,255,255,.1)}
+
+.product-main{min-width:0;padding:0 18px 18px}
+.product-header{
+  min-height:70px;display:flex;align-items:center;gap:14px;margin:0 -18px 14px;padding:10px 18px;
+  background:#fff;border-bottom:1px solid #dbe4eb;box-shadow:0 2px 8px rgba(31,54,72,.05)
+}
+.product-header h1{margin:0;font-size:19px}
+.product-header .app-subtitle{margin-top:2px;color:#678095}
+.page-title{margin-left:auto;color:#46647a;font-size:10px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
+.mobile-nav-toggle{
+  display:none;min-width:40px;height:38px;border:1px solid #c9d7e2;border-radius:7px;background:#fff;
+  color:#143b5b;font-size:20px;cursor:pointer
+}
+
+.app-page{display:none;animation:pageFade .16s ease-out}
+.app-page.active{display:block}
+@keyframes pageFade{from{opacity:.45;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+.setup-page-wrap{max-width:760px;margin:0 auto}
+#page-flight-setup .setup{position:static !important;width:100%;margin:0}
+#page-flight-setup .setup-summary{cursor:default}
+#page-flight-setup .setup-bottom-toggle{display:none !important}
+
+.trainer-page-shell{
+  display:grid !important;
+  grid-template-columns:minmax(460px,1.28fr) minmax(320px,.92fr);
+  grid-template-areas:"stage transcript" !important;
+  gap:14px;align-items:start
+}
+.trainer-page-shell>.main-grid{display:contents}
+.trainer-page-shell>.main-grid>section:first-child{grid-area:stage}
+.trainer-page-shell>.main-grid>.radio-exchange-card{grid-area:transcript}
+
+#page-training-log,#page-report,#page-how-to{max-width:1000px;margin:0 auto}
+#page-training-log .training-log-card{width:100%;margin:0}
+#page-report #finalReport{margin:0}
+
+.how-to-card{padding:20px}
+.how-to-card h2{margin:4px 0 18px}
+.how-to-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}
+.how-to-step{
+  display:grid;grid-template-columns:34px minmax(0,1fr);gap:10px;padding:13px;
+  border:1px solid #dfe7ed;border-radius:9px;background:#fbfcfd
+}
+.how-to-step>span{
+  display:flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+  background:#e6f1f9;color:#1769aa;font-size:12px;font-weight:900
+}
+.how-to-step strong{color:#193f5d;font-size:12px}
+.how-to-step p{margin:4px 0 0;color:#607586;font-size:11px;line-height:1.5}
+.how-to-note{margin-top:14px;padding:12px 14px;border-left:3px solid #1769aa;background:#f0f6fa;color:#4f687a;font-size:11px;line-height:1.5}
+.product-footer{text-align:center;margin:16px 0 0}
+
+@media(max-width:900px){
+  .product-layout{grid-template-columns:1fr}
+  .side-nav{
+    position:fixed;left:0;top:0;width:min(82vw,280px);transform:translateX(-105%);
+    transition:transform .2s ease;box-shadow:8px 0 30px rgba(0,0,0,.22)
+  }
+  body.nav-open .side-nav{transform:translateX(0)}
+  body.nav-open::after{content:"";position:fixed;inset:0;background:rgba(5,24,38,.38);z-index:90}
+  .mobile-nav-toggle{display:block;position:relative;z-index:2}
+  .product-main{padding:0 10px 14px}
+  .product-header{margin:0 -10px 10px;padding:8px 10px;min-height:62px}
+  .page-title{display:none}
+  .trainer-page-shell{grid-template-columns:1fr !important;grid-template-areas:"stage" "transcript" !important;gap:9px}
+  .how-to-grid{grid-template-columns:1fr}
+}
+@media(max-width:520px){
+  .product-header h1{font-size:16px}
+  .product-header .app-subtitle{font-size:7px}
+  .setup-page-wrap{width:100%}
+  .how-to-card{padding:13px}
+}
+
+/* =========================================================
+   V4.03 FLIGHT SETUP ACTION BUTTONS
+   ========================================================= */
+/* Restore Apply Setup + Tap To Collapse next to each other on one line. */
+#page-flight-setup .setup-action-row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:8px !important;
+  align-items:stretch;
+}
+#page-flight-setup details.setup[open] .setup-bottom-toggle{
+  display:block !important;
+  width:100% !important;
+  margin-top:0 !important;
+}
+#page-flight-setup .setup-action-btn{
+  width:100%;
+}
+
+/* Keep both controls on one line on phones too. */
+@media(max-width:700px){
+  #page-flight-setup .setup-action-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:6px !important;
+  }
+  #page-flight-setup details.setup[open] .setup-bottom-toggle{
+    display:block !important;
+  }
+}
+
+/* =========================================================
+   V4.04 DASHBOARD + APPLICATION REFINEMENT
+   ========================================================= */
+.side-nav-status{
+  margin-top:auto;
+  padding:14px 18px;
+  border-top:1px solid rgba(255,255,255,.1);
+  background:rgba(0,0,0,.08);
+}
+.side-status-label{
+  color:#799cb4;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.13em;
+}
+.side-status-route{
+  margin-top:5px;
+  color:#fff;
+  font-size:12px;
+  font-weight:900;
+}
+.side-status-meta{
+  margin-top:3px;
+  color:#9fb9cb;
+  font-size:9px;
+  font-weight:700;
+}
+.side-nav-footer{margin-top:0}
+
+#page-home{max-width:1100px;margin:0 auto}
+.dashboard-shell{display:flex;flex-direction:column;gap:14px}
+.dashboard-hero{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:24px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#0c3558,#155a89);
+  color:#fff;
+  box-shadow:0 8px 22px rgba(20,62,91,.12);
+}
+.dashboard-hero .eyebrow{color:#a9d5f2}
+.dashboard-hero h2{margin:5px 0 7px;font-size:25px}
+.dashboard-hero p{margin:0;max-width:650px;color:#d8e8f3;font-size:12px;line-height:1.55}
+.dashboard-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.dashboard-actions .btn{min-width:145px}
+.dashboard-actions .btn:not(.primary){background:#fff;border-color:#d8e5ef}
+
+.dashboard-stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.dashboard-stat{
+  min-height:92px;
+  padding:14px 16px;
+  border:1px solid #dce5ec;
+  border-radius:10px;
+  background:#fff;
+  box-shadow:0 2px 8px rgba(31,54,72,.04);
+}
+.dashboard-stat-label{
+  display:block;
+  color:#718596;
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+.dashboard-stat strong{
+  display:block;
+  margin-top:8px;
+  color:#173e5c;
+  font-size:17px;
+}
+.dashboard-stat small{
+  display:block;
+  margin-top:4px;
+  color:#8a99a5;
+  font-size:9px;
+}
+
+.dashboard-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+}
+.dashboard-card{
+  min-height:138px;
+  padding:16px;
+  border:1px solid #dce5ec;
+  border-radius:10px;
+  background:#fff;
+  text-align:left;
+  cursor:pointer;
+  transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;
+}
+.dashboard-card:hover{
+  transform:translateY(-1px);
+  border-color:#a8c8df;
+  box-shadow:0 5px 15px rgba(31,73,103,.08);
+}
+.dashboard-card-number{
+  display:block;
+  color:#8da3b3;
+  font-size:9px;
+  font-weight:900;
+}
+.dashboard-card strong{
+  display:block;
+  margin-top:10px;
+  color:#173e5c;
+  font-size:14px;
+}
+.dashboard-card>span:last-child{
+  display:block;
+  margin-top:7px;
+  color:#687d8e;
+  font-size:10px;
+  line-height:1.45;
+}
+
+.setup-route-summary{
+  display:grid;
+  grid-template-columns:1.3fr repeat(3,1fr);
+  gap:1px;
+  margin-bottom:10px;
+  border:1px solid #d8e3eb;
+  border-radius:9px;
+  overflow:hidden;
+  background:#d8e3eb;
+}
+.setup-route-summary>div{
+  padding:11px 13px;
+  background:#fff;
+}
+.setup-summary-label{
+  display:block;
+  color:#8393a0;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.setup-route-summary strong{
+  display:block;
+  margin-top:5px;
+  color:#24465f;
+  font-size:12px;
+}
+.training-level-description{
+  margin-top:5px;
+  padding:6px 8px;
+  border-radius:6px;
+  background:#f1f6fa;
+  color:#677d8e;
+  font-size:9px;
+  line-height:1.35;
+}
+
+.trainer-status-bar{
+  display:grid;
+  grid-template-columns:1.15fr .7fr .65fr 1.2fr auto;
+  gap:1px;
+  margin-bottom:10px;
+  border:1px solid #d6e1e9;
+  border-radius:9px;
+  overflow:hidden;
+  background:#d6e1e9;
+}
+.trainer-status-item{
+  padding:9px 11px;
+  background:#fff;
+  min-width:0;
+}
+.trainer-status-item span{
+  display:block;
+  color:#8494a1;
+  font-size:7px;
+  font-weight:900;
+  letter-spacing:.11em;
+}
+.trainer-status-item strong{
+  display:block;
+  margin-top:4px;
+  color:#234760;
+  font-size:10px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.trainer-status-actions{
+  display:flex;
+  align-items:center;
+  padding:6px;
+  background:#fff;
+}
+.trainer-status-actions .btn{
+  min-height:32px;
+  font-size:9px;
+  white-space:nowrap;
+}
+
+.report-action-row{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:14px;
+}
+
+@media(max-width:900px){
+  .dashboard-stats{grid-template-columns:1fr 1fr}
+  .dashboard-grid{grid-template-columns:1fr 1fr}
+  .trainer-status-bar{
+    grid-template-columns:1fr 1fr;
+  }
+  .trainer-status-actions{
+    grid-column:1/-1;
+  }
+  .trainer-status-actions .btn{width:100%}
+}
+@media(max-width:600px){
+  .dashboard-hero{display:block;padding:18px}
+  .dashboard-hero h2{font-size:20px}
+  .dashboard-actions{margin-top:14px;justify-content:stretch}
+  .dashboard-actions .btn{flex:1 1 130px}
+  .dashboard-stats{grid-template-columns:1fr 1fr}
+  .dashboard-grid{grid-template-columns:1fr}
+  .setup-route-summary{grid-template-columns:1fr 1fr}
+  .report-action-row{display:grid;grid-template-columns:1fr 1fr}
+}
+
+/* =========================================================
+   V4.05 TOP NAVIGATION
+   ========================================================= */
+
+/* Application is now a full-width vertical stack. */
+.product-layout{
+  display:block !important;
+  min-height:100vh;
+  background:#edf3f7;
+}
+
+/* Former side navigation becomes a sticky top navigation bar. */
+.side-nav.top-nav{
+  position:sticky !important;
+  top:0;
+  left:auto !important;
+  width:100% !important;
+  height:auto !important;
+  min-height:0 !important;
+  transform:none !important;
+  display:grid !important;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  grid-template-areas:
+    "brand menu status";
+  align-items:center;
+  gap:16px;
+  padding:0 18px;
+  background:#0b2f50;
+  border-right:0;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  box-shadow:0 3px 14px rgba(10,35,55,.14);
+  z-index:100;
+}
+
+.top-nav .side-nav-brand{
+  grid-area:brand;
+  padding:13px 0;
+  border:0;
+  min-width:190px;
+}
+.top-nav .side-nav-title{
+  font-size:16px;
+  line-height:1.1;
+}
+.top-nav .side-nav-subtitle{
+  margin-top:4px;
+  font-size:7px;
+  white-space:nowrap;
+}
+
+/* Navigation links run left-to-right across the top. */
+.top-nav .side-nav-menu{
+  grid-area:menu;
+  display:flex;
+  flex-direction:row;
+  align-items:stretch;
+  justify-content:center;
+  gap:3px;
+  padding:8px 0;
+  min-width:0;
+}
+.top-nav .side-nav-item{
+  width:auto;
+  min-width:0;
+  min-height:38px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:8px 10px;
+  border-radius:7px;
+  white-space:nowrap;
+  font-size:10px;
+}
+.top-nav .side-nav-item.active{
+  box-shadow:inset 0 -3px 0 #8bd0ff;
+}
+.top-nav .side-nav-number{
+  font-size:7px;
+}
+
+/* Current-flight status stays visible on the right. */
+.top-nav .side-nav-status{
+  grid-area:status;
+  margin:0;
+  min-width:150px;
+  padding:9px 0 9px 14px;
+  border-top:0;
+  border-left:1px solid rgba(255,255,255,.12);
+  background:transparent;
+}
+.top-nav .side-status-label{
+  font-size:7px;
+}
+.top-nav .side-status-route{
+  margin-top:3px;
+  font-size:11px;
+}
+.top-nav .side-status-meta{
+  margin-top:2px;
+  font-size:8px;
+}
+.top-nav .side-nav-footer{
+  display:none;
+}
+
+/* Main content now uses the full viewport width below the top navigation. */
+.product-main{
+  width:100%;
+  min-width:0;
+  padding:0 18px 18px;
+}
+
+/* Product header becomes a compact page-title strip; brand already lives in top nav. */
+.product-header{
+  min-height:44px;
+  margin:0 -18px 14px;
+  padding:8px 18px;
+  background:#fff;
+}
+.product-header .app-title-block{
+  display:none;
+}
+.product-header .page-title{
+  margin-left:0;
+  font-size:10px;
+}
+.mobile-nav-toggle{
+  display:none !important;
+}
+
+/* Desktop spacing: dashboard and content get more horizontal room. */
+#page-home{
+  max-width:1180px;
+}
+.setup-page-wrap{
+  max-width:860px;
+}
+#page-training-log,
+#page-report,
+#page-how-to{
+  max-width:1080px;
+}
+
+/* Tablet: brand on first row, navigation on second row, flight status on first row right. */
+@media(max-width:1050px){
+  .side-nav.top-nav{
+    grid-template-columns:minmax(0,1fr) auto;
+    grid-template-areas:
+      "brand status"
+      "menu menu";
+    gap:0 14px;
+    padding:0 12px;
+  }
+  .top-nav .side-nav-brand{
+    padding:10px 0 7px;
+  }
+  .top-nav .side-nav-status{
+    padding:8px 0 7px 12px;
+  }
+  .top-nav .side-nav-menu{
+    justify-content:flex-start;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:thin;
+    padding:5px 0 8px;
+  }
+  .top-nav .side-nav-item{
+    flex:0 0 auto;
+  }
+}
+
+/* Phone: compact title/status row + horizontally scrollable nav tabs. */
+@media(max-width:700px){
+  .product-layout{
+    grid-template-columns:1fr !important;
+  }
+  .side-nav.top-nav{
+    position:sticky !important;
+    width:100% !important;
+    transform:none !important;
+    box-shadow:0 3px 12px rgba(0,0,0,.12) !important;
+  }
+  body.nav-open .side-nav{
+    transform:none !important;
+  }
+  body.nav-open::after{
+    display:none !important;
+  }
+  .top-nav .side-nav-title{
+    font-size:14px;
+  }
+  .top-nav .side-nav-subtitle{
+    font-size:6px;
+  }
+  .top-nav .side-nav-status{
+    min-width:125px;
+  }
+  .top-nav .side-status-route{
+    font-size:10px;
+  }
+  .top-nav .side-status-meta{
+    font-size:7px;
+  }
+  .top-nav .side-nav-item{
+    min-height:34px;
+    padding:7px 9px;
+    font-size:9px;
+  }
+  .product-main{
+    padding:0 10px 14px;
+  }
+  .product-header{
+    margin:0 -10px 10px;
+    padding:7px 10px;
+    min-height:38px;
+  }
+  .product-header .page-title{
+    display:block !important;
+    font-size:9px;
+  }
+}
+
+@media(max-width:430px){
+  .side-nav.top-nav{
+    grid-template-columns:minmax(0,1fr);
+    grid-template-areas:
+      "brand"
+      "status"
+      "menu";
+  }
+  .top-nav .side-nav-brand{
+    padding-bottom:4px;
+  }
+  .top-nav .side-nav-status{
+    min-width:0;
+    padding:4px 0 5px;
+    border-left:0;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:flex;
+    align-items:center;
+    gap:7px;
+  }
+  .top-nav .side-status-label{
+    display:none;
+  }
+  .top-nav .side-status-route,
+  .top-nav .side-status-meta{
+    margin:0;
+  }
+}
+
+/* =========================================================
+   V4.06 MOBILE SIDE NAVIGATION
+   Desktop / tablet keep TOP navigation.
+   Phone widths use a SIDE navigation drawer.
+   ========================================================= */
+
+@media(max-width:700px){
+  /* Restore a hamburger trigger in the compact page header. */
+  .mobile-nav-toggle{
+    display:block !important;
+    position:relative;
+    z-index:2;
+    min-width:40px;
+    height:36px;
+  }
+
+  .product-header{
+    display:flex !important;
+    align-items:center;
+    gap:9px;
+  }
+
+  /* Convert the top nav back to an off-canvas left sidebar on phones. */
+  .side-nav.top-nav{
+    position:fixed !important;
+    top:0 !important;
+    left:0 !important;
+    right:auto !important;
+    width:min(82vw,285px) !important;
+    height:100vh !important;
+    min-height:100vh !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    gap:0 !important;
+    padding:0 !important;
+    transform:translateX(-105%) !important;
+    transition:transform .2s ease !important;
+    overflow-y:auto;
+    overflow-x:hidden;
+    background:#0b2f50 !important;
+    box-shadow:8px 0 30px rgba(0,0,0,.22) !important;
+    border-right:1px solid rgba(255,255,255,.08) !important;
+    border-bottom:0 !important;
+    z-index:110 !important;
+  }
+
+  body.nav-open .side-nav.top-nav{
+    transform:translateX(0) !important;
+  }
+
+  body.nav-open::after{
+    display:block !important;
+    content:"";
+    position:fixed;
+    inset:0;
+    background:rgba(5,24,38,.40);
+    z-index:105;
+  }
+
+  .top-nav .side-nav-brand{
+    padding:20px 18px 16px !important;
+    border-bottom:1px solid rgba(255,255,255,.12) !important;
+    min-width:0;
+  }
+  .top-nav .side-nav-title{
+    font-size:17px !important;
+  }
+  .top-nav .side-nav-subtitle{
+    margin-top:5px !important;
+    font-size:7px !important;
+  }
+
+  /* Vertical side-menu items. */
+  .top-nav .side-nav-menu{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+    justify-content:flex-start !important;
+    gap:5px !important;
+    padding:12px 9px !important;
+    overflow:visible !important;
+  }
+
+  .top-nav .side-nav-item{
+    flex:none !important;
+    width:100% !important;
+    min-height:44px !important;
+    display:grid !important;
+    grid-template-columns:30px minmax(0,1fr) !important;
+    justify-content:stretch !important;
+    text-align:left !important;
+    gap:8px !important;
+    padding:9px 11px !important;
+    border-radius:8px !important;
+    font-size:11px !important;
+  }
+
+  .top-nav .side-nav-item.active{
+    box-shadow:inset 3px 0 0 #8bd0ff !important;
+  }
+
+  .top-nav .side-nav-number{
+    font-size:8px !important;
+  }
+
+  /* Current flight block returns to the bottom portion of the side drawer. */
+  .top-nav .side-nav-status{
+    margin-top:auto !important;
+    width:100% !important;
+    min-width:0 !important;
+    padding:13px 18px !important;
+    display:block !important;
+    border-left:0 !important;
+    border-top:1px solid rgba(255,255,255,.10) !important;
+    background:rgba(0,0,0,.08) !important;
+  }
+
+  .top-nav .side-status-label{
+    display:block !important;
+    font-size:7px !important;
+  }
+  .top-nav .side-status-route{
+    margin-top:5px !important;
+    font-size:11px !important;
+  }
+  .top-nav .side-status-meta{
+    margin-top:3px !important;
+    font-size:8px !important;
+  }
+
+  .top-nav .side-nav-footer{
+    display:block !important;
+    padding:13px 18px !important;
+    border-top:1px solid rgba(255,255,255,.08);
+    font-size:8px;
+    color:#88a9bf;
+  }
+
+  /* The top page bar remains visible after the main nav moves off canvas. */
+  .product-main{
+    width:100%;
+    padding:0 10px 14px;
+  }
+  .product-header{
+    margin:0 -10px 10px;
+    padding:7px 10px;
+    min-height:48px;
+  }
+  .product-header .app-title-block{
+    display:block !important;
+    min-width:0;
+  }
+  .product-header .app-title-block h1{
+    font-size:15px !important;
+  }
+  .product-header .app-subtitle{
+    display:block !important;
+    font-size:6px !important;
+  }
+  .product-header .page-title{
+    display:none !important;
+  }
+}
+
+/* Very small phones keep the same side drawer instead of reverting to stacked top nav. */
+@media(max-width:430px){
+  .side-nav.top-nav{
+    display:flex !important;
+    flex-direction:column !important;
+    width:min(86vw,280px) !important;
+  }
+  .top-nav .side-nav-status{
+    display:block !important;
+  }
+}
+
+/* =========================================================
+   V4.07 FLIGHT SETUP INSIDE RADIO TRAINER
+   ========================================================= */
+
+/* Flight Setup is no longer a standalone application page. */
+#page-flight-setup{display:none !important}
+
+/* Desktop Radio Trainer: Setup | Current Stage | Radio Exchange */
+.trainer-page-shell{
+  display:grid !important;
+  grid-template-columns:minmax(245px,.72fr) minmax(410px,1.18fr) minmax(315px,.90fr) !important;
+  grid-template-areas:"setup stage transcript" !important;
+  gap:12px !important;
+  align-items:start !important;
+}
+.trainer-page-shell>.trainer-setup-column{
+  grid-area:setup;
+  min-width:0;
+  position:sticky;
+  top:92px;
+  align-self:start;
+}
+.trainer-page-shell>.main-grid{
+  display:contents !important;
+}
+.trainer-page-shell>.main-grid>section:first-child{
+  grid-area:stage !important;
+}
+.trainer-page-shell>.main-grid>.radio-exchange-card{
+  grid-area:transcript !important;
+}
+
+/* Make the embedded setup compact enough to function as a left column. */
+.trainer-setup-column .setup-route-summary{
+  grid-template-columns:1fr 1fr !important;
+  margin-bottom:8px;
+}
+.trainer-setup-column .setup-route-summary>div{
+  padding:8px 9px;
+}
+.trainer-setup-column .setup-route-summary strong{
+  font-size:10px;
+}
+.trainer-setup-column .setup{
+  width:100% !important;
+  margin:0 !important;
+  position:static !important;
+}
+.trainer-setup-column .setup-summary h2#routeHeading{
+  font-size:15px !important;
+}
+.trainer-setup-column .setup-content{
+  padding:10px !important;
+}
+.trainer-setup-column .setup-grid{
+  grid-template-columns:1fr !important;
+  gap:8px !important;
+}
+.trainer-setup-column .setup-section-label{
+  margin-top:3px;
+}
+.trainer-setup-column label{
+  font-size:9px;
+}
+.trainer-setup-column select,
+.trainer-setup-column input{
+  font-size:10px;
+}
+.trainer-setup-column .vfr-altitude-guide{
+  font-size:8px;
+}
+.trainer-setup-column .training-level-description{
+  font-size:8px;
+}
+.trainer-setup-column .setup-action-row{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:6px !important;
+}
+.trainer-setup-column details.setup[open] .setup-bottom-toggle{
+  display:block !important;
+}
+.trainer-setup-column .setup-action-btn{
+  font-size:8px !important;
+  min-height:32px !important;
+}
+.trainer-setup-column .setup-note{
+  font-size:8px !important;
+  line-height:1.35;
+}
+
+/* The old standalone-page-only selectors are neutralized for the embedded version. */
+#page-flight-setup .setup-bottom-toggle{
+  display:initial;
+}
+
+/* Tablet: setup above stage, exchange full width below. */
+@media(min-width:701px) and (max-width:1100px){
+  .trainer-page-shell{
+    grid-template-columns:minmax(250px,.8fr) minmax(0,1.35fr) !important;
+    grid-template-areas:
+      "setup stage"
+      "transcript transcript" !important;
+    gap:10px !important;
+  }
+  .trainer-page-shell>.trainer-setup-column{
+    position:static;
+  }
+}
+
+/* Mobile: stack Flight Setup first, then Current Stage, then Radio Exchange. */
+@media(max-width:700px){
+  .trainer-page-shell{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "setup"
+      "stage"
+      "transcript" !important;
+    gap:9px !important;
+  }
+  .trainer-page-shell>.trainer-setup-column{
+    position:static !important;
+  }
+  .trainer-setup-column .setup-route-summary{
+    grid-template-columns:1fr 1fr !important;
+  }
+}
+
+/* Dashboard quick card terminology after merging setup into trainer. */
+#page-home .dashboard-card strong{
+  line-height:1.25;
+}
+
+/* =========================================================
+   V4.08 RADIO TRAINER CLEANUP
+   ========================================================= */
+#page-trainer{
+  padding-top:0;
+}
+.trainer-page-shell{
+  margin-top:0 !important;
+}
+.trainer-setup-column{
+  margin-top:0 !important;
+}
+
+/* =========================================================
+   V4.09 RADIO TRAINER HEADER CLEANUP
+   ========================================================= */
+/* On desktop/tablet the blue top navigation already identifies Radio Trainer,
+   so remove the redundant "RADIO COMMUNICATION TRAINER" strip below it. */
+@media(min-width:701px){
+  body.trainer-page-active .product-header{
+    display:none !important;
+  }
+  body.trainer-page-active .product-main{
+    padding-top:14px;
+  }
+}
+
+/* On phones keep the compact header because it carries the hamburger button. */
+@media(max-width:700px){
+  body.trainer-page-active .product-header{
+    display:flex !important;
+  }
+}
+
+/* =========================================================
+   V4.10 VFR / IFR TRAINER SPLIT
+   ========================================================= */
+#page-ifr-trainer{
+  max-width:1080px;
+  margin:0 auto;
+}
+.ifr-starter-shell{
+  width:100%;
+}
+.ifr-starter-card{
+  padding:22px;
+}
+.ifr-starter-card h2{
+  margin:5px 0 8px;
+}
+.ifr-starter-lead{
+  margin:0 0 18px;
+  color:#607586;
+  font-size:12px;
+  line-height:1.55;
+}
+.ifr-planning-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.ifr-plan-item{
+  display:grid;
+  grid-template-columns:34px minmax(0,1fr);
+  gap:10px;
+  padding:13px;
+  border:1px solid #dfe7ed;
+  border-radius:9px;
+  background:#fbfcfd;
+}
+.ifr-plan-number{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:30px;
+  height:30px;
+  border-radius:50%;
+  background:#e6f1f9;
+  color:#1769aa;
+  font-size:9px;
+  font-weight:900;
+}
+.ifr-plan-item strong{
+  color:#193f5d;
+  font-size:12px;
+}
+.ifr-plan-item p{
+  margin:4px 0 0;
+  color:#657a8a;
+  font-size:10px;
+  line-height:1.45;
+}
+.ifr-starter-note{
+  margin-top:14px;
+  padding:12px 14px;
+  border-left:3px solid #1769aa;
+  background:#f0f6fa;
+  color:#4f687a;
+  font-size:11px;
+  line-height:1.5;
+}
+
+/* Five dashboard cards fit neatly without forcing narrow columns. */
+.dashboard-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+}
+
+@media(max-width:1000px){
+  .dashboard-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+@media(max-width:700px){
+  .ifr-planning-grid{
+    grid-template-columns:1fr;
+  }
+  .dashboard-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* =========================================================
+   V4.11 CENTERED RWD CONTENT WIDTH
+   ========================================================= */
+
+/* Keep the navigation full width, but center the application pages
+   inside a responsive max-width container similar to the V4.01 feel. */
+.product-main{
+  width:min(100%, 1420px) !important;
+  margin:0 auto !important;
+  padding-left:18px !important;
+  padding-right:18px !important;
+}
+
+/* Page content should not stretch edge-to-edge on large monitors. */
+#page-home,
+#page-trainer,
+#page-ifr-trainer,
+#page-training-log,
+#page-report,
+#page-how-to{
+  width:100%;
+  max-width:1320px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+/* VFR trainer keeps its three-column architecture but within the centered page. */
+.trainer-page-shell{
+  width:100%;
+  max-width:1320px;
+  margin-left:auto;
+  margin-right:auto;
+}
+
+/* Home dashboard should remain spacious but not full-screen wide. */
+#page-home{
+  max-width:1180px !important;
+}
+
+/* IFR, log, report and instructions use a comfortable reading width. */
+#page-ifr-trainer,
+#page-training-log,
+#page-report,
+#page-how-to{
+  max-width:1080px !important;
+}
+
+/* RWD scaling for desktop/laptop widths. */
+@media(max-width:1400px){
+  .product-main{
+    width:100% !important;
+    max-width:1240px !important;
+  }
+  #page-trainer{
+    max-width:1200px !important;
+  }
+  .trainer-page-shell{
+    max-width:1200px;
+    grid-template-columns:minmax(225px,.72fr) minmax(380px,1.15fr) minmax(300px,.9fr) !important;
+  }
+}
+
+/* Medium laptop / tablet landscape. */
+@media(max-width:1150px){
+  .product-main{
+    max-width:1040px !important;
+    padding-left:14px !important;
+    padding-right:14px !important;
+  }
+  #page-home,
+  #page-trainer,
+  #page-ifr-trainer,
+  #page-training-log,
+  #page-report,
+  #page-how-to{
+    max-width:100% !important;
+  }
+}
+
+/* Tablet layout keeps the existing two-column trainer behavior. */
+@media(min-width:701px) and (max-width:1100px){
+  .product-main{
+    width:100% !important;
+    max-width:920px !important;
+    padding-left:12px !important;
+    padding-right:12px !important;
+  }
+  .trainer-page-shell{
+    max-width:100%;
+  }
+}
+
+/* Phone: full available width with small side gutters. */
+@media(max-width:700px){
+  .product-main{
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
+  }
+  #page-home,
+  #page-trainer,
+  #page-ifr-trainer,
+  #page-training-log,
+  #page-report,
+  #page-how-to,
+  .trainer-page-shell{
+    width:100%;
+    max-width:none !important;
+  }
+}
+
+/* Very small phones: slightly tighter gutters without horizontal overflow. */
+@media(max-width:430px){
+  .product-main{
+    padding-left:7px !important;
+    padding-right:7px !important;
+  }
+  .card,
+  .dashboard-hero,
+  .dashboard-stat,
+  .dashboard-card{
+    max-width:100%;
+  }
+}
+
+/* =========================================================
+   V4.12 HOME HEADER CLEANUP
+   ========================================================= */
+/* The blue top navigation already identifies Home, so remove the redundant
+   white HOME bar underneath it on desktop/tablet. */
+@media(min-width:701px){
+  body.home-page-active .product-header{
+    display:none !important;
+  }
+  body.home-page-active .product-main{
+    padding-top:14px;
+  }
+}
+
+/* Mobile keeps the compact header because it contains the hamburger control. */
+@media(max-width:700px){
+  body.home-page-active .product-header{
+    display:flex !important;
+  }
+}
+
+/* =========================================================
+   V4.13 FUNCTIONAL IFR RADIO TRAINER
+   ========================================================= */
+
+#page-ifr-trainer{
+  width:100%;
+  max-width:1320px !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+}
+
+/* Match the VFR three-column architecture. */
+#page-ifr-trainer .trainer-page-shell{
+  display:grid !important;
+  grid-template-columns:minmax(245px,.72fr) minmax(410px,1.18fr) minmax(315px,.90fr) !important;
+  grid-template-areas:"setup stage transcript" !important;
+  gap:12px !important;
+  align-items:start !important;
+}
+#page-ifr-trainer .trainer-setup-column{grid-area:setup;min-width:0;position:sticky;top:92px;align-self:start}
+#page-ifr-trainer .main-grid{display:contents !important}
+#page-ifr-trainer .main-grid>section:first-child{grid-area:stage !important}
+#page-ifr-trainer .main-grid>.radio-exchange-card{grid-area:transcript !important}
+
+/* IFR setup remains compact in the left column. */
+#page-ifr-trainer .setup{width:100% !important;margin:0 !important;position:static !important}
+#page-ifr-trainer .setup-content{padding:10px !important}
+#page-ifr-trainer .setup-grid{grid-template-columns:1fr !important;gap:8px !important}
+#page-ifr-trainer .setup-action-row{
+  display:grid !important;
+  grid-template-columns:1fr 1fr !important;
+  gap:6px !important;
+}
+#page-ifr-trainer details.setup[open] .setup-bottom-toggle{display:block !important}
+#page-ifr-trainer .setup-action-btn{font-size:8px !important;min-height:32px !important}
+#page-ifr-trainer .setup-note{font-size:8px !important;line-height:1.35}
+#page-ifr-trainer .training-level-description{font-size:8px}
+#page-ifr-trainer .vfr-altitude-guide{font-size:8px}
+
+/* Hide the redundant white page-title strip on IFR desktop/tablet. */
+@media(min-width:701px){
+  body.ifr-page-active .product-header{display:none !important}
+  body.ifr-page-active .product-main{padding-top:14px}
+}
+@media(max-width:700px){
+  body.ifr-page-active .product-header{display:flex !important}
+}
+
+/* Tablet and mobile mirror VFR behavior. */
+@media(min-width:701px) and (max-width:1100px){
+  #page-ifr-trainer .trainer-page-shell{
+    grid-template-columns:minmax(250px,.8fr) minmax(0,1.35fr) !important;
+    grid-template-areas:
+      "setup stage"
+      "transcript transcript" !important;
+    gap:10px !important;
+  }
+  #page-ifr-trainer .trainer-setup-column{position:static}
+}
+@media(max-width:700px){
+  #page-ifr-trainer .trainer-page-shell{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "setup"
+      "stage"
+      "transcript" !important;
+    gap:9px !important;
+  }
+  #page-ifr-trainer .trainer-setup-column{position:static !important}
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ATC Trainer">
 </head>
 <body>
-<div class="app">
-<header>
-  <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div class="app-subtitle">RADIO COMMUNICATION TRAINING</div></div>
-  <div class="header-actions">
-    
-  </div>
-</header>
-<div class="trainer-shell">
-<details class="card setup">
+<div class="product-layout">
+  <header id="sideNav" class="side-nav top-nav" aria-label="Trainer navigation">
+    <div class="side-nav-brand">
+      <div class="side-nav-title">FK ATC COM Trainer</div>
+      <div class="side-nav-subtitle">RADIO COMMUNICATION TRAINING</div>
+    </div>
+    <nav class="side-nav-menu">
+      <button class="side-nav-item active" data-page="home" type="button"><span class="side-nav-number">01</span><span>Home</span></button>
+      <button class="side-nav-item" data-page="trainer" type="button"><span class="side-nav-number">02</span><span>VFR Radio Trainer</span></button>
+      <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">03</span><span>IFR Radio Trainer</span></button>
+      <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">04</span><span>Training Log</span></button>
+      <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">05</span><span>Flight Report</span></button>
+      <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">06</span><span>How To Use</span></button>
+    </nav>
+    <div class="side-nav-status" aria-label="Current training status">
+      <div class="side-status-label">CURRENT FLIGHT</div>
+      <div id="sideStatusRoute" class="side-status-route">KLGB → KCRQ</div>
+      <div id="sideStatusMeta" class="side-status-meta">Beginner • Stage 1 of 9</div>
+    </div>
+    <div class="side-nav-footer">Pilot Vibes • FWD Skill Zone</div>
+  </header>
+
+  <main class="product-main">
+    <header class="product-header">
+      <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div class="app-subtitle">RADIO COMMUNICATION TRAINING</div></div>
+      <div id="pageTitle" class="page-title">HOME</div>
+    </header>
+
+    <section id="page-home" class="app-page active" data-title="HOME">
+      <div class="dashboard-shell">
+        <section class="dashboard-hero">
+          <div>
+            <div class="eyebrow">PILOT VIBES TRAINING</div>
+            <h2>Ready for your next radio session?</h2>
+            <p>Build a flight, practice realistic ATC communication, and review completed training sessions.</p>
+          </div>
+          <div class="dashboard-actions">
+            <button id="dashboardNewFlight" class="btn primary" type="button">NEW FLIGHT</button>
+            <button id="dashboardContinue" class="btn" type="button">CONTINUE TRAINING</button>
+          </div>
+        </section>
+
+        <section class="dashboard-stats">
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">CURRENT ROUTE</span>
+            <strong id="dashboardCurrentRoute">KLGB → KCRQ</strong>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">TRAINING LEVEL</span>
+            <strong id="dashboardLevel">Beginner</strong>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">COMPLETED SESSIONS</span>
+            <strong id="dashboardCompletedCount">0</strong>
+          </div>
+          <div class="dashboard-stat">
+            <span class="dashboard-stat-label">LAST COMPLETED</span>
+            <strong id="dashboardLastRoute">—</strong>
+            <small id="dashboardLastDate"></small>
+          </div>
+        </section>
+
+        <section class="dashboard-grid">
+          <button class="dashboard-card" type="button" data-dashboard-page="trainer">
+            <span class="dashboard-card-number">01</span>
+            <strong>Flight Setup + VFR Radio Trainer</strong>
+            <span>Set up the flight in the left column, then begin VFR radio training.</span>
+          </button>
+          <button class="dashboard-card" type="button" data-dashboard-page="trainer">
+            <span class="dashboard-card-number">02</span>
+            <strong>VFR Radio Trainer</strong>
+            <span>Continue the active VFR ATC communication session.</span>
+          </button>
+          <button class="dashboard-card" type="button" data-dashboard-page="ifr-trainer">
+            <span class="dashboard-card-number">03</span>
+            <strong>IFR Radio Trainer</strong>
+            <span>Practice a complete IFR flight: ATIS, clearance, taxi, tower, departure, enroute, arrival ATIS, approach, tower, and ground.</span>
+          </button>
+          <button class="dashboard-card" type="button" data-dashboard-page="training-log">
+            <span class="dashboard-card-number">04</span>
+            <strong>Training Log</strong>
+            <span>Review completed routes and training dates.</span>
+          </button>
+          <button class="dashboard-card" type="button" data-dashboard-page="how-to">
+            <span class="dashboard-card-number">05</span>
+            <strong>How To Use</strong>
+            <span>Review the trainer workflow and controls.</span>
+          </button>
+        </section>
+      </div>
+    </section>
+
+    <section id="page-trainer" class="app-page" data-title="VFR RADIO TRAINER">
+      <div class="trainer-shell trainer-page-shell">
+        <aside class="trainer-setup-column" aria-label="Flight Setup">
+<details class="card setup" open>
   <summary class="setup-summary">
     <div class="setup-summary-title">
       <div class="setup-title-row">
-        <div class="eyebrow">FLIGHT SETUP</div>
+        <div class="eyebrow">VFR FLIGHT SETUP</div>
         <span class="setup-summary-hint"></span>
       </div>
       <h2 id="routeHeading">KLGB → KCRQ</h2>
@@ -2749,6 +4114,7 @@ header{
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
+        <div id="trainingLevelDescription" class="training-level-description">More prompting and fewer unexpected ATC changes.</div>
       </label>
 
       <div class="setup-section-label">ROUTE</div>
@@ -2892,15 +4258,13 @@ header{
         APPLY SETUP
       </button>
       <button type="button" class="setup-bottom-toggle setup-action-btn" onclick="collapseSetupAndTop(this)">
-        Tap to Collapse ▲
+        Tap To Collapse ▲
       </button>
     </div>
     <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic.</div>
   </div>
 </details>
-
-
-
+        </aside>
 <div class="main-grid">
   <section class="card current-stage-card">
     <div class="heading stage-heading stage-heading-grid">
@@ -3047,15 +4411,353 @@ header{
   </section>
 
 </div>
-</div>
+      </div>
+    </section>
 
-<section class="card study-history-card training-log-card">
+    <section id="page-ifr-trainer" class="app-page" data-title="IFR RADIO TRAINER">
+
+      <div class="trainer-shell trainer-page-shell">
+        <aside class="trainer-setup-column" aria-label="IFR Flight Setup">
+<details class="card setup" open>
+  <summary class="setup-summary">
+    <div class="setup-summary-title">
+      <div class="setup-title-row">
+        <div class="eyebrow">IFR FLIGHT SETUP</div>
+        <span class="setup-summary-hint"></span>
+      </div>
+      <h2 id="ifr-routeHeading">KLGB → KCRQ</h2>
+    </div>
+  </summary>
+
+  <div class="setup-content">
+    <div class="setup-grid">
+      <div class="setup-section-label">FLIGHT</div>
+      <label>Training Level
+        <select id="ifr-level">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+        <div id="ifr-trainingLevelDescription" class="training-level-description">More prompting and simplified IFR clearances.</div>
+      </label>
+
+      <div class="setup-section-label">ROUTE</div>
+      <label>Departure Airport
+        <select id="ifr-departureAirport">
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
+<option value="KCRQ">KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KRAL">KRAL — Riverside</option>
+<option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
+        </select>
+      </label>
+
+      <label>Destination Airport
+        <select id="ifr-destinationAirport">
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
+<option value="KCRQ" selected>KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB">KLGB — Long Beach</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KRAL">KRAL — Riverside</option>
+<option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
+        </select>
+      </label>
+
+      <div class="setup-section-label">AIRCRAFT</div>
+      <label>Aircraft Type
+        <select id="ifr-aircraftType">
+          <option value="Cessna 152">Cessna 152</option>
+          <option value="Cessna 172" selected>Cessna 172</option>
+          <option value="Skyhawk">Skyhawk</option>
+          <option value="Piper Archer">Piper Archer</option>
+          <option value="Piper Warrior">Piper Warrior</option>
+          <option value="Cirrus SR20">Cirrus SR20</option>
+          <option value="Cirrus SR22">Cirrus SR22</option>
+          <option value="Diamond DA40">Diamond DA40</option>
+          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label id="ifr-otherAircraftTypeLabel" class="hidden">Other Aircraft Type
+        <input id="ifr-otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
+      </label>
+
+      <label>Call Sign
+        <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
+      </label>
+
+      <div class="setup-section-label">DEPARTURE / ARRIVAL</div>
+      <label>Starting Location
+        <select id="ifr-location">
+          <option>Long Beach Flying Club</option>
+          <option>Signature Ramp</option>
+          <option>Atlantic Ramp</option>
+          <option>West Ramp</option>
+          <option>South Ramp</option>
+        </select>
+      </label>
+
+      <div class="runway-pair">
+        <label>Takeoff Runway
+          <select id="ifr-runway">
+            <option>26L</option>
+            <option>26R</option>
+            <option>30</option>
+            <option>12</option>
+            <option>8L</option>
+            <option>8R</option>
+          </select>
+        </label>
+
+        <label>Destination Runway
+          <select id="ifr-destRunway">
+            <option selected>24</option>
+            <option>6</option>
+            <option>25</option>
+          </select>
+        </label>
+      <label>Approach
+        <select id="ifr-approachType">
+          <option value="RNAV (GPS)">RNAV (GPS)</option>
+          <option value="ILS">ILS</option>
+          <option value="VOR">VOR</option>
+          <option value="Visual">Visual</option>
+        </select>
+      </label>
+      </div>
+
+      <label>IFR Route
+        <select id="ifr-direction">
+          <option value="As Filed">As Filed</option>
+          <option value="Direct">Direct</option>
+          <option value="Radar Vectors">Radar Vectors</option>
+        </select>
+      </label>
+
+      <label>Requested Altitude
+        <div class="altitude-stepper">
+          <button id="ifr-altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
+          <div class="altitude-input-wrap">
+            <input id="ifr-altitude" type="number" min="0" max="18000" step="500" value="5000" inputmode="numeric" aria-describedby="ifr-vfrAltitudeGuide">
+            <span class="altitude-unit">ft MSL</span>
+          </div>
+          <button id="ifr-altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
+        </div>
+        <div id="ifr-vfrAltitudeGuide" class="vfr-altitude-guide">
+          IFR ALTITUDE — Enter the requested cruise altitude for this training scenario.
+        </div>
+      </label>
+
+    </div>
+
+    <div class="setup-action-row">
+      <button id="ifr-applySetup" class="btn primary setup-action-btn">
+        APPLY SETUP
+      </button>
+      <button type="button" class="setup-bottom-toggle setup-action-btn" onclick="collapseIFRSetupAndTop(this)">
+        Tap To Collapse ▲
+      </button>
+    </div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic.</div>
+  </div>
+</details>
+        </aside>
+<div class="main-grid">
+  <section class="card current-stage-card">
+    <div class="heading stage-heading stage-heading-grid">
+      <div class="stage-top-left">
+        <span id="ifr-stageTitle">DEPARTURE ATIS</span><span id="ifr-stageFrequency">127.750</span>
+      </div>
+      <div class="stage-top-right">
+        <span id="ifr-stageCounter">STAGE 1 OF 9</span><span class="stage-strip-sep"> ·</span>
+      </div>
+      <div id="ifr-nextStageText" class="next-stage-text stage-bottom-left"></div>
+      <div id="ifr-stageState" class="small stage-bottom-right">Not completed</div>
+    </div>
+
+    <div id="ifr-navRow" class="nav-row">
+      <button id="ifr-previous" class="btn">← PREVIOUS</button>
+      <button id="ifr-next" class="btn primary" disabled>NEXT →</button>
+      <button id="ifr-reset" class="btn primary hidden">RESET / START OVER</button>
+    </div>
+
+    <div class="radio com-radio-panel">
+      <div class="com-bezel">
+        <span class="panel-screw screw-tl"></span>
+        <span class="panel-screw screw-tr"></span>
+        <span class="panel-screw screw-bl"></span>
+        <span class="panel-screw screw-br"></span>
+
+        <div class="com-header">
+          <div class="com-brand-block">
+            <div class="com-brand-row">
+              <div class="com-brand">FK COM 1</div>
+              <div id="ifr-radioReadyState" class="radio-ready-state not-ready">NOT READY</div>
+            </div>
+            <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
+          </div>
+          <div class="com-header-right">
+            <div id="ifr-targetFrequency" class="com-target"></div>
+          </div>
+        </div>
+
+        <input id="ifr-frequency" type="hidden" value="121.500">
+
+        <div class="digit-tuner" aria-label="COM 1 frequency tuner">
+          <div class="digit-column fixed-digit">
+            <div class="digit-spacer"></div>
+            <div id="ifr-digit0" class="radio-digit">1</div>
+            <div class="digit-spacer"></div>
+          </div>
+
+          <div class="digit-column">
+            <button class="digit-btn digit-up" data-digit="1" data-dir="1" type="button" aria-label="Increase second MHz digit">+</button>
+            <div id="ifr-digit1" class="radio-digit">2</div>
+            <button class="digit-btn digit-down" data-digit="1" data-dir="-1" type="button" aria-label="Decrease second MHz digit">−</button>
+          </div>
+
+          <div class="digit-column">
+            <button class="digit-btn digit-up" data-digit="2" data-dir="1" type="button" aria-label="Increase third MHz digit">+</button>
+            <div id="ifr-digit2" class="radio-digit">1</div>
+            <button class="digit-btn digit-down" data-digit="2" data-dir="-1" type="button" aria-label="Decrease third MHz digit">−</button>
+          </div>
+
+          <div class="decimal-point">.</div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="3" data-dir="1" type="button" aria-label="Increase first decimal digit">+</button>
+            <div id="ifr-digit3" class="radio-digit">5</div>
+            <button class="digit-btn digit-down" data-digit="3" data-dir="-1" type="button" aria-label="Decrease first decimal digit">−</button>
+          </div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="4" data-dir="1" type="button" aria-label="Increase second decimal digit">+</button>
+            <div id="ifr-digit4" class="radio-digit">0</div>
+            <button class="digit-btn digit-down" data-digit="4" data-dir="-1" type="button" aria-label="Decrease second decimal digit">−</button>
+          </div>
+
+          <div class="digit-column decimal-control">
+            <button class="digit-btn digit-up" data-digit="5" data-dir="1" type="button" aria-label="Increase third decimal digit">+</button>
+            <div id="ifr-digit5" class="radio-digit">0</div>
+            <button class="digit-btn digit-down" data-digit="5" data-dir="-1" type="button" aria-label="Decrease third decimal digit">−</button>
+          </div>
+        </div>
+
+        <div class="com-legends">
+          <div class="mhz-legend">
+            <span class="legend-main">118–137 MHz</span>
+            <span class="legend-sub">WHOLE MHz</span>
+          </div>
+          <div class="channel-legend">
+            <span class="legend-main">10 kHz</span>
+            <span class="legend-sub">CHANNEL + 5 kHz FINE</span>
+          </div>
+        </div>
+
+        <div class="com-status-row">
+          <span class="rx-light"><i></i> RX</span>
+          <span class="tx-light"><i></i> TX</span>
+          
+        </div>
+      </div>
+      <div id="ifr-tuneMsg" class="tune-msg">Tune to the active facility.</div>
+    </div>
+
+    <div id="ifr-instruction" class="stage-instruction"></div>
+
+    <div id="ifr-atisPanel">
+      <div id="ifr-atisActions" class="atis-actions">
+        <button id="ifr-monitorAtis" class="btn primary">MONITOR ATIS</button>
+      </div>
+      <div id="ifr-atisText" class="atis-box" style="margin-top:10px"></div>
+    </div>
+
+    <div id="ifr-commPanel" class="hidden">
+      <button id="ifr-ptt" class="ptt" disabled>
+        <span class="mic">🎙</span><span id="ifr-pttLabel">TAP TO TALK</span>
+      </button>
+      <textarea id="ifr-pilotText" rows="4" placeholder="Tune the correct frequency to enable speech or typed transmission."></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
+        <button id="ifr-sendTyped" class="btn primary">SEND TYPED</button>
+        <button id="ifr-clearText" class="btn">CLEAR</button>
+        <button id="ifr-sayAgain" class="btn" disabled>SAY AGAIN</button>
+      </div>
+      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
+    </div>
+
+    <div class="scorebar">
+      <div id="ifr-feedback" class="feedback">Tune the radio to begin.</div>
+    </div>
+
+
+  </section>
+
+  <section class="card radio-exchange-card">
+    <div class="progress-wrap">
+      <div class="progress radio-exchange-progress"><div id="ifr-progressFill"></div></div>
+      <div id="ifr-progressMarkers" class="progress-markers" aria-label="Training stage progress"></div>
+    </div>
+    <div class="radio-exchange-head">
+      <div class="eyebrow">RADIO EXCHANGE</div>
+      <div class="stage-score-radio">
+        <div id="ifr-score" class="score">—</div>
+        <div class="small">STAGE SCORE</div>
+      </div>
+    </div>
+    <div id="ifr-transcript" class="transcript"></div>
+  </section>
+
+</div>
+      </div>
+    
+</section>
+
+
+
+    <section id="page-training-log" class="app-page" data-title="TRAINING LOG">
+      <section class="card study-history-card training-log-card">
   <div class="study-history-head">
     <div class="eyebrow">TRAINING LOG</div>
   </div>
   <div id="studyHistoryList" class="study-history-list"></div>
 </section>
+    </section>
 
+    <section id="page-report" class="app-page" data-title="END-OF-FLIGHT REPORT">
 <section id="finalReport" class="card final-report hidden">
   <div class="report-head">
     <div>
@@ -3067,15 +4769,154 @@ header{
   <div id="reportSummary" class="report-summary"></div>
   <div id="reportStages" class="report-stages"></div>
   <div id="reportRecommendations" class="report-recommendations"></div>
+  <div class="report-action-row">
+    <button id="repeatSameRoute" class="btn primary" type="button">REPEAT SAME ROUTE</button>
+    <button id="reportNewFlight" class="btn" type="button">NEW FLIGHT</button>
+  </div>
 </section>
+    </section>
 
-<p class="small" style="text-align:center;margin:16px 0 0">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
+    <section id="page-how-to" class="app-page" data-title="HOW TO USE">
+      <section class="card how-to-card">
+        <div class="eyebrow">HOW TO USE</div>
+        <h2>FK ATC COM Trainer</h2>
+        <div class="how-to-grid">
+          <div class="how-to-step"><span>1</span><div><strong>Set up the flight</strong><p>Open <b>VFR Radio Trainer</b>. Use the Flight Setup column on the left to select training level, airports, aircraft, runways, direction, and requested altitude. Then select <b>Apply Setup</b>.</p></div></div>
+          <div class="how-to-step"><span>2</span><div><strong>Open Radio Communication Trainer</strong><p>Flight Setup and VFR radio training share the same page. After applying the setup, tune the displayed COM frequency before transmitting.</p></div></div>
+          <div class="how-to-step"><span>3</span><div><strong>Monitor ATIS</strong><p>For ATIS stages, tune the correct frequency and select <b>Monitor ATIS</b>. Record the information code and runway before continuing.</p></div></div>
+          <div class="how-to-step"><span>4</span><div><strong>Transmit</strong><p>Tap the microphone once to start talking. Tap it again to end and send. You may also type a transmission and select <b>Send Typed</b>.</p></div></div>
+          <div class="how-to-step"><span>5</span><div><strong>Respond to ATC</strong><p>Read back the required runway, altitude, frequency, squawk, taxi instructions, traffic pattern instructions, or other clearances. Unexpected ATC changes may occur.</p></div></div>
+          <div class="how-to-step"><span>6</span><div><strong>Review your results</strong><p>Completed flights are saved in <b>Training Log</b>. At the end of a flight, review the <b>End-of-Flight Report</b> for scores and recommended practice.</p></div></div>
+        </div>
+        <div class="how-to-note"><strong>Training aid only.</strong> Always use current FAA publications and actual ATC instructions for real-world operations.</div>
+      </section>
+    </section>
+
+    <p class="small product-footer">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
+  </main>
 </div>
 
 <script>
 "use strict";
 
 const $ = id => document.getElementById(id);
+
+const APP_PAGE_TITLES={
+  "home":"HOME",
+  "trainer":"VFR RADIO TRAINER",
+  "ifr-trainer":"IFR RADIO TRAINER",
+  "training-log":"TRAINING LOG",
+  "report":"END-OF-FLIGHT REPORT",
+  "how-to":"HOW TO USE"
+};
+
+function showAppPage(page,options={}){
+  const target=document.getElementById(`page-${page}`);
+  if(!target) return;
+  document.querySelectorAll(".app-page").forEach(el=>el.classList.toggle("active",el===target));
+  document.querySelectorAll(".side-nav-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
+  if($("pageTitle")) $("pageTitle").textContent=APP_PAGE_TITLES[page]||target.dataset.title||"";
+  document.body.classList.toggle("trainer-page-active",page==="trainer");
+  document.body.classList.toggle("home-page-active",page==="home");
+  document.body.classList.toggle("ifr-page-active",page==="ifr-trainer");
+  document.body.classList.remove("nav-open");
+  updateApplicationStatus();
+  if(page==="home") renderDashboard();
+  if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function showTrainerWithSetup(){
+  showAppPage("trainer");
+  const setup=document.querySelector("#page-trainer details.setup");
+  if(setup) setup.open=true;
+  setTimeout(()=>setup?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+
+function initSideNavigation(){
+  document.querySelectorAll(".side-nav-item").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.page)));
+  document.querySelectorAll("[data-dashboard-page]").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.dashboardPage)));
+
+  $("dashboardNewFlight")?.addEventListener("click",()=>showTrainerWithSetup());
+  $("dashboardContinue")?.addEventListener("click",()=>showAppPage("trainer"));
+  $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup());
+  $("repeatSameRoute")?.addEventListener("click",()=>{
+    resetTraining();
+    showAppPage("trainer");
+  });
+
+  $("mobileNavToggle")?.addEventListener("click",()=>document.body.classList.toggle("nav-open"));
+  document.addEventListener("click",event=>{
+    if(!document.body.classList.contains("nav-open")) return;
+    if(event.target.closest("#sideNav") || event.target.closest("#mobileNavToggle")) return;
+    document.body.classList.remove("nav-open");
+  });
+  document.addEventListener("keydown",event=>{
+    if(event.key==="Escape") document.body.classList.remove("nav-open");
+  });
+  showAppPage("home",{noScroll:true});
+}
+
+
+function titleCaseWord(value){
+  const s=String(value||"");
+  return s ? s.charAt(0).toUpperCase()+s.slice(1) : "";
+}
+
+function currentRouteText(){
+  const dep=(typeof app!=="undefined" && app.config?.departureAirport) || $("departureAirport")?.value || "KLGB";
+  const dest=(typeof app!=="undefined" && app.config?.destinationAirport) || $("destinationAirport")?.value || "KCRQ";
+  return `${dep} → ${dest}`;
+}
+
+function updateSetupSummary(){
+  const dep=$("departureAirport")?.value || (typeof app!=="undefined" ? app.config?.departureAirport : "KLGB") || "KLGB";
+  const dest=$("destinationAirport")?.value || (typeof app!=="undefined" ? app.config?.destinationAirport : "KCRQ") || "KCRQ";
+  let nm=0;
+  try{ nm=Math.round(routeDistanceNm(dep,dest)); }catch(e){}
+  let stages=9;
+  try{ stages=buildStages(dep,dest).length; }catch(e){}
+
+  if($("setupSummaryRoute")) $("setupSummaryRoute").textContent=`${dep} → ${dest}`;
+  if($("setupSummaryDistance")) $("setupSummaryDistance").textContent=nm ? `${nm} NM` : "— NM";
+  if($("setupSummaryStages")) $("setupSummaryStages").textContent=String(stages);
+  if($("setupSummaryEnroute")) $("setupSummaryEnroute").textContent=nm>50 ? "Yes" : "No";
+}
+
+function updateTrainingLevelDescription(){
+  const level=$("level")?.value || (typeof app!=="undefined" ? app.config?.level : "beginner") || "beginner";
+  const descriptions={
+    beginner:"More prompting and fewer unexpected ATC changes.",
+    intermediate:"Reduced prompting with more unexpected ATC changes.",
+    advanced:"Minimal prompting with the most unexpected ATC changes."
+  };
+  if($("trainingLevelDescription")) $("trainingLevelDescription").textContent=descriptions[level]||"";
+}
+
+function updateApplicationStatus(){
+  if(typeof app==="undefined") return;
+  const route=`${app.config?.departureAirport||"KLGB"} → ${app.config?.destinationAirport||"KCRQ"}`;
+  const level=titleCaseWord(app.config?.level||"beginner");
+  const stageTotal=(typeof STAGES!=="undefined" && STAGES?.length) ? STAGES.length : 9;
+  const stageNum=Math.min((app.stageIndex||0)+1,stageTotal);
+  const stage=(typeof STAGES!=="undefined" && STAGES?.[app.stageIndex]) ? STAGES[app.stageIndex] : null;
+
+  if($("sideStatusRoute")) $("sideStatusRoute").textContent=route;
+  if($("sideStatusMeta")) $("sideStatusMeta").textContent=`${level} • Stage ${stageNum} of ${stageTotal}`;
+}
+
+function renderDashboard(){
+  if(typeof app==="undefined") return;
+  const route=`${app.config?.departureAirport||"KLGB"} → ${app.config?.destinationAirport||"KCRQ"}`;
+  const level=titleCaseWord(app.config?.level||"beginner");
+  const history=typeof loadStudyHistory==="function" ? loadStudyHistory() : [];
+  const last=history.length ? history[history.length-1] : null;
+
+  if($("dashboardCurrentRoute")) $("dashboardCurrentRoute").textContent=route;
+  if($("dashboardLevel")) $("dashboardLevel").textContent=level;
+  if($("dashboardCompletedCount")) $("dashboardCompletedCount").textContent=String(history.length);
+  if($("dashboardLastRoute")) $("dashboardLastRoute").textContent=last?.route||"—";
+  if($("dashboardLastDate")) $("dashboardLastDate").textContent=last?.completedAt ? formatStudyHistoryDate(last.completedAt) : "";
+}
 
 const DIGIT = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five","6":"six","7":"seven","8":"eight","9":"niner"};
 const PHONETIC = {A:"Alpha",B:"Bravo",C:"Charlie",D:"Delta",E:"Echo",F:"Foxtrot",G:"Golf",H:"Hotel",I:"India",J:"Juliet",K:"Kilo",L:"Lima",M:"Mike",N:"November",O:"Oscar",P:"Papa",Q:"Quebec",R:"Romeo",S:"Sierra",T:"Tango",U:"Uniform",V:"Victor",W:"Whiskey",X:"X-ray",Y:"Yankee",Z:"Zulu"};
@@ -4296,6 +6137,7 @@ function renderStage(resetFrequency=true){
     : "FINAL STAGE";
   $("stageState").textContent="Not completed";
   $("stageState").className="small";
+  updateApplicationStatus();
   $("progressFill").style.width=`${((app.stageIndex+1)/STAGES.length)*100}%`;
   renderProgressMarkers(false);
   $("targetFrequency").textContent=app.config.level==="beginner" ? `Target ${stage.freq} MHz` : "";
@@ -5445,6 +7287,7 @@ function recordCompletedTraining(){
     localStorage.setItem(STUDY_HISTORY_KEY,JSON.stringify(history));
     app.session.historyRecorded=true;
     renderStudyHistory();
+    renderDashboard();
   }catch(e){
     /* Study history is optional; training completion should never fail if storage is unavailable. */
   }
@@ -5633,6 +7476,7 @@ function renderFinalReport(){
   `;
 
   $("finalReport").classList.remove("hidden");
+  showAppPage("report");
 }
 
 function evaluateTransmission(text){
@@ -6466,12 +8310,23 @@ function previousStage(){
 }
 
 
-$("departureAirport").addEventListener("change",()=>updateDepartureChoices(false));
-$("destinationAirport").addEventListener("change",()=>updateDestinationChoices(false));
+$("departureAirport").addEventListener("change",()=>{
+  updateDepartureChoices(false);
+  updateSetupSummary();
+});
+$("destinationAirport").addEventListener("change",()=>{
+  updateDestinationChoices(false);
+  updateSetupSummary();
+});
+$("level").addEventListener("change",()=>{
+  updateTrainingLevelDescription();
+  updateApplicationStatus();
+});
 
 $("applySetup").addEventListener("click",()=>{
   readSetup(true);
   collapseSetupAfterApplyIfSmall();
+  updateApplicationStatus();
 });
 $("monitorAtis").addEventListener("click",monitorAtis);
 $("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
@@ -6645,6 +8500,787 @@ function collapseSetupAndTop(button){
   });
 }
 
+
+/* V4.14 VFR setup label */
+updateSetupSummary();
+updateTrainingLevelDescription();
+updateApplicationStatus();
+renderDashboard();
+initSideNavigation();
+
+/* =========================================================
+   V4.13 IFR RADIO TRAINER ENGINE
+   ========================================================= */
+
+const ifr$ = id => document.getElementById(`ifr-${id}`);
+
+const IFR_LEVEL_DESCRIPTIONS={
+  beginner:"More prompting and simplified IFR clearances.",
+  intermediate:"Reduced prompting with more realistic IFR readbacks.",
+  advanced:"Minimal prompting with amended clearances and less coaching."
+};
+
+const IFR_APP={
+  stageIndex:0,
+  phase:"idle",
+  stageComplete:false,
+  pttActive:false,
+  pttStopping:false,
+  recognizer:null,
+  recognitionCommitted:"",
+  recognitionSegment:"",
+  recognitionRestartTimer:null,
+  micAllowed:false,
+  lastATC:null,
+  squawk:"4652",
+  config:{
+    departureAirport:"KLGB",
+    destinationAirport:"KCRQ",
+    aircraftType:"Cessna 172",
+    callsign:"724SP",
+    location:"Long Beach Flying Club",
+    runway:"26L",
+    destRunway:"24",
+    route:"As Filed",
+    altitude:"5,000 ft",
+    approachType:"RNAV (GPS)",
+    level:"beginner",
+    atis:"",
+    arrivalAtis:""
+  },
+  session:{
+    attempts:0,
+    tuningErrors:0,
+    stages:{},
+    missing:{},
+    historyRecorded:false
+  }
+};
+
+let IFR_STAGES=[];
+
+function ifrRandomSquawk(){
+  const digits=()=>String(Math.floor(Math.random()*8));
+  return `${digits()}${digits()}${digits()}${digits()}`;
+}
+
+function ifrAirport(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
+function ifrFreq(code,key){
+  const ap=ifrAirport(code);
+  return String(ap?.frequencies?.[key] || ap?.frequencies?.approach || "121.500");
+}
+function ifrFacility(code,key){
+  const ap=ifrAirport(code);
+  return ap?.facilities?.[key] || `${ap?.radioName||ap?.name||code} ${key}`;
+}
+function ifrTail(){ return String(IFR_APP.config.callsign||"724SP").replace(/\s+/g,"").toUpperCase(); }
+function ifrAircraftPrefix(){
+  const type=String(IFR_APP.config.aircraftType||"Cessna 172");
+  if(type.toLowerCase().includes("piper")) return "Piper";
+  if(type.toLowerCase().includes("cirrus")) return "Cirrus";
+  if(type.toLowerCase().includes("diamond")) return "Diamond";
+  if(type.toLowerCase().includes("bonanza")) return "Bonanza";
+  return "Cessna";
+}
+function ifrCallsignVisual(){ return `${ifrAircraftPrefix()} ${ifrTail()}`; }
+function ifrCallsignSpoken(){
+  return `${ifrAircraftPrefix()} `+[...ifrTail()].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+}
+function ifrFormatAltitude(v){
+  const n=parseInt(String(v||"").replace(/\D/g,""),10);
+  const safe=Number.isFinite(n)?Math.max(0,Math.min(18000,n)):5000;
+  return `${safe.toLocaleString("en-US")} ft`;
+}
+function ifrAltitudeNumber(v=IFR_APP.config.altitude){
+  const n=parseInt(String(v||"").replace(/\D/g,""),10);
+  return Number.isFinite(n)?n:5000;
+}
+function ifrRunwaySpoken(r){
+  const m=String(r||"").toUpperCase().match(/^(\d+)([LRC])?$/);
+  if(!m) return String(r||"");
+  let s=[...m[1]].map(d=>DIGIT[d]).join(" ");
+  if(m[2]) s+=" "+({L:"left",R:"right",C:"center"}[m[2]]);
+  return s;
+}
+function ifrApproachName(){
+  return `${IFR_APP.config.approachType} Runway ${IFR_APP.config.destRunway}`;
+}
+function ifrApproachSpoken(){
+  return `${IFR_APP.config.approachType.replace("(GPS)","GPS")} runway ${ifrRunwaySpoken(IFR_APP.config.destRunway)}`;
+}
+function ifrClearanceInitialAltitude(){
+  return Math.min(3000,ifrAltitudeNumber());
+}
+function ifrClearanceInitialAltitudeText(){
+  return `${ifrClearanceInitialAltitude().toLocaleString("en-US")} ft`;
+}
+function ifrRouteClearance(){
+  const route=IFR_APP.config.route;
+  if(route==="Direct") return `direct ${IFR_APP.config.destinationAirport}`;
+  if(route==="Radar Vectors") return `radar vectors, then direct ${IFR_APP.config.destinationAirport}`;
+  return "as filed";
+}
+
+function buildIFRStages(){
+  const c=IFR_APP.config, dep=ifrAirport(c.departureAirport), dest=ifrAirport(c.destinationAirport);
+  return [
+    {id:"atis",title:"DEPARTURE ATIS",facility:`${dep.radioName||dep.name} ATIS`,freq:ifrFreq(c.departureAirport,"atis"),type:"atis"},
+    {id:"clearance",title:"IFR CLEARANCE",facility:ifrFacility(c.departureAirport,"clearance"),freq:ifrFreq(c.departureAirport,"clearance"),type:"comm"},
+    {id:"ground",title:"GROUND",facility:ifrFacility(c.departureAirport,"ground"),freq:ifrFreq(c.departureAirport,"ground"),type:"comm"},
+    {id:"tower",title:"TOWER / IFR RELEASE",facility:ifrFacility(c.departureAirport,"tower"),freq:ifrFreq(c.departureAirport,"tower"),type:"comm"},
+    {id:"departure",title:"DEPARTURE",facility:ifrFacility(c.departureAirport,"departure"),freq:ifrFreq(c.departureAirport,"departure"),type:"comm"},
+    {id:"enroute",title:"ENROUTE",facility:"Center / Approach",freq:enrouteFrequency(c.departureAirport,c.destinationAirport),type:"comm"},
+    {id:"arrivalAtis",title:"ARRIVAL ATIS",facility:`${dest.radioName||dest.name} ATIS`,freq:ifrFreq(c.destinationAirport,"arrivalAtis")||ifrFreq(c.destinationAirport,"atis"),type:"atis"},
+    {id:"approach",title:"APPROACH",facility:ifrFacility(c.destinationAirport,"approach"),freq:ifrFreq(c.destinationAirport,"approach"),type:"comm"},
+    {id:"destTower",title:"DESTINATION TOWER",facility:ifrFacility(c.destinationAirport,"tower"),freq:ifrFreq(c.destinationAirport,"tower"),type:"comm"},
+    {id:"destGround",title:"DESTINATION GROUND",facility:ifrFacility(c.destinationAirport,"ground"),freq:ifrFreq(c.destinationAirport,"ground"),type:"comm"}
+  ];
+}
+
+function ifrSetOptions(id,values,preferred){
+  const el=ifr$(id);
+  if(!el) return;
+  el.innerHTML=values.map(v=>`<option value="${v}">${v}</option>`).join("");
+  el.value=values.includes(preferred)?preferred:values[0];
+}
+function ifrUpdateDepartureChoices(preserve=true){
+  const code=ifr$("departureAirport").value;
+  const ap=ifrAirport(code);
+  const oldRunway=preserve?ifr$("runway").value:"";
+  const oldLoc=preserve?ifr$("location").value:"";
+  ifrSetOptions("runway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
+  ifrSetOptions("location",ap.locations,oldLoc);
+  ifrUpdateRouteHeading();
+}
+function ifrUpdateDestinationChoices(preserve=true){
+  const code=ifr$("destinationAirport").value;
+  const ap=ifrAirport(code);
+  const oldRunway=preserve?ifr$("destRunway").value:"";
+  ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
+  ifrUpdateRouteHeading();
+}
+function ifrUpdateRouteHeading(){
+  const dep=ifr$("departureAirport")?.value||"KLGB";
+  const dest=ifr$("destinationAirport")?.value||"KCRQ";
+  if(ifr$("routeHeading")) ifr$("routeHeading").textContent=`${dep} → ${dest}`;
+}
+function ifrSelectedAircraftType(){
+  const v=ifr$("aircraftType")?.value||"Cessna 172";
+  if(v==="Other") return (ifr$("otherAircraftType")?.value||"Aircraft").trim()||"Aircraft";
+  return v;
+}
+function ifrReadSetup(generateCodes=true){
+  const priorAtis=IFR_APP.config.atis, priorArrival=IFR_APP.config.arrivalAtis;
+  IFR_APP.config={
+    departureAirport:ifr$("departureAirport").value||"KLGB",
+    destinationAirport:ifr$("destinationAirport").value||"KCRQ",
+    aircraftType:ifrSelectedAircraftType(),
+    callsign:(ifr$("callsign").value.trim()||"724SP").replace(/\s+/g,"").toUpperCase(),
+    location:ifr$("location").value,
+    runway:ifr$("runway").value,
+    destRunway:ifr$("destRunway").value,
+    route:ifr$("direction").value||"As Filed",
+    altitude:ifrFormatAltitude(ifr$("altitude").value),
+    approachType:ifr$("approachType").value||"RNAV (GPS)",
+    level:ifr$("level").value||"beginner",
+    atis:generateCodes?randomAtisCode():(priorAtis||randomAtisCode()),
+    arrivalAtis:generateCodes?randomAtisCode():(priorArrival||randomAtisCode())
+  };
+  IFR_APP.squawk=ifrRandomSquawk();
+  IFR_APP.stageIndex=0;
+  IFR_APP.stageComplete=false;
+  IFR_APP.session={attempts:0,tuningErrors:0,stages:{},missing:{},historyRecorded:false};
+  IFR_STAGES=buildIFRStages();
+  ifr$("next").classList.remove("hidden");
+  ifr$("reset").classList.add("hidden");
+  ifrUpdateRouteHeading();
+  ifrRenderStage(true);
+}
+
+function ifrInstructionFor(stage){
+  const c=IFR_APP.config, dep=ifrAirport(c.departureAirport), dest=ifrAirport(c.destinationAirport);
+  const beginner={
+    atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Record the information code and departure runway.`,
+    clearance:`Call ${ifrFacility(c.departureAirport,"clearance")}. Include callsign, location, ATIS ${c.atis}, IFR destination ${dest.name}, and say ready to copy.`,
+    ground:`Call ${ifrFacility(c.departureAirport,"ground")}. Include callsign, location, information ${c.atis}, and request taxi for IFR departure.`,
+    tower:`At Runway ${c.runway}, call ${ifrFacility(c.departureAirport,"tower")} and report ready for IFR departure.`,
+    departure:`After handoff, check in with ${ifrFacility(c.departureAirport,"departure")}. Include callsign, passing altitude, and assigned altitude.`,
+    enroute:`Check in with ${stage.facility}. Include callsign and level altitude.`,
+    arrivalAtis:`Monitor ${dest.name} ATIS before the approach. Record the information code and landing runway.`,
+    approach:`Contact ${ifrFacility(c.destinationAirport,"approach")} with callsign, altitude, information ${c.arrivalAtis}, and request the ${ifrApproachName()}.`,
+    destTower:`After approach handoff, contact ${ifrFacility(c.destinationAirport,"tower")} and report established on the ${c.approachType} approach Runway ${c.destRunway}.`,
+    destGround:`After clearing the runway, contact ${ifrFacility(c.destinationAirport,"ground")} and request taxi to parking.`
+  };
+  const intermediate={
+    atis:"Monitor departure ATIS and record the information.",
+    clearance:"Request and read back the IFR clearance.",
+    ground:"Make the IFR taxi request and read back the taxi / hold-short clearance.",
+    tower:"Report ready for IFR departure and read back the takeoff instruction.",
+    departure:"Check in after handoff and read back the climb / direct instruction.",
+    enroute:"Make the enroute check-in and read back the route / altitude instruction.",
+    arrivalAtis:"Monitor destination ATIS before the approach.",
+    approach:"Make the approach call and read back vectors, altitude, and approach clearance.",
+    destTower:"Report established and read back the landing clearance.",
+    destGround:"Request taxi to parking and read back the taxi instruction."
+  };
+  if(c.level==="advanced") return "Complete the IFR radio task without prompting.";
+  return (c.level==="beginner"?beginner:intermediate)[stage.id]||"Complete the IFR radio task.";
+}
+
+function ifrStagePhase(stage){
+  return ({
+    clearance:"clearanceInitial",
+    ground:"groundInitial",
+    tower:"towerInitial",
+    departure:"departureInitial",
+    enroute:"enrouteInitial",
+    approach:"approachInitial",
+    destTower:"destTowerInitial",
+    destGround:"destGroundInitial"
+  })[stage.id]||"idle";
+}
+
+function ifrRenderProgress(){
+  const holder=ifr$("progressMarkers");
+  if(!holder) return;
+  holder.innerHTML=IFR_STAGES.map((s,i)=>{
+    const state=i<IFR_APP.stageIndex?"complete":(i===IFR_APP.stageIndex?"current":"future");
+    return `<span class="progress-marker ${state}" title="Stage ${i+1}: ${s.title}">${i+1}</span>`;
+  }).join("");
+  if(ifr$("progressFill")) ifr$("progressFill").style.width=`${((IFR_APP.stageIndex)/Math.max(1,IFR_STAGES.length))*100}%`;
+}
+
+function ifrRadioValueParts(){
+  const value=parseFloat(ifr$("frequency").value)||121.500;
+  const mhz=Math.floor(value);
+  const frac=Math.round((value-mhz)*1000/5)*5;
+  return {mhz,frac:Math.max(0,Math.min(990,frac))};
+}
+function ifrRenderRadioDigits(){
+  const {mhz,frac}=ifrRadioValueParts();
+  const chars=String(mhz).padStart(3,"0")+String(frac).padStart(3,"0");
+  for(let i=0;i<6;i++) if(ifr$(`digit${i}`)) ifr$(`digit${i}`).textContent=chars[i];
+}
+function ifrSetRadioFrequency(mhz,frac){
+  mhz=Math.max(118,Math.min(137,mhz));
+  frac=Math.round(frac/5)*5;
+  if(frac<0){ if(mhz>118){mhz--;frac=990}else frac=0; }
+  if(frac>990){ if(mhz<137){mhz++;frac=0}else frac=0; }
+  if(mhz===137&&frac>0) frac=0;
+  ifr$("frequency").value=`${mhz}.${String(frac).padStart(3,"0")}`;
+  ifrRenderRadioDigits();
+  ifrUpdateTuneUI();
+}
+function ifrStepRadioDigit(index,dir){
+  const {mhz,frac}=ifrRadioValueParts();
+  if(index<=2){
+    const digits=String(mhz).padStart(3,"0").split("");
+    let tens=Number(digits[1]),ones=Number(digits[2]);
+    if(index===1){
+      const allowed=[1,2,3]; let pos=allowed.indexOf(tens); pos=(pos+dir+allowed.length)%allowed.length; tens=allowed[pos];
+      if(tens===1&&ones<8) ones=8; if(tens===3&&ones>7) ones=7;
+    }else if(index===2){
+      let allowed=tens===1?[8,9]:(tens===3?[0,1,2,3,4,5,6,7]:[0,1,2,3,4,5,6,7,8,9]);
+      let pos=allowed.indexOf(ones); if(pos<0)pos=0; pos=(pos+dir+allowed.length)%allowed.length; ones=allowed[pos];
+    }
+    ifrSetRadioFrequency(100+tens*10+ones,frac);
+  }else{
+    const delta=index===3?100:(index===4?10:5);
+    ifrSetRadioFrequency(mhz,frac+dir*delta);
+  }
+}
+function ifrTuned(){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  return stage && Math.abs(parseFloat(ifr$("frequency").value)-parseFloat(stage.freq))<0.001;
+}
+function ifrUpdateTuneUI(){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage) return;
+  const ok=ifrTuned();
+  ifr$("targetFrequency").textContent=`TARGET ${stage.freq}`;
+  ifr$("radioReadyState").textContent=ok?"READY":"NOT READY";
+  ifr$("radioReadyState").className=`radio-ready-state ${ok?"ready":"not-ready"}`;
+  ifr$("tuneMsg").textContent=ok?`${stage.facility} selected.`:`Tune ${stage.freq} for ${stage.facility}.`;
+}
+
+function ifrRenderStage(resetFrequency=true){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage) return;
+  IFR_APP.phase=ifrStagePhase(stage);
+  IFR_APP.stageComplete=false;
+  ifr$("stageTitle").textContent=stage.title;
+  ifr$("stageFrequency").textContent=stage.freq;
+  ifr$("stageCounter").textContent=`STAGE ${IFR_APP.stageIndex+1} OF ${IFR_STAGES.length}`;
+  const next=IFR_STAGES[IFR_APP.stageIndex+1];
+  ifr$("nextStageText").textContent=next?`NEXT · ${next.title} · ${next.freq}`:"FINAL STAGE";
+  ifr$("stageState").textContent="Not completed";
+  ifr$("stageState").className="small";
+  ifr$("instruction").textContent=ifrInstructionFor(stage);
+  ifr$("score").textContent="—";
+  ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
+  ifr$("next").disabled=true;
+  ifr$("previous").disabled=IFR_APP.stageIndex===0;
+  ifr$("transcript").innerHTML="";
+  ifr$("atisPanel").classList.toggle("hidden",stage.type!=="atis");
+  ifr$("commPanel").classList.toggle("hidden",stage.type==="atis");
+  if(stage.id==="atis") ifr$("atisText").textContent="";
+  if(stage.id==="arrivalAtis") ifr$("atisText").textContent="";
+  if(resetFrequency) ifrSetRadioFrequency(121,500); else ifrUpdateTuneUI();
+  ifrRenderProgress();
+}
+
+function ifrAppend(type,speaker,text){
+  const el=document.createElement("div");
+  el.className=`msg ${type}`;
+  el.innerHTML=`<div class="speaker">${speaker}</div><div class="bubble"></div>`;
+  el.querySelector(".bubble").textContent=text;
+  ifr$("transcript").appendChild(el);
+  ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
+}
+function ifrSpeak(text){
+  IFR_APP.lastATC=text;
+  if(!("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="en-US"; u.rate=.94; u.pitch=.92;
+  speechSynthesis.speak(u);
+}
+function ifrATC(visual,spoken=visual){
+  ifrAppend("atc","ATC",visual);
+  ifrSpeak(spoken);
+}
+
+function ifrContainsCallsign(text){
+  const c=norm(text), tail=ifrTail().toLowerCase();
+  return c.includes(tail)||compact(c).includes(tail);
+}
+function ifrContainsAirport(text,code){
+  const n=norm(text), ap=ifrAirport(code);
+  const vals=[code,code.replace(/^K/,""),ap.name,ap.radioName,...(ap.aliases||[])].filter(Boolean).map(norm);
+  return vals.some(v=>v&&n.includes(v));
+}
+function ifrContainsRunway(text,runway){
+  const n=norm(text).replace(/\s+/g," ");
+  const r=String(runway||"").toLowerCase();
+  const m=r.match(/^(\d+)([lrc])?$/);
+  if(!m) return n.includes(r);
+  const digits=m[1],side=m[2]?({l:"left",r:"right",c:"center"}[m[2]]):"";
+  const spoken=[...digits].map(d=>DIGIT[d]).join(" ");
+  const patterns=[`runway ${digits}`,digits,`runway ${spoken}`,spoken];
+  if(side) patterns.push(`${digits} ${side}`,`${spoken} ${side}`,`runway ${digits} ${side}`,`runway ${spoken} ${side}`);
+  return patterns.some(p=>new RegExp(`(^|[^a-z0-9])${p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}([^a-z0-9]|$)`).test(n));
+}
+function ifrContainsAltitude(text,value){
+  const target=parseInt(String(value||"").replace(/\D/g,""),10);
+  if(!Number.isFinite(target)) return false;
+  const n=norm(text), compactN=compact(text);
+  return n.includes(target.toLocaleString("en-US"))||n.includes(String(target))||compactN.includes(String(target));
+}
+function ifrContainsFrequency(text,freq){
+  const digits=String(freq).replace(".","");
+  return compact(text).includes(digits)||norm(text).includes(String(freq));
+}
+function ifrContainsSquawk(text){
+  return compact(text).includes(IFR_APP.squawk);
+}
+function ifrGrade(checks){
+  const vals=Object.values(checks);
+  if(!vals.length) return 0;
+  return Math.round(100*vals.filter(Boolean).length/vals.length);
+}
+function ifrCompleteStage(score=100){
+  IFR_APP.stageComplete=true;
+  ifr$("score").textContent=`${score}%`;
+  ifr$("stageState").textContent="Completed";
+  ifr$("stageState").className="small good";
+  ifr$("next").disabled=false;
+  if(IFR_APP.stageIndex===IFR_STAGES.length-1){
+    ifr$("next").classList.add("hidden");
+    ifr$("reset").classList.remove("hidden");
+    ifrRecordCompletedTraining();
+    ifr$("feedback").textContent="IFR training session complete.";
+  }
+}
+
+function ifrMonitorAtis(){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage||stage.type!=="atis") return;
+  if(!ifrTuned()){
+    IFR_APP.session.tuningErrors++;
+    ifr$("feedback").textContent=`Tune ${stage.freq} before monitoring ATIS.`;
+    return;
+  }
+  const dep=stage.id==="atis";
+  const code=dep?IFR_APP.config.atis:IFR_APP.config.arrivalAtis;
+  const runway=dep?IFR_APP.config.runway:IFR_APP.config.destRunway;
+  const airport=ifrAirport(dep?IFR_APP.config.departureAirport:IFR_APP.config.destinationAirport);
+  const visual=`${airport.radioName||airport.name} information ${code}. Wind 260 at 8. Visibility 10. Ceiling 4,500 broken. Runway ${runway} in use. Altimeter 30.02.`;
+  ifr$("atisText").textContent=visual;
+  ifrSpeak(`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`);
+  ifr$("feedback").textContent=`ATIS received: information ${code}, Runway ${runway}.`;
+  ifrCompleteStage(100);
+}
+
+function ifrEvaluateTransmission(text){
+  text=String(text||"").trim();
+  if(!text) return;
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage||stage.type==="atis") return;
+  if(!ifrTuned()){
+    IFR_APP.session.tuningErrors++;
+    ifr$("feedback").textContent=`Radio is not tuned to ${stage.freq}.`;
+    return;
+  }
+
+  IFR_APP.session.attempts++;
+  ifrAppend("pilot","PILOT",text);
+  const n=norm(text);
+  let checks={},score=0;
+
+  if(stage.id==="clearance"){
+    if(IFR_APP.phase==="clearanceInitial"){
+      checks={
+        facility:n.includes("clearance")||ifrContainsAirport(text,IFR_APP.config.departureAirport),
+        callsign:ifrContainsCallsign(text),
+        location:n.includes(norm(IFR_APP.config.location)),
+        atis:n.includes(IFR_APP.config.atis.toLowerCase()),
+        destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
+        ifr:n.includes("ifr")||n.includes("ready to copy")||n.includes("copy")
+      };
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=70){
+        const initial=ifrClearanceInitialAltitude();
+        const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
+        const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial}, expect ${ifrAltitudeNumber()} ten minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        ifrATC(visual,spoken);
+        IFR_APP.phase="clearanceReadback";
+        ifr$("feedback").textContent="Read back the IFR clearance: clearance limit/route, altitude, departure frequency, and squawk.";
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, say again IFR request and destination.`);
+        ifr$("feedback").textContent="Initial IFR clearance call incomplete.";
+      }
+    }else{
+      checks={
+        destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
+        altitude:ifrContainsAltitude(text,ifrClearanceInitialAltitude()),
+        frequency:ifrContainsFrequency(text,ifrFreq(IFR_APP.config.departureAirport,"departure")),
+        squawk:ifrContainsSquawk(text),
+        callsign:ifrContainsCallsign(text)
+      };
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(checks.destination&&checks.altitude&&checks.frequency&&checks.squawk){
+        ifrATC(`${ifrCallsignVisual()}, readback correct. Contact Ground when ready to taxi.`);
+        ifr$("feedback").textContent="IFR Clearance complete.";
+        ifrCompleteStage(checks.callsign?100:90);
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, verify clearance, altitude, departure frequency, and squawk.`);
+        ifr$("feedback").textContent="IFR clearance readback incomplete.";
+      }
+    }
+    return;
+  }
+
+  if(stage.id==="ground"){
+    if(IFR_APP.phase==="groundInitial"){
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:n.includes(norm(IFR_APP.config.location)),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")&&(n.includes("ifr")||n.includes("departure"))};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=60){
+        const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
+        IFR_APP.taxiway=taxi;
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, taxi via ${taxi}, hold short Runway ${IFR_APP.config.runway}.`);
+        IFR_APP.phase="groundReadback";
+        ifr$("feedback").textContent="Read back runway, taxiway, and hold-short instruction.";
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, say again position, ATIS, and IFR taxi request.`);
+      }
+    }else{
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:n.includes(norm(IFR_APP.taxiway)),hold:n.includes("hold short")||n.includes("holding short")};
+      score=ifrGrade(checks);
+      if(checks.runway&&checks.taxiway&&checks.hold){
+        ifrATC(`${ifrCallsignVisual()}, readback correct.`);
+        ifrCompleteStage(100);
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, verify taxi via ${IFR_APP.taxiway}, hold short Runway ${IFR_APP.config.runway}.`);
+      }
+    }
+    return;
+  }
+
+  if(stage.id==="tower"){
+    if(IFR_APP.phase==="towerInitial"){
+      checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),ready:n.includes("ready"),ifr:n.includes("ifr")||n.includes("departure"),runway:ifrContainsRunway(text,IFR_APP.config.runway)};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=60){
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. Fly runway heading. Contact Departure.`);
+        IFR_APP.phase="towerReadback";
+        ifr$("feedback").textContent="Read back runway, takeoff clearance, and runway heading.";
+      }else ifrATC(`${ifrCallsignVisual()}, say again ready for IFR departure.`);
+    }else{
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:n.includes("takeoff"),heading:n.includes("runway heading")||n.includes("heading")};
+      if(checks.runway&&checks.takeoff&&checks.heading){
+        ifrATC(`${ifrCallsignVisual()}, correct. Contact Departure ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify cleared for takeoff Runway ${IFR_APP.config.runway}, fly runway heading.`);
+    }
+    return;
+  }
+
+  if(stage.id==="departure"){
+    if(IFR_APP.phase==="departureInitial"){
+      checks={facility:n.includes("departure")||n.includes("approach"),callsign:ifrContainsCallsign(text),altitude:/\d/.test(n)||n.includes("passing")||n.includes("climbing")};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=60){
+        ifrATC(`${ifrCallsignVisual()}, radar contact. Climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}. Proceed direct ${IFR_APP.config.destinationAirport}.`);
+        IFR_APP.phase="departureReadback";
+        ifr$("feedback").textContent="Read back assigned altitude and direct instruction.";
+      }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
+    }else{
+      checks={altitude:ifrContainsAltitude(text,ifrAltitudeNumber()),direct:n.includes("direct")||ifrContainsAirport(text,IFR_APP.config.destinationAirport)};
+      if(checks.altitude&&checks.direct){
+        ifrATC(`${ifrCallsignVisual()}, correct.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}, direct ${IFR_APP.config.destinationAirport}.`);
+    }
+    return;
+  }
+
+  if(stage.id==="enroute"){
+    if(IFR_APP.phase==="enrouteInitial"){
+      checks={callsign:ifrContainsCallsign(text),altitude:ifrContainsAltitude(text,ifrAltitudeNumber())||n.includes("level")};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=50){
+        const descent=Math.min(4000,ifrAltitudeNumber());
+        IFR_APP.arrivalAltitude=descent;
+        ifrATC(`${ifrCallsignVisual()}, proceed direct ${IFR_APP.config.destinationAirport}. Descend and maintain ${descent.toLocaleString("en-US")}. Expect ${ifrApproachName()}.`);
+        IFR_APP.phase="enrouteReadback";
+        ifr$("feedback").textContent="Read back direct, descent altitude, and expected approach.";
+      }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
+    }else{
+      checks={direct:n.includes("direct")||ifrContainsAirport(text,IFR_APP.config.destinationAirport),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:n.includes(norm(IFR_APP.config.approachType.split(" ")[0]))||n.includes("approach")};
+      if(checks.direct&&checks.altitude&&checks.approach){
+        ifrATC(`${ifrCallsignVisual()}, correct. Monitor destination ATIS.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify direct ${IFR_APP.config.destinationAirport}, descend and maintain ${IFR_APP.arrivalAltitude}, expect ${ifrApproachName()}.`);
+    }
+    return;
+  }
+
+  if(stage.id==="approach"){
+    if(IFR_APP.phase==="approachInitial"){
+      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),altitude:/\d/.test(n)||n.includes("level")};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=60){
+        IFR_APP.vectorHeading="240";
+        IFR_APP.approachAltitude=Math.min(3000,IFR_APP.arrivalAltitude||3000);
+        ifrATC(`${ifrCallsignVisual()}, fly heading ${IFR_APP.vectorHeading}. Maintain ${IFR_APP.approachAltitude.toLocaleString("en-US")} until established. Cleared ${ifrApproachName()}.`);
+        IFR_APP.phase="approachReadback";
+        ifr$("feedback").textContent="Read back heading, altitude restriction, and approach clearance.";
+      }else ifrATC(`${ifrCallsignVisual()}, say approach request and ATIS.`);
+    }else{
+      checks={heading:n.includes(IFR_APP.vectorHeading)||n.includes("heading"),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
+      if(checks.heading&&checks.altitude&&checks.approach&&checks.runway){
+        ifrATC(`${ifrCallsignVisual()}, correct. Contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower")}.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify heading ${IFR_APP.vectorHeading}, maintain ${IFR_APP.approachAltitude} until established, cleared ${ifrApproachName()}.`);
+    }
+    return;
+  }
+
+  if(stage.id==="destTower"){
+    if(IFR_APP.phase==="destTowerInitial"){
+      checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),runway:ifrContainsRunway(text,IFR_APP.config.destRunway),approach:n.includes("approach")||n.includes("established")||n.includes("final")};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=60){
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.destRunway}, cleared to land.`);
+        IFR_APP.phase="destTowerReadback";
+        ifr$("feedback").textContent="Read back runway and landing clearance.";
+      }else ifrATC(`${ifrCallsignVisual()}, say position and runway.`);
+    }else{
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.destRunway),landing:n.includes("land")||n.includes("cleared to land")};
+      if(checks.runway&&checks.landing){
+        ifrATC(`${ifrCallsignVisual()}, correct.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify Runway ${IFR_APP.config.destRunway}, cleared to land.`);
+    }
+    return;
+  }
+
+  if(stage.id==="destGround"){
+    if(IFR_APP.phase==="destGroundInitial"){
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),request:n.includes("taxi"),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
+      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      if(score>=50){
+        const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
+        IFR_APP.destTaxiway=taxi;
+        ifrATC(`${ifrCallsignVisual()}, taxi to parking via ${taxi}.`);
+        IFR_APP.phase="destGroundReadback";
+        ifr$("feedback").textContent="Read back taxiway and parking destination.";
+      }else ifrATC(`${ifrCallsignVisual()}, say parking request.`);
+    }else{
+      checks={taxiway:n.includes(norm(IFR_APP.destTaxiway)),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
+      if(checks.taxiway){
+        ifrATC(`${ifrCallsignVisual()}, readback correct. Good day.`);
+        ifrCompleteStage(100);
+      }else ifrATC(`${ifrCallsignVisual()}, verify taxi via ${IFR_APP.destTaxiway}.`);
+    }
+  }
+}
+
+function ifrNextStage(){
+  if(!IFR_APP.stageComplete) return;
+  if(IFR_APP.stageIndex>=IFR_STAGES.length-1) return;
+  IFR_APP.stageIndex++;
+  ifrRenderStage(true);
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function ifrPreviousStage(){
+  if(IFR_APP.stageIndex<=0) return;
+  IFR_APP.stageIndex--;
+  ifrRenderStage(true);
+}
+function ifrResetTraining(){
+  ifrReadSetup(true);
+}
+function ifrRecordCompletedTraining(){
+  if(IFR_APP.session.historyRecorded) return;
+  try{
+    const history=loadStudyHistory();
+    history.push({
+      route:`IFR ${IFR_APP.config.departureAirport} → ${IFR_APP.config.destinationAirport}`,
+      completedAt:new Date().toISOString()
+    });
+    localStorage.setItem(STUDY_HISTORY_KEY,JSON.stringify(history));
+    IFR_APP.session.historyRecorded=true;
+    renderStudyHistory();
+    renderDashboard();
+  }catch(e){}
+}
+
+function ifrCollapseSetupAndTop(button){
+  const details=button.closest("details");
+  if(details) details.open=false;
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
+}
+window.collapseIFRSetupAndTop=ifrCollapseSetupAndTop;
+
+function ifrUpdatePTTState(){
+  ifr$("ptt").classList.toggle("listening",IFR_APP.pttActive);
+  ifr$("pttLabel").textContent=IFR_APP.pttActive?"TAP TO END & SEND":"TAP TO TALK";
+}
+function ifrJoinRecognitionText(base,addition){
+  base=(base||"").trim(); addition=(addition||"").trim();
+  if(!addition) return base; if(!base) return addition;
+  const a=base.split(/\s+/),b=addition.split(/\s+/);
+  const max=Math.min(8,a.length,b.length); let overlap=0;
+  for(let size=max;size>=1;size--){
+    if(a.slice(-size).join(" ").toLowerCase()===b.slice(0,size).join(" ").toLowerCase()){overlap=size;break;}
+  }
+  return [...a,...b.slice(overlap)].join(" ");
+}
+function ifrStartRecognitionSegment(){
+  if(!IFR_APP.pttActive||IFR_APP.pttStopping) return;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){
+    ifr$("feedback").textContent="Speech recognition is unavailable in this browser.";
+    IFR_APP.pttActive=false; ifrUpdatePTTState(); return;
+  }
+  const r=new SR();
+  r.lang="en-US"; r.continuous=false; r.interimResults=true; r.maxAlternatives=1;
+  IFR_APP.recognizer=r; IFR_APP.recognitionSegment="";
+  r.onstart=()=>{ifr$("stageState").textContent="Listening";ifr$("feedback").textContent="Listening... tap again when finished.";};
+  r.onresult=event=>{
+    let finalPart="",interimPart="";
+    for(let i=event.resultIndex;i<event.results.length;i++){
+      const t=event.results[i][0].transcript;
+      if(event.results[i].isFinal) finalPart+=" "+t; else interimPart+=" "+t;
+    }
+    if(finalPart.trim()){
+      IFR_APP.recognitionCommitted=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,finalPart.trim());
+      IFR_APP.recognitionSegment="";
+    }else IFR_APP.recognitionSegment=interimPart.trim();
+    ifr$("pilotText").value=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,IFR_APP.recognitionSegment);
+  };
+  r.onerror=e=>{
+    if(e.error!=="no-speech"&&e.error!=="aborted") ifr$("feedback").textContent=`Speech recognition: ${e.error}.`;
+  };
+  r.onend=()=>{
+    IFR_APP.recognizer=null;
+    if(IFR_APP.pttActive&&!IFR_APP.pttStopping){
+      clearTimeout(IFR_APP.recognitionRestartTimer);
+      IFR_APP.recognitionRestartTimer=setTimeout(ifrStartRecognitionSegment,120);
+    }
+  };
+  try{r.start()}catch(e){}
+}
+async function ifrTogglePTT(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  if(!IFR_APP.pttActive){
+    if(!IFR_APP.micAllowed&&navigator.mediaDevices?.getUserMedia){
+      try{
+        const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+        stream.getTracks().forEach(t=>t.stop());
+        IFR_APP.micAllowed=true;
+      }catch(e){
+        ifr$("feedback").textContent="Microphone permission is required for Tap To Talk.";
+        return;
+      }
+    }
+    IFR_APP.pttStopping=false; IFR_APP.pttActive=true;
+    IFR_APP.recognitionCommitted=""; IFR_APP.recognitionSegment="";
+    ifr$("pilotText").value="";
+    ifrUpdatePTTState(); ifrStartRecognitionSegment();
+  }else{
+    IFR_APP.pttStopping=true; IFR_APP.pttActive=false;
+    clearTimeout(IFR_APP.recognitionRestartTimer);
+    try{IFR_APP.recognizer?.stop()}catch(e){}
+    const text=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,IFR_APP.recognitionSegment).trim();
+    ifr$("pilotText").value=text;
+    ifrUpdatePTTState();
+    setTimeout(()=>{
+      IFR_APP.pttStopping=false;
+      if(text) ifrEvaluateTransmission(text);
+    },160);
+  }
+}
+
+function ifrInit(){
+  if(!ifr$("departureAirport")) return;
+
+  ifr$("departureAirport").addEventListener("change",()=>ifrUpdateDepartureChoices(false));
+  ifr$("destinationAirport").addEventListener("change",()=>ifrUpdateDestinationChoices(false));
+  ifr$("level").addEventListener("change",()=>{
+    if(ifr$("trainingLevelDescription")) ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS[ifr$("level").value]||"";
+  });
+  ifr$("aircraftType").addEventListener("change",()=>{
+    const other=ifr$("aircraftType").value==="Other";
+    ifr$("otherAircraftTypeLabel")?.classList.toggle("hidden",!other);
+  });
+
+  ifr$("altitudeDown").addEventListener("click",()=>{ifr$("altitude").value=Math.max(0,(parseInt(ifr$("altitude").value)||0)-500);});
+  ifr$("altitudeUp").addEventListener("click",()=>{ifr$("altitude").value=Math.min(18000,(parseInt(ifr$("altitude").value)||0)+500);});
+
+  ifr$("applySetup").addEventListener("click",()=>ifrReadSetup(true));
+  ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
+  ifr$("sendTyped").addEventListener("click",()=>ifrEvaluateTransmission(ifr$("pilotText").value));
+  ifr$("clearText").addEventListener("click",()=>{ifr$("pilotText").value="";});
+  ifr$("sayAgain").addEventListener("click",()=>{ if(IFR_APP.lastATC) ifrSpeak(IFR_APP.lastATC); });
+  ifr$("ptt").addEventListener("click",ifrTogglePTT);
+  ifr$("next").addEventListener("click",ifrNextStage);
+  ifr$("previous").addEventListener("click",ifrPreviousStage);
+  ifr$("reset").addEventListener("click",ifrResetTraining);
+
+  document.querySelectorAll("#page-ifr-trainer .digit-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>ifrStepRadioDigit(Number(btn.dataset.digit),Number(btn.dataset.dir)));
+  });
+
+  ifrUpdateDepartureChoices(false);
+  ifrUpdateDestinationChoices(false);
+  if(ifr$("altitude")) ifr$("altitude").value=5000;
+  if(ifr$("trainingLevelDescription")) ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS.beginner;
+  ifrReadSetup(true);
+}
+
+ifrInit();
 </script>
 </body>
 </html>
