@@ -2871,7 +2871,7 @@ header{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. The last Flight Setup is remembered on this device. Enroute sector frequencies are training defaults and are kept separate from Arrival/Approach frequencies. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Airport frequencies were checked against FAA-cycle data effective October 1, 2026. Approach and Departure frequencies can vary by sector, runway, route, and altitude; the trainer uses a published frequency as a training default and actual ATC assignments must always be followed. The last Flight Setup is remembered on this device. Enroute sector frequencies are training defaults and are kept separate from Arrival/Approach frequencies. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
   </div>
 </details>
 
@@ -3057,12 +3057,18 @@ const DIGIT = {"0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five",
 const PHONETIC = {A:"Alpha",B:"Bravo",C:"Charlie",D:"Delta",E:"Echo",F:"Foxtrot",G:"Golf",H:"Hotel",I:"India",J:"Juliet",K:"Kilo",L:"Lima",M:"Mike",N:"November",O:"Oscar",P:"Papa",Q:"Quebec",R:"Romeo",S:"Sierra",T:"Tango",U:"Uniform",V:"Victor",W:"Whiskey",X:"X-ray",Y:"Yankee",Z:"Zulu"};
 
 
+const FREQUENCY_AUDIT={
+  source:"FAA-cycle airport communication data",
+  effectiveDate:"2026-10-01",
+  note:"Approach/Departure frequencies may vary by sector, runway, route, and altitude. Trainer values are published training defaults."
+};
+
 const AIRPORTS = {
   KLGB:{
     name:"Long Beach", radioName:"Long Beach",
     aliases:["long beach"],
     coords:{lat:33.8177,lon:-118.1516},
-    frequencies:{atis:"127.750",clearance:"118.150",ground:"133.000",tower:"119.400",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"127.750",clearance:"118.150",ground:"133.000",tower:"119.400",departure:"127.200",approach:"125.350"},
     facilities:{clearance:"Long Beach Clearance",ground:"Long Beach Ground",tower:"Long Beach Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"2500",
     runways:["26L","26R","30","12","8L","8R"], preferredRunway:"26L",
@@ -3088,7 +3094,7 @@ const AIRPORTS = {
     name:"Fullerton", radioName:"Fullerton",
     aliases:["fullerton"],
     coords:{lat:33.872,lon:-117.9798},
-    frequencies:{atis:"119.575",clearance:"121.800",ground:"121.800",tower:"119.100",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"125.050",clearance:"121.800",ground:"121.800",tower:"119.100",departure:"125.350",approach:"125.350"},
     facilities:{clearance:"Fullerton Clearance",ground:"Fullerton Ground",tower:"Fullerton Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"2500",
     runways:["24","6"], preferredRunway:"24",
@@ -3099,7 +3105,7 @@ const AIRPORTS = {
     name:"Torrance", radioName:"Torrance",
     aliases:["torrance"],
     coords:{lat:33.8034,lon:-118.3396},
-    frequencies:{atis:"125.600",clearance:"121.600",ground:"121.600",tower:"124.000",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"125.600",clearance:"120.900",ground:"120.900",tower:"124.000",departure:"124.300",approach:"127.200"},
     facilities:{clearance:"Torrance Clearance",ground:"Torrance Ground",tower:"Torrance Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"2500",
     runways:["29R","29L","11R","11L"], preferredRunway:"29R",
@@ -3110,7 +3116,7 @@ const AIRPORTS = {
     name:"Hawthorne", radioName:"Hawthorne",
     aliases:["hawthorne"],
     coords:{lat:33.9228,lon:-118.3352},
-    frequencies:{atis:"118.350",clearance:"121.100",ground:"121.100",tower:"121.100",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"118.400",clearance:"125.100",ground:"125.100",tower:"121.100",departure:"124.300",approach:"124.300"},
     facilities:{clearance:"Hawthorne Clearance",ground:"Hawthorne Ground",tower:"Hawthorne Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"2500",
     runways:["25","7"], preferredRunway:"25",
@@ -3121,7 +3127,7 @@ const AIRPORTS = {
     name:"John Wayne", radioName:"John Wayne",
     aliases:["john wayne","orange county"],
     coords:{lat:33.6757,lon:-117.8682},
-    frequencies:{atis:"126.000",clearance:"118.000",ground:"120.800",tower:"126.800",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"126.000",clearance:"118.000",ground:"120.800",tower:"126.800",departure:"128.100",approach:"121.300"},
     facilities:{clearance:"John Wayne Clearance",ground:"John Wayne Ground",tower:"John Wayne Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"4000",
     runways:["20R","20L","2R","2L"], preferredRunway:"20R",
@@ -3132,7 +3138,7 @@ const AIRPORTS = {
     name:"McClellan-Palomar", radioName:"Palomar",
     aliases:["palomar","mcclellan palomar","mcclellan-palomar"],
     coords:{lat:33.1283,lon:-117.2801},
-    frequencies:{atis:"120.150",clearance:"121.800",ground:"121.800",tower:"118.600",departure:"127.300",approach:"127.300"},
+    frequencies:{atis:"120.150",clearance:"134.850",ground:"121.800",tower:"118.600",departure:"127.300",approach:"127.300"},
     facilities:{clearance:"Palomar Clearance",ground:"Palomar Ground",tower:"Palomar Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"3000",
     runways:["24","6"], preferredRunway:"24",
@@ -3144,7 +3150,7 @@ const AIRPORTS = {
     name:"Ontario", radioName:"Ontario",
     aliases:["ontario"],
     coords:{lat:34.056,lon:-117.6012},
-    frequencies:{atis:"124.250",clearance:"118.100",ground:"121.900",tower:"120.600",departure:"127.200",approach:"127.300"},
+    frequencies:{atis:"124.250",clearance:"132.900",ground:"121.900",tower:"120.600",departure:"127.000",approach:"127.000"},
     facilities:{clearance:"Ontario Clearance",ground:"Ontario Ground",tower:"Ontario Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"5000",
     runways:["26L","26R","8L","8R"], preferredRunway:"26L",
@@ -3155,7 +3161,7 @@ const AIRPORTS = {
     name:"Palm Springs", radioName:"Palm Springs",
     aliases:["palm springs"],
     coords:{lat:33.8297,lon:-116.5067},
-    frequencies:{atis:"118.250",clearance:"121.650",ground:"121.900",tower:"119.700",departure:"126.700",approach:"126.700"},
+    frequencies:{atis:"124.650",clearance:"128.350",ground:"121.900",tower:"119.700",departure:"126.700",approach:"126.700"},
     facilities:{clearance:"Palm Springs Clearance",ground:"Palm Springs Ground",tower:"Palm Springs Tower",departure:"Palm Springs Departure",approach:"Palm Springs Approach"},
     vfrClearanceLimit:"3000",
     runways:["31L","31R","13L","13R"], preferredRunway:"31L",
@@ -3166,7 +3172,7 @@ const AIRPORTS = {
     name:"Santa Barbara", radioName:"Santa Barbara",
     aliases:["santa barbara"],
     coords:{lat:34.4262,lon:-119.8404},
-    frequencies:{atis:"132.650",clearance:"121.700",ground:"121.700",tower:"119.700",departure:"125.400",approach:"125.400"},
+    frequencies:{atis:"132.650",clearance:"132.900",ground:"121.700",tower:"119.700",departure:"125.400",approach:"125.400"},
     facilities:{clearance:"Santa Barbara Clearance",ground:"Santa Barbara Ground",tower:"Santa Barbara Tower",departure:"Santa Barbara Departure",approach:"Santa Barbara Approach"},
     vfrClearanceLimit:"4000",
     runways:["25","7","15L","15R","33L","33R"], preferredRunway:"25",
@@ -3177,7 +3183,7 @@ const AIRPORTS = {
     name:"Ramona", radioName:"Ramona",
     aliases:["ramona"],
     coords:{lat:33.0392,lon:-116.9153},
-    frequencies:{atis:"118.675",clearance:"121.650",ground:"121.650",tower:"119.870",departure:"127.300",approach:"127.300"},
+    frequencies:{atis:"132.025",clearance:"121.650",ground:"121.650",tower:"119.875",departure:"127.300",approach:"132.200"},
     facilities:{clearance:"Ramona Clearance",ground:"Ramona Ground",tower:"Ramona Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"4000",
     runways:["27","9"], preferredRunway:"27",
