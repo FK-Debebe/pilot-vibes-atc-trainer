@@ -3992,6 +3992,263 @@ body{overflow-x:hidden}
   }
   #page-ifr-trainer .trainer-setup-column{position:static !important}
 }
+
+/* =========================================================
+   V4.15 TOP NAV CONTAINER SQUARE CORNERS
+   ========================================================= */
+.side-nav.top-nav{
+  border-radius:0 !important;
+}
+
+/* =========================================================
+   V4.16 REMOVE HOME + DETAILED USER GUIDE
+   ========================================================= */
+.howto-shell{width:100%;max-width:1080px;margin:0 auto}
+.howto-hero{padding:22px;margin-bottom:12px}
+.howto-hero h2{margin:5px 0 8px}
+.howto-hero p{margin:0;color:#5f7484;line-height:1.55;font-size:12px}
+.howto-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.howto-card{position:relative;padding:16px 16px 15px 54px;min-height:145px}
+.howto-step{position:absolute;left:14px;top:15px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#e7f1f8;color:#1769aa;font-weight:900;font-size:9px}
+.howto-card h3,.howto-reference h3{margin:0 0 7px;color:#193f5d;font-size:13px}
+.howto-card p,.howto-reference p{margin:0 0 7px;color:#5e7383;font-size:10.5px;line-height:1.5}
+.howto-card p:last-child,.howto-reference p:last-child{margin-bottom:0}
+.howto-reference{margin-top:10px;padding:17px 18px}
+.howto-warning{border-left:4px solid #1769aa}
+@media(max-width:760px){
+  .howto-grid{grid-template-columns:1fr}
+  .howto-card{min-height:0}
+}
+
+/* =========================================================
+   V4.17 VFR MOBILE WIDTH / RWD FIX
+   Final overrides intentionally placed last.
+   ========================================================= */
+
+/* Prevent grid children and cards from forcing horizontal shrink/overflow. */
+#page-trainer,
+#page-trainer .trainer-page-shell,
+#page-trainer .trainer-setup-column,
+#page-trainer .main-grid,
+#page-trainer .current-stage-card,
+#page-trainer .radio-exchange-card{
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+
+/* Tablet: restore the intended 2-column VFR arrangement. */
+@media(min-width:701px) and (max-width:1100px){
+  #page-trainer .trainer-page-shell{
+    width:100% !important;
+    max-width:100% !important;
+    display:grid !important;
+    grid-template-columns:minmax(240px,.8fr) minmax(0,1.35fr) !important;
+    grid-template-areas:
+      "setup stage"
+      "transcript transcript" !important;
+    gap:10px !important;
+  }
+  #page-trainer .trainer-setup-column{
+    position:static !important;
+    width:100% !important;
+  }
+}
+
+/* Phone: VFR trainer must occupy the full usable screen width. */
+@media(max-width:700px){
+  html,
+  body{
+    width:100% !important;
+    max-width:100% !important;
+    overflow-x:hidden !important;
+  }
+
+  .product-layout{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+
+  .product-main{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding-left:8px !important;
+    padding-right:8px !important;
+    box-sizing:border-box !important;
+  }
+
+  #page-trainer{
+    display:block !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  #page-trainer .trainer-page-shell{
+    display:grid !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+    padding:0 !important;
+    grid-template-columns:minmax(0,1fr) !important;
+    grid-template-areas:
+      "setup"
+      "stage"
+      "transcript" !important;
+    gap:9px !important;
+    box-sizing:border-box !important;
+  }
+
+  #page-trainer .trainer-setup-column{
+    grid-area:setup !important;
+    position:static !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+  }
+
+  #page-trainer .main-grid{
+    display:contents !important;
+  }
+
+  #page-trainer .current-stage-card{
+    grid-area:stage !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+
+  #page-trainer .radio-exchange-card{
+    grid-area:transcript !important;
+    width:100% !important;
+    max-width:100% !important;
+    min-width:0 !important;
+    margin:0 !important;
+  }
+
+  #page-trainer .card,
+  #page-trainer details.setup,
+  #page-trainer .setup-content,
+  #page-trainer .radio,
+  #page-trainer .com-bezel,
+  #page-trainer .transcript,
+  #page-trainer textarea,
+  #page-trainer select,
+  #page-trainer input{
+    max-width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  /* Preserve the compact mobile setup action row. */
+  #page-trainer .setup-action-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  }
+}
+
+/* Extra-small phones use slightly tighter page gutters. */
+@media(max-width:430px){
+  .product-main{
+    padding-left:6px !important;
+    padding-right:6px !important;
+  }
+}
+
+/* =========================================================
+   V4.18 REMOVE CURRENT FLIGHT HEADER STATUS
+   ========================================================= */
+
+/* Desktop / tablet top navigation now uses only brand + menu. */
+.side-nav.top-nav{
+  grid-template-columns:auto minmax(0,1fr) !important;
+  grid-template-areas:"brand menu" !important;
+}
+.top-nav .side-nav-menu{
+  justify-content:flex-end !important;
+}
+
+/* Remove any leftover status spacing/rules from older versions. */
+.top-nav .side-nav-status,
+.top-nav .side-status-label,
+.top-nav .side-status-route,
+.top-nav .side-status-meta{
+  display:none !important;
+}
+
+/* Tablet keeps brand first row and nav second row without a status column. */
+@media(max-width:1050px) and (min-width:701px){
+  .side-nav.top-nav{
+    grid-template-columns:1fr !important;
+    grid-template-areas:
+      "brand"
+      "menu" !important;
+  }
+  .top-nav .side-nav-menu{
+    justify-content:flex-start !important;
+  }
+}
+
+/* Mobile side drawer no longer reserves space for CURRENT FLIGHT. */
+@media(max-width:700px){
+  .top-nav .side-nav-menu{
+    flex:1 1 auto !important;
+  }
+  .top-nav .side-nav-footer{
+    margin-top:auto !important;
+  }
+}
+
+/* =========================================================
+   V4.19 MOBILE SETUP COLLAPSED DEFAULT SUPPORT
+   ========================================================= */
+@media(max-width:700px){
+  #page-trainer details.setup:not([open]) .setup-content,
+  #page-ifr-trainer details.setup:not([open]) .setup-content{
+    display:none !important;
+  }
+}
+
+/* =========================================================
+   V4.20 NAVIGATION ALIGNMENT / MOBILE SIDEBAR ANCHOR FIX
+   ========================================================= */
+
+/* Desktop/tablet: navigation is centered in the available header space,
+   not pushed to the far right. */
+.top-nav .side-nav-menu{
+  justify-content:center !important;
+}
+
+/* Tablet second-row navigation starts naturally from the left. */
+@media(max-width:1050px) and (min-width:701px){
+  .top-nav .side-nav-menu{
+    justify-content:flex-start !important;
+  }
+}
+
+/* Mobile side drawer: keep navigation anchored directly below the title.
+   Do not let the menu grow and drift toward the bottom of the sidebar. */
+@media(max-width:700px){
+  .top-nav .side-nav-menu{
+    flex:0 0 auto !important;
+    width:100% !important;
+    justify-content:flex-start !important;
+    margin-top:0 !important;
+    margin-bottom:0 !important;
+  }
+
+  .top-nav .side-nav-footer{
+    margin-top:auto !important;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4005,18 +4262,12 @@ body{overflow-x:hidden}
       <div class="side-nav-subtitle">RADIO COMMUNICATION TRAINING</div>
     </div>
     <nav class="side-nav-menu">
-      <button class="side-nav-item active" data-page="home" type="button"><span class="side-nav-number">01</span><span>Home</span></button>
-      <button class="side-nav-item" data-page="trainer" type="button"><span class="side-nav-number">02</span><span>VFR Radio Trainer</span></button>
-      <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">03</span><span>IFR Radio Trainer</span></button>
-      <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">04</span><span>Training Log</span></button>
-      <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">05</span><span>Flight Report</span></button>
-      <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">06</span><span>How To Use</span></button>
+      <button class="side-nav-item active" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
+      <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">02</span><span>IFR Radio Trainer</span></button>
+      <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
+      <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Report</span></button>
+      <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
     </nav>
-    <div class="side-nav-status" aria-label="Current training status">
-      <div class="side-status-label">CURRENT FLIGHT</div>
-      <div id="sideStatusRoute" class="side-status-route">KLGB → KCRQ</div>
-      <div id="sideStatusMeta" class="side-status-meta">Beginner • Stage 1 of 9</div>
-    </div>
     <div class="side-nav-footer">Pilot Vibes • FWD Skill Zone</div>
   </header>
 
@@ -4024,74 +4275,10 @@ body{overflow-x:hidden}
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
       <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div class="app-subtitle">RADIO COMMUNICATION TRAINING</div></div>
-      <div id="pageTitle" class="page-title">HOME</div>
+      <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
-    <section id="page-home" class="app-page active" data-title="HOME">
-      <div class="dashboard-shell">
-        <section class="dashboard-hero">
-          <div>
-            <div class="eyebrow">PILOT VIBES TRAINING</div>
-            <h2>Ready for your next radio session?</h2>
-            <p>Build a flight, practice realistic ATC communication, and review completed training sessions.</p>
-          </div>
-          <div class="dashboard-actions">
-            <button id="dashboardNewFlight" class="btn primary" type="button">NEW FLIGHT</button>
-            <button id="dashboardContinue" class="btn" type="button">CONTINUE TRAINING</button>
-          </div>
-        </section>
-
-        <section class="dashboard-stats">
-          <div class="dashboard-stat">
-            <span class="dashboard-stat-label">CURRENT ROUTE</span>
-            <strong id="dashboardCurrentRoute">KLGB → KCRQ</strong>
-          </div>
-          <div class="dashboard-stat">
-            <span class="dashboard-stat-label">TRAINING LEVEL</span>
-            <strong id="dashboardLevel">Beginner</strong>
-          </div>
-          <div class="dashboard-stat">
-            <span class="dashboard-stat-label">COMPLETED SESSIONS</span>
-            <strong id="dashboardCompletedCount">0</strong>
-          </div>
-          <div class="dashboard-stat">
-            <span class="dashboard-stat-label">LAST COMPLETED</span>
-            <strong id="dashboardLastRoute">—</strong>
-            <small id="dashboardLastDate"></small>
-          </div>
-        </section>
-
-        <section class="dashboard-grid">
-          <button class="dashboard-card" type="button" data-dashboard-page="trainer">
-            <span class="dashboard-card-number">01</span>
-            <strong>Flight Setup + VFR Radio Trainer</strong>
-            <span>Set up the flight in the left column, then begin VFR radio training.</span>
-          </button>
-          <button class="dashboard-card" type="button" data-dashboard-page="trainer">
-            <span class="dashboard-card-number">02</span>
-            <strong>VFR Radio Trainer</strong>
-            <span>Continue the active VFR ATC communication session.</span>
-          </button>
-          <button class="dashboard-card" type="button" data-dashboard-page="ifr-trainer">
-            <span class="dashboard-card-number">03</span>
-            <strong>IFR Radio Trainer</strong>
-            <span>Practice a complete IFR flight: ATIS, clearance, taxi, tower, departure, enroute, arrival ATIS, approach, tower, and ground.</span>
-          </button>
-          <button class="dashboard-card" type="button" data-dashboard-page="training-log">
-            <span class="dashboard-card-number">04</span>
-            <strong>Training Log</strong>
-            <span>Review completed routes and training dates.</span>
-          </button>
-          <button class="dashboard-card" type="button" data-dashboard-page="how-to">
-            <span class="dashboard-card-number">05</span>
-            <strong>How To Use</strong>
-            <span>Review the trainer workflow and controls.</span>
-          </button>
-        </section>
-      </div>
-    </section>
-
-    <section id="page-trainer" class="app-page" data-title="VFR RADIO TRAINER">
+    <section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="Flight Setup">
 <details class="card setup" open>
@@ -4777,19 +4964,65 @@ body{overflow-x:hidden}
     </section>
 
     <section id="page-how-to" class="app-page" data-title="HOW TO USE">
-      <section class="card how-to-card">
-        <div class="eyebrow">HOW TO USE</div>
-        <h2>FK ATC COM Trainer</h2>
-        <div class="how-to-grid">
-          <div class="how-to-step"><span>1</span><div><strong>Set up the flight</strong><p>Open <b>VFR Radio Trainer</b>. Use the Flight Setup column on the left to select training level, airports, aircraft, runways, direction, and requested altitude. Then select <b>Apply Setup</b>.</p></div></div>
-          <div class="how-to-step"><span>2</span><div><strong>Open Radio Communication Trainer</strong><p>Flight Setup and VFR radio training share the same page. After applying the setup, tune the displayed COM frequency before transmitting.</p></div></div>
-          <div class="how-to-step"><span>3</span><div><strong>Monitor ATIS</strong><p>For ATIS stages, tune the correct frequency and select <b>Monitor ATIS</b>. Record the information code and runway before continuing.</p></div></div>
-          <div class="how-to-step"><span>4</span><div><strong>Transmit</strong><p>Tap the microphone once to start talking. Tap it again to end and send. You may also type a transmission and select <b>Send Typed</b>.</p></div></div>
-          <div class="how-to-step"><span>5</span><div><strong>Respond to ATC</strong><p>Read back the required runway, altitude, frequency, squawk, taxi instructions, traffic pattern instructions, or other clearances. Unexpected ATC changes may occur.</p></div></div>
-          <div class="how-to-step"><span>6</span><div><strong>Review your results</strong><p>Completed flights are saved in <b>Training Log</b>. At the end of a flight, review the <b>End-of-Flight Report</b> for scores and recommended practice.</p></div></div>
-        </div>
-        <div class="how-to-note"><strong>Training aid only.</strong> Always use current FAA publications and actual ATC instructions for real-world operations.</div>
-      </section>
+      <div class="howto-shell">
+        <section class="card howto-hero">
+          <div class="eyebrow">HOW TO USE</div>
+          <h2>FK ATC COM Trainer — User Guide</h2>
+          <p>The trainer lets you practice realistic radio communication one stage at a time. VFR and IFR use the same basic workflow: configure the flight, tune the radio, listen to ATC or ATIS, transmit your response, review the feedback, and continue to the next stage.</p>
+        </section>
+
+        <section class="howto-grid">
+          <article class="card howto-card"><div class="howto-step">01</div><h3>Choose VFR or IFR</h3><p>Select <strong>VFR Radio Trainer</strong> for VFR operations or <strong>IFR Radio Trainer</strong> for IFR clearances, departures, enroute communication, arrivals, and approaches.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">02</div><h3>Complete Flight Setup</h3><p>Use the setup column on the left. Select the training level, departure and destination airports, aircraft type, callsign, starting location, runways, and requested altitude.</p><p>For IFR, also select the route type and approach type.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">03</div><h3>Apply the Setup</h3><p>Select <strong>APPLY SETUP</strong>. The trainer rebuilds the scenario using your selected airports, runways, frequencies, aircraft, and training level.</p><p>Select <strong>Tap To Collapse</strong> if you want to hide the setup panel after configuration.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">04</div><h3>Read the Current Stage</h3><p>The center panel shows the current facility, frequency, stage number, next stage, and the task you are expected to complete.</p><p>Read the instruction before transmitting because the trainer evaluates stage-specific items.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">05</div><h3>Tune the COM Radio</h3><p>Use the <strong>+</strong> and <strong>−</strong> controls to tune the displayed target frequency. The radio must show <strong>READY</strong> before ATIS monitoring or a radio transmission is accepted.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">06</div><h3>Monitor ATIS</h3><p>During an ATIS stage, tune the correct frequency and select <strong>MONITOR ATIS</strong>. Listen for the information code, runway, wind, ceiling, visibility, and altimeter.</p><p>The trainer carries the information code into later radio calls where appropriate.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">07</div><h3>Use Tap To Talk</h3><p>Select <strong>TAP TO TALK</strong> once to start listening. Speak your complete transmission. Select it a second time to <strong>end and send</strong>.</p><p>The trainer evaluates the speech only after you end the transmission.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">08</div><h3>Allow Microphone Access</h3><p>The first time you use Tap To Talk, your browser may request microphone permission. Allow access for the trainer website.</p><p>For reliable microphone operation, use <strong>HTTPS</strong> or <strong>localhost</strong>. Some embedded website frames may restrict microphone access.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">09</div><h3>Use Typed Transmission</h3><p>You may type the pilot transmission instead of using the microphone and select <strong>SEND</strong>. This is useful for practicing phraseology or checking recognition issues.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">10</div><h3>Listen to ATC</h3><p>Controller responses appear in the Radio Exchange column and are spoken aloud when browser speech synthesis is available.</p><p>Select <strong>SAY AGAIN</strong> to replay the most recent controller transmission.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">11</div><h3>Read Back Required Items</h3><p>Depending on the stage, the trainer checks runway, altitude, heading, frequency, squawk, hold-short instructions, route, taxi instructions, approach clearance, or other required information.</p><p>Your full callsign remains acceptable even after ATC abbreviates it.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">12</div><h3>Review Score and Feedback</h3><p>After each transmission, review the stage score and feedback. If information is missing or incorrect, ATC may ask you to repeat or verify part of the readback.</p><p>Repeat the transmission until the essential items are accepted.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">13</div><h3>Move to the Next Stage</h3><p>When a stage is completed, <strong>NEXT</strong> becomes available. The trainer also shows the next facility and frequency.</p><p>Use <strong>PREVIOUS</strong> to review an earlier stage.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">14</div><h3>Training Levels</h3><p><strong>Beginner</strong> provides more prompting and fewer unexpected changes. <strong>Intermediate</strong> reduces prompting and introduces more variation. <strong>Advanced</strong> provides minimal prompting and the most unexpected changes.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">15</div><h3>Unexpected ATC Changes</h3><p>Depending on training level and scenario, ATC may issue runway changes, amended altitudes, different departure directions, stand-by instructions, unable responses, extended downwind, or go-around instructions.</p><p>Respond to the new clearance rather than repeating the original plan.</p></article>
+
+          <article class="card howto-card"><div class="howto-step">16</div><h3>Training Log and Flight Report</h3><p>Completed sessions are added to the <strong>Training Log</strong>. At the end of a flight, use the <strong>Flight Report</strong> to review the session, repeat the same route, or start another flight.</p></article>
+        </section>
+
+        <section class="card howto-reference">
+          <div class="eyebrow">VFR WORKFLOW</div>
+          <h3>Typical VFR Sequence</h3>
+          <p>Departure ATIS → Clearance / Flight Following → Ground → Tower → Departure → Enroute when applicable → Arrival ATIS → Arrival / Approach → Destination Tower → Destination Ground.</p>
+        </section>
+
+        <section class="card howto-reference">
+          <div class="eyebrow">IFR WORKFLOW</div>
+          <h3>Typical IFR Sequence</h3>
+          <p>Departure ATIS → IFR Clearance → Ground → Tower / IFR Release → Departure → Enroute → Arrival ATIS → Approach → Destination Tower → Destination Ground.</p>
+        </section>
+
+        <section class="card howto-reference howto-warning">
+          <div class="eyebrow">IMPORTANT</div>
+          <h3>Training Use Only</h3>
+          <p>FK ATC COM Trainer is a communication training aid. Frequencies, airport profiles, taxi routing, clearances, and scenarios may not represent current operational conditions. For an actual flight, use current FAA publications, charts, airport information, ATIS/AWOS/ASOS, and ATC instructions.</p>
+        </section>
+      </div>
     </section>
 
     <p class="small product-footer">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
@@ -4802,7 +5035,6 @@ body{overflow-x:hidden}
 const $ = id => document.getElementById(id);
 
 const APP_PAGE_TITLES={
-  "home":"HOME",
   "trainer":"VFR RADIO TRAINER",
   "ifr-trainer":"IFR RADIO TRAINER",
   "training-log":"TRAINING LOG",
@@ -4817,11 +5049,9 @@ function showAppPage(page,options={}){
   document.querySelectorAll(".side-nav-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
   if($("pageTitle")) $("pageTitle").textContent=APP_PAGE_TITLES[page]||target.dataset.title||"";
   document.body.classList.toggle("trainer-page-active",page==="trainer");
-  document.body.classList.toggle("home-page-active",page==="home");
   document.body.classList.toggle("ifr-page-active",page==="ifr-trainer");
   document.body.classList.remove("nav-open");
   updateApplicationStatus();
-  if(page==="home") renderDashboard();
   if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -4834,10 +5064,7 @@ function showTrainerWithSetup(){
 
 function initSideNavigation(){
   document.querySelectorAll(".side-nav-item").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.page)));
-  document.querySelectorAll("[data-dashboard-page]").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.dashboardPage)));
 
-  $("dashboardNewFlight")?.addEventListener("click",()=>showTrainerWithSetup());
-  $("dashboardContinue")?.addEventListener("click",()=>showAppPage("trainer"));
   $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup());
   $("repeatSameRoute")?.addEventListener("click",()=>{
     resetTraining();
@@ -4853,7 +5080,7 @@ function initSideNavigation(){
   document.addEventListener("keydown",event=>{
     if(event.key==="Escape") document.body.classList.remove("nav-open");
   });
-  showAppPage("home",{noScroll:true});
+  showAppPage("trainer",{noScroll:true});
 }
 
 
@@ -7287,7 +7514,6 @@ function recordCompletedTraining(){
     localStorage.setItem(STUDY_HISTORY_KEY,JSON.stringify(history));
     app.session.historyRecorded=true;
     renderStudyHistory();
-    renderDashboard();
   }catch(e){
     /* Study history is optional; training completion should never fail if storage is unavailable. */
   }
@@ -8501,7 +8727,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.14 VFR setup label */
+/* V4.20 navigation alignment fix */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9152,7 +9378,6 @@ function ifrRecordCompletedTraining(){
     localStorage.setItem(STUDY_HISTORY_KEY,JSON.stringify(history));
     IFR_APP.session.historyRecorded=true;
     renderStudyHistory();
-    renderDashboard();
   }catch(e){}
 }
 
@@ -9281,6 +9506,22 @@ function ifrInit(){
 }
 
 ifrInit();
+
+/* =========================================================
+   V4.19 MOBILE FLIGHT SETUP DEFAULT STATE
+   - Mobile (700px and below): VFR + IFR Flight Setup collapsed
+   - Tablet/Desktop: VFR + IFR Flight Setup expanded
+   ========================================================= */
+function applyResponsiveSetupDefaultState(){
+  const isMobile=window.matchMedia("(max-width:700px)").matches;
+  const vfrSetup=document.querySelector("#page-trainer details.setup");
+  const ifrSetup=document.querySelector("#page-ifr-trainer details.setup");
+  if(vfrSetup) vfrSetup.open=!isMobile;
+  if(ifrSetup) ifrSetup.open=!isMobile;
+}
+
+/* Apply after all trainer initialization has completed. */
+requestAnimationFrame(()=>applyResponsiveSetupDefaultState());
 </script>
 </body>
 </html>
