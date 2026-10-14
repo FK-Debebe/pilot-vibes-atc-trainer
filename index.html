@@ -2754,31 +2754,55 @@ header{
       <div class="setup-section-label">ROUTE</div>
       <label>Departure Airport
         <select id="departureAirport">
-          <option value="KLGB" selected>KLGB — Long Beach</option>
-<option value="KFUL">KFUL — Fullerton</option>
-<option value="KTOA">KTOA — Torrance</option>
-<option value="KHHR">KHHR — Hawthorne</option>
-<option value="KSNA">KSNA — John Wayne</option>
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
 <option value="KCRQ">KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB" selected>KLGB — Long Beach</option>
 <option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
 <option value="KPSP">KPSP — Palm Springs</option>
-<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KRAL">KRAL — Riverside</option>
 <option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
         </select>
       </label>
 
       <label>Destination Airport
         <select id="destinationAirport">
-          <option value="KLGB">KLGB — Long Beach</option>
-<option value="KFUL">KFUL — Fullerton</option>
-<option value="KTOA">KTOA — Torrance</option>
-<option value="KHHR">KHHR — Hawthorne</option>
-<option value="KSNA">KSNA — John Wayne</option>
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
 <option value="KCRQ" selected>KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB">KLGB — Long Beach</option>
 <option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
 <option value="KPSP">KPSP — Palm Springs</option>
-<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KRAL">KRAL — Riverside</option>
 <option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
         </select>
       </label>
 
@@ -2871,7 +2895,7 @@ header{
         Tap to Collapse ▲
       </button>
     </div>
-    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic. Airport frequencies were checked against FAA-cycle data effective October 1, 2026. Approach and Departure frequencies can vary by sector, runway, route, and altitude; the trainer uses a published frequency as a training default and actual ATC assignments must always be followed. The last Flight Setup is remembered on this device. Enroute sector frequencies are training defaults and are kept separate from Arrival/Approach frequencies. Ground, Tower, Departure, Enroute, and Approach use distinct ATC voice profiles when supported by the device.</div>
+    <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic.</div>
   </div>
 </details>
 
@@ -3190,6 +3214,141 @@ const AIRPORTS = {
     taxiwaysByRunway:{"27":"Alpha","9":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
   }
+  ,
+  KLAX:{
+    name:"Los Angeles International", radioName:"Los Angeles",
+    aliases:["los angeles","los angeles international","lax"],
+    coords:{lat:33.9424964,lon:-118.4080486},
+    frequencies:{atis:"135.650",arrivalAtis:"133.800",clearance:"120.350",ground:"121.650",tower:"133.900",departure:"125.200",approach:"124.500"},
+    facilities:{clearance:"Los Angeles Clearance",ground:"Los Angeles Ground",tower:"Los Angeles Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"5000",
+    runways:["24R","24L","25R","25L","6L","6R","7L","7R"], preferredRunway:"24R",
+    taxiwaysByRunway:{"24R":"Alpha","24L":"Alpha","25R":"Alpha","25L":"Alpha","6L":"Alpha","6R":"Alpha","7L":"Alpha","7R":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["General Aviation Ramp","FBO / Ramp","Transient Parking"]
+  },
+  KSBD:{
+    name:"San Bernardino International", radioName:"San Bernardino",
+    aliases:["san bernardino","san bernardino international","sbd"],
+    coords:{lat:34.0953611,lon:-117.2348889},
+    frequencies:{atis:"124.175",clearance:"121.800",ground:"121.800",tower:"119.450",departure:"127.000",approach:"127.000"},
+    facilities:{clearance:"San Bernardino Clearance",ground:"San Bernardino Ground",tower:"San Bernardino Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"5000",
+    runways:["6","24"], preferredRunway:"24",
+    trafficPatternByRunway:{"6":"right"},
+    taxiwaysByRunway:{"6":"Alpha","24":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["General Aviation Ramp","FBO / Ramp","Transient Parking"]
+  },
+  KVNY:{
+    name:"Van Nuys", radioName:"Van Nuys",
+    aliases:["van nuys","vny"],
+    coords:{lat:34.2098056,lon:-118.4899722},
+    frequencies:{atis:"127.550",clearance:"126.600",ground:"121.700",tower:"119.300",departure:"120.400",approach:"120.400"},
+    facilities:{clearance:"Van Nuys Clearance",ground:"Van Nuys Ground",tower:"Van Nuys Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["16R","16L","34L","34R"], preferredRunway:"16R",
+    taxiwaysByRunway:{"16R":"Alpha","16L":"Alpha","34L":"Alpha","34R":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["General Aviation Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KCNO:{
+    name:"Chino", radioName:"Chino",
+    aliases:["chino","cno"],
+    coords:{lat:33.9747793,lon:-117.6364828},
+    frequencies:{atis:"125.850",clearance:"121.600",ground:"121.600",tower:"118.500",departure:"135.400",approach:"135.400"},
+    facilities:{clearance:"Chino Clearance",ground:"Chino Ground",tower:"Chino Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["3","21","8L","8R","26L","26R"], preferredRunway:"26R",
+    taxiwaysByRunway:{"3":"Alpha","21":"Alpha","8L":"Alpha","8R":"Alpha","26L":"Alpha","26R":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KBUR:{
+    name:"Hollywood Burbank", radioName:"Burbank",
+    aliases:["burbank","hollywood burbank","bur"],
+    coords:{lat:34.2006944,lon:-118.3586667},
+    frequencies:{atis:"134.500",clearance:"118.000",ground:"123.900",tower:"118.700",departure:"124.600",approach:"120.400"},
+    facilities:{clearance:"Burbank Clearance",ground:"Burbank Ground",tower:"Burbank Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"5000",
+    runways:["8","26","15","33"], preferredRunway:"8",
+    taxiwaysByRunway:{"8":"Alpha","26":"Alpha","15":"Alpha","33":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["General Aviation Ramp","FBO / Ramp","Transient Parking"]
+  },
+  KCMA:{
+    name:"Camarillo", radioName:"Camarillo",
+    aliases:["camarillo","cma"],
+    coords:{lat:34.2137583,lon:-119.0943542},
+    frequencies:{atis:"126.025",clearance:"120.750",ground:"121.800",tower:"128.200",departure:"124.700",approach:"124.700"},
+    facilities:{clearance:"Camarillo Clearance",ground:"Camarillo Ground",tower:"Camarillo Tower",departure:"Point Mugu Departure",approach:"Point Mugu Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["8","26"], preferredRunway:"26",
+    taxiwaysByRunway:{"8":"Alpha","26":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KOXR:{
+    name:"Oxnard", radioName:"Oxnard",
+    aliases:["oxnard","oxr"],
+    coords:{lat:34.2008069,lon:-119.2072264},
+    frequencies:{atis:"118.050",clearance:"121.900",ground:"121.900",tower:"134.950",departure:"124.700",approach:"124.700"},
+    facilities:{clearance:"Oxnard Clearance",ground:"Oxnard Ground",tower:"Oxnard Tower",departure:"Point Mugu Departure",approach:"Point Mugu Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["7","25"], preferredRunway:"25",
+    taxiwaysByRunway:{"7":"Alpha","25":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking"]
+  },
+  KRAL:{
+    name:"Riverside", radioName:"Riverside",
+    aliases:["riverside","ral"],
+    coords:{lat:33.9518889,lon:-117.4451111},
+    frequencies:{atis:"128.800",clearance:"124.125",ground:"124.125",tower:"121.000",departure:"135.400",approach:"135.400"},
+    facilities:{clearance:"Riverside Clearance",ground:"Riverside Ground",tower:"Riverside Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["9","27","16","34"], preferredRunway:"27",
+    taxiwaysByRunway:{"9":"Alpha","27":"Alpha","16":"Alpha","34":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KPOC:{
+    name:"Brackett Field", radioName:"Brackett",
+    aliases:["brackett","brackett field","poc"],
+    coords:{lat:34.0916667,lon:-117.7817778},
+    frequencies:{atis:"124.400",clearance:"121.875",ground:"125.000",tower:"118.200",departure:"125.500",approach:"125.500"},
+    facilities:{clearance:"Brackett Clearance",ground:"Brackett Ground",tower:"Brackett Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["8L","8R","26L","26R"], preferredRunway:"26R",
+    taxiwaysByRunway:{"8L":"Alpha","8R":"Alpha","26L":"Alpha","26R":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KWHP:{
+    name:"Whiteman", radioName:"Whiteman",
+    aliases:["whiteman","whp"],
+    coords:{lat:34.2593253,lon:-118.4134331},
+    frequencies:{atis:"132.100",clearance:"125.000",ground:"125.000",tower:"135.000",departure:"120.400",approach:"120.400"},
+    facilities:{clearance:"Whiteman Clearance",ground:"Whiteman Ground",tower:"Whiteman Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["12","30"], preferredRunway:"12",
+    taxiwaysByRunway:{"12":"Alpha","30":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KEMT:{
+    name:"San Gabriel Valley", radioName:"El Monte",
+    aliases:["el monte","san gabriel valley","emt"],
+    coords:{lat:34.0860089,lon:-118.0348453},
+    frequencies:{atis:"118.750",clearance:"125.900",ground:"125.900",tower:"121.200",departure:"125.500",approach:"125.500"},
+    facilities:{clearance:"El Monte Clearance",ground:"El Monte Ground",tower:"El Monte Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["1","19"], preferredRunway:"19",
+    taxiwaysByRunway:{"1":"Alpha","19":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  },
+  KSMO:{
+    name:"Santa Monica Municipal", radioName:"Santa Monica",
+    aliases:["santa monica","santa monica municipal","smo"],
+    coords:{lat:34.0158219,lon:-118.4513061},
+    frequencies:{atis:"119.150",clearance:"121.900",ground:"121.900",tower:"120.100",departure:"125.200",approach:"124.300"},
+    facilities:{clearance:"Santa Monica Clearance",ground:"Santa Monica Ground",tower:"Santa Monica Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"4000",
+    runways:["3","21"], preferredRunway:"21",
+    taxiwaysByRunway:{"3":"Alpha","21":"Alpha"}, parkingTaxiway:"Alpha",
+    locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
+  }
+
 };
 
 function airportData(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
@@ -3400,7 +3559,7 @@ function buildStages(depCode,destCode){
 
   stages.push(
     {id:"arrival", title:"ARRIVAL / APPROACH", facility:airportFacility(dest,"approach"), freq:airportFrequency(dest,"approach"), type:"comm"},
-    {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"atis"), type:"atis"},
+    {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
     {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
     {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
   );
