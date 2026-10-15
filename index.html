@@ -5243,9 +5243,12 @@ function showAppPage(page,options={}){
   if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
 }
 
-function showTrainerWithSetup(){
-  showAppPage("trainer");
-  const setup=document.querySelector("#page-trainer details.setup");
+let activeReportMode="vfr";
+
+function showTrainerWithSetup(mode="vfr"){
+  const page=mode==="ifr"?"ifr-trainer":"trainer";
+  showAppPage(page);
+  const setup=document.querySelector(`#page-${page} details.setup`);
   if(setup) setup.open=true;
   setTimeout(()=>setup?.scrollIntoView({behavior:"smooth",block:"start"}),80);
 }
@@ -5253,10 +5256,15 @@ function showTrainerWithSetup(){
 function initSideNavigation(){
   document.querySelectorAll(".side-nav-item").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.page)));
 
-  $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup());
+  $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup(activeReportMode));
   $("repeatSameRoute")?.addEventListener("click",()=>{
-    resetTraining();
-    showAppPage("trainer");
+    if(activeReportMode==="ifr"){
+      ifrResetTraining();
+      showAppPage("ifr-trainer");
+    }else{
+      resetTraining();
+      showAppPage("trainer");
+    }
   });
 
   $("mobileNavToggle")?.addEventListener("click",()=>document.body.classList.toggle("nav-open"));
@@ -7816,6 +7824,7 @@ function stageBest(stage){
 }
 
 function renderFinalReport(){
+  activeReportMode="vfr";
   const stageStats=STAGES.map(stage=>{
     const stat=app.session.stages[stage.id] || {
       title:stage.title,attempts:0,best:0,completed:false,misses:{}
@@ -8940,7 +8949,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.34 IFR clearance speech-capture robustness */
+/* V4.37 squawk transcript recovery + approach availability correction */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -8954,9 +8963,9 @@ initSideNavigation();
 const ifr$ = id => document.getElementById(`ifr-${id}`);
 
 const IFR_LEVEL_DESCRIPTIONS={
-  beginner:"More prompting and simplified IFR clearances.",
-  intermediate:"Reduced prompting with more realistic IFR readbacks.",
-  advanced:"Minimal prompting with amended clearances and less coaching."
+  beginner:"More prompting; operational essentials are required while some identification details are coached.",
+  intermediate:"Reduced prompting; facility, callsign, ATIS, and key readback details are evaluated more strictly.",
+  advanced:"Minimal prompting; all evaluated call elements are required before ATC advances the scenario."
 };
 
 const IFR_APP={
@@ -9043,10 +9052,16 @@ function ifrRunwaySpoken(r){
   return s;
 }
 function ifrApproachName(){
+  if(IFR_APP.config.approachType==="Instrument (Training)"){
+    return `instrument approach Runway ${IFR_APP.config.destRunway}`;
+  }
   return `${IFR_APP.config.approachType} Runway ${IFR_APP.config.destRunway}`;
 }
 function ifrApproachSpoken(){
-  return `${IFR_APP.config.approachType.replace("(GPS)","GPS")} runway ${ifrRunwaySpoken(IFR_APP.config.destRunway)}`;
+  if(IFR_APP.config.approachType==="Instrument (Training)"){
+    return `instrument approach runway ${ifrRunwaySpoken(IFR_APP.config.destRunway)}`;
+  }
+  return `${IFR_APP.config.approachType.replace("(GPS)","GPS").replace("(RNP)","RNP")} runway ${ifrRunwaySpoken(IFR_APP.config.destRunway)}`;
 }
 function ifrClearanceInitialAltitude(){
   return Math.min(3000,ifrAltitudeNumber());
@@ -9127,11 +9142,45 @@ function ifrUpdateDepartureChoices(preserve=true){
   ifrSetOptions("location",ap.locations,oldLoc);
   ifrUpdateRouteHeading();
 }
+
+const IFR_VERIFIED_APPROACHES={
+  /* FAA d-TPP cycle 2610, effective Oct 01–Oct 28, 2026. */
+  KLGB:{
+    "30":["ILS","RNAV (GPS)","VOR","Visual"],
+    "12":["RNAV (RNP)","Visual"],
+    "26R":["RNAV (RNP)","Visual"]
+  },
+
+  /* FAA published IAPs verified from 2026 d-TPP listings. */
+  KCRQ:{
+    "24":["ILS","RNAV (GPS)","RNAV (RNP)","Visual"],
+    "6":["RNAV (GPS)","RNAV (RNP)","Visual"]
+  }
+};
+
+function ifrApproachOptionsFor(code,runway){
+  const verified=IFR_VERIFIED_APPROACHES?.[code]?.[runway];
+  if(verified?.length) return verified;
+
+  /* For airports/runways not yet verified in the embedded procedure map,
+     do not falsely advertise ILS/VOR/RNAV availability. */
+  return ["Instrument (Training)","Visual"];
+}
+
+function ifrUpdateApproachChoices(preserve=true){
+  const code=ifr$("destinationAirport")?.value||"KCRQ";
+  const runway=ifr$("destRunway")?.value||"";
+  const old=preserve?ifr$("approachType")?.value:"";
+  const options=ifrApproachOptionsFor(code,runway);
+  ifrSetOptions("approachType",options,options.includes(old)?old:options[0]);
+}
+
 function ifrUpdateDestinationChoices(preserve=true){
   const code=ifr$("destinationAirport").value;
   const ap=ifrAirport(code);
   const oldRunway=preserve?ifr$("destRunway").value:"";
   ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
+  ifrUpdateApproachChoices(preserve);
   ifrUpdateRouteHeading();
 }
 function ifrUpdateRouteHeading(){
@@ -9164,6 +9213,62 @@ function ifrSaveLastSetup(){
       approachType:ifr$("approachType")?.value
     };
     localStorage.setItem(IFR_LAST_SETUP_KEY,JSON.stringify(saved));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+
+function ifrLoadLastSetup(){
+  try{
+    const raw=localStorage.getItem(IFR_LAST_SETUP_KEY);
+    if(!raw) return false;
+    const saved=JSON.parse(raw)||{};
+
+    if(saved.level && ifr$("level")) ifr$("level").value=saved.level;
+
+    if(saved.departureAirport && AIRPORTS[saved.departureAirport]){
+      ifr$("departureAirport").value=saved.departureAirport;
+    }
+    ifrUpdateDepartureChoices(false);
+
+    if(saved.destinationAirport && AIRPORTS[saved.destinationAirport]){
+      ifr$("destinationAirport").value=saved.destinationAirport;
+    }
+    ifrUpdateDestinationChoices(false);
+
+    if(saved.aircraftType && ifr$("aircraftType")){
+      const allowed=[...ifr$("aircraftType").options].map(o=>o.value);
+      ifr$("aircraftType").value=allowed.includes(saved.aircraftType)?saved.aircraftType:"Other";
+    }
+    if(saved.otherAircraftType && ifr$("otherAircraftType")){
+      ifr$("otherAircraftType").value=saved.otherAircraftType;
+    }
+    ifr$("otherAircraftTypeLabel")?.classList.toggle("hidden",ifr$("aircraftType")?.value!=="Other");
+
+    if(saved.callsign && ifr$("callsign")) ifr$("callsign").value=saved.callsign;
+
+    if(saved.runway && [...ifr$("runway").options].some(o=>o.value===saved.runway)){
+      ifr$("runway").value=saved.runway;
+    }
+    if(saved.location && [...ifr$("location").options].some(o=>o.value===saved.location)){
+      ifr$("location").value=saved.location;
+    }
+    if(saved.route && ifr$("direction")) ifr$("direction").value=saved.route;
+    if(saved.userRoute && ifr$("userRoute")) ifr$("userRoute").value=saved.userRoute;
+    if(saved.altitude && ifr$("altitude")) ifr$("altitude").value=saved.altitude;
+
+    if(saved.destRunway && [...ifr$("destRunway").options].some(o=>o.value===saved.destRunway)){
+      ifr$("destRunway").value=saved.destRunway;
+    }
+    ifrUpdateApproachChoices(false);
+    if(saved.approachType && ifr$("approachType")){
+      const allowed=[...ifr$("approachType").options].map(o=>o.value);
+      if(allowed.includes(saved.approachType)) ifr$("approachType").value=saved.approachType;
+    }
+
+    ifrUpdateRouteHeading();
     return true;
   }catch(e){
     return false;
@@ -9300,26 +9405,29 @@ function ifrUpdateTuneUI(){
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
   const ok=ifrTuned();
+  const isComm=stage.type==="comm";
+  const active=!IFR_APP.stageComplete;
+
   ifr$("targetFrequency").textContent=`TARGET ${stage.freq}`;
   ifr$("radioReadyState").textContent=ok?"READY":"NOT READY";
   ifr$("radioReadyState").className=`radio-ready-state ${ok?"ready":"not-ready"}`;
   ifr$("tuneMsg").textContent=ok?`${stage.facility} selected.`:`Tune ${stage.freq} for ${stage.facility}.`;
 
-  /* Keep pilot controls synchronized with radio tuning. */
-  const isComm=stage.type==="comm";
-  if(ifr$("ptt")){
-    ifr$("ptt").disabled=!isComm || (!ok && !IFR_APP.pttActive);
+  if(ifr$("ptt")) ifr$("ptt").disabled=!isComm || !active || (!ok && !IFR_APP.pttActive);
+  if(ifr$("pilotText")) ifr$("pilotText").disabled=!isComm || !active || !ok;
+  if(ifr$("sendTyped")) ifr$("sendTyped").disabled=!isComm || !active || !ok;
+  if(ifr$("clearText")) ifr$("clearText").disabled=!isComm || !active;
+
+  const monitor=ifr$("monitorAtis");
+  if(monitor){
+    const enableAtis=stage.type==="atis" && ok && active;
+    monitor.disabled=!enableAtis;
+    monitor.classList.toggle("disabled",!enableAtis);
+    monitor.setAttribute("aria-disabled",enableAtis?"false":"true");
   }
-  if(ifr$("pilotText")){
-    ifr$("pilotText").disabled=!isComm || !ok;
-  }
-  if(ifr$("sendTyped")){
-    ifr$("sendTyped").disabled=!isComm || !ok;
-  }
-  if(ifr$("clearText")){
-    ifr$("clearText").disabled=!isComm;
-  }
+
   ifrUpdatePTTState();
+  ifrUpdateRepeatButton();
 }
 
 function ifrRenderStage(resetFrequency=true){
@@ -9338,6 +9446,8 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("score").textContent="—";
   ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
   ifr$("next").disabled=true;
+  ifr$("next").classList.remove("hidden");
+  ifr$("next").textContent=IFR_APP.stageIndex===IFR_STAGES.length-1?"FINISH":"NEXT →";
   ifr$("previous").disabled=IFR_APP.stageIndex===0;
   /* Keep the full Radio Exchange history across stage changes. */
   ifrAppend("system","TRAINER",`${stage.title} stage loaded.`);
@@ -9364,7 +9474,6 @@ function ifrAppend(type,speaker,text){
   ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
 }
 function ifrSpeak(text){
-  IFR_APP.lastATC=text;
   if(!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
@@ -9388,6 +9497,12 @@ function ifrATC(visual,spoken=null){
     return frequencySpoken(`${whole}.${frac.padEnd(3,"0")}`);
   });
 
+  IFR_APP.lastATC={
+    visual:String(visual||""),
+    spoken:String(voiceText||visual||""),
+    speaker:"ATC"
+  };
+  ifrUpdateRepeatButton();
   ifrSpeak(voiceText);
 }
 
@@ -9406,6 +9521,41 @@ function ifrContainsAirport(text,code){
 function ifrContainsRunway(text,runway){
   return containsRunway(text,runway);
 }
+
+function ifrNormalizeClearanceReadback(text){
+  let s=String(text||"");
+
+  /* "one two seven point two" is sometimes rendered "1 to 7.2". */
+  s=s.replace(/\b1\s+(?:to|too|two)\s+7(?:\s*point\s*|\.)\s*2\b/gi,"127.2");
+
+  /* More general three-digit COM form: "1 to 5.3" -> "125.3". */
+  s=s.replace(/\b1\s+(?:to|too|two)\s+([0-9])(?:\s*point\s*|\.)\s*([0-9])\b/gi,
+    (m,d2,d3)=>`12${d2}.${d3}`);
+
+  /* During "expect 5,000, one zero minutes after departure", ASR can glue
+     the first timing digit to the altitude: "5001 zero minutes".
+     Repair only when it is immediately followed by zero + minutes. */
+  const expected=ifrAltitudeNumber();
+  if(Number.isFinite(expected) && expected>=1000 && expected%10===0){
+    const glued=String(Math.trunc(expected/10))+"1";
+    const rx=new RegExp(`\\b${glued}\\s+(?:zero|0)\\s+minutes?\\b`,"gi");
+    s=s.replace(rx,`${expected} one zero minutes`);
+  }
+
+  /* A similar ASR form can be "5000 1 zero minutes". */
+  if(Number.isFinite(expected)){
+    const rx2=new RegExp(`\\b${expected}\\s+1\\s+(?:zero|0)\\s+minutes?\\b`,"gi");
+    s=s.replace(rx2,`${expected} one zero minutes`);
+  }
+
+  return s.replace(/\s+/g," ").trim();
+}
+
+function ifrClearanceExpectedAltitudeOK(text){
+  const normalized=ifrNormalizeClearanceReadback(text);
+  return ifrContainsAltitude(normalized,ifrAltitudeNumber());
+}
+
 function ifrContainsAltitude(text,value){
   const target=parseInt(String(value||"").replace(/\D/g,""),10);
   if(!Number.isFinite(target)) return false;
@@ -9428,12 +9578,9 @@ function ifrContainsAltitude(text,value){
 function ifrContainsFrequency(text,freq){
   if(containsFrequency(text,freq)) return true;
 
-  /* Speech recognition commonly renders spoken "two" as "to" or "too"
-     inside a frequency. Limit this repair to the frequency phrase. */
-  const n=norm(text);
-  const m=n.match(/\b(?:departure\s+)?frequency\s+([^,;]+)/i);
-  if(!m) return false;
-  const repaired=m[1]
+  /* Repair common ASR "to/too" substitutions whether or not the pilot
+     explicitly says the word "frequency". */
+  const repaired=ifrNormalizeClearanceReadback(text)
     .replace(/\bto\b/g,"two")
     .replace(/\btoo\b/g,"two");
   return containsFrequency(repaired,freq);
@@ -9447,18 +9594,176 @@ function ifrGrade(checks){
   if(!vals.length) return 0;
   return Math.round(100*vals.filter(Boolean).length/vals.length);
 }
+
+const IFR_CHECK_LABELS={
+  facility:"facility name",
+  callsign:"aircraft callsign",
+  location:"starting location",
+  atis:"ATIS code",
+  destination:"clearance limit / destination",
+  ifr:"IFR request",
+  request:"request",
+  route:"route",
+  altitude:"altitude",
+  expectedAltitude:"expected altitude",
+  frequency:"frequency",
+  squawk:"squawk code",
+  runway:"runway",
+  taxiway:"taxiway",
+  ready:"ready-for-departure call",
+  takeoff:"takeoff clearance",
+  heading:"heading",
+  approach:"approach",
+  landing:"landing clearance",
+  parking:"parking request"
+};
+
+function ifrMissingItems(checks){
+  return Object.entries(checks||{})
+    .filter(([,ok])=>!ok)
+    .map(([key])=>IFR_CHECK_LABELS[key]||key);
+}
+
+function ifrRecordAttempt(stage,checks,score){
+  if(!stage || !checks || !Object.keys(checks).length) return;
+  const stat=IFR_APP.session.stages[stage.id] || {
+    title:stage.title,attempts:0,best:0,completed:false,misses:{}
+  };
+  stat.attempts++;
+  if(Number.isFinite(score)) stat.best=Math.max(stat.best,score);
+  for(const item of ifrMissingItems(checks)){
+    stat.misses[item]=(stat.misses[item]||0)+1;
+    IFR_APP.session.missing[item]=(IFR_APP.session.missing[item]||0)+1;
+  }
+  IFR_APP.session.stages[stage.id]=stat;
+}
+
+function ifrScoreChecks(stage,checks){
+  const score=ifrGrade(checks);
+  ifr$("score").textContent=`${score}%`;
+  ifrRecordAttempt(stage,checks,score);
+  return score;
+}
+
+function ifrRecordStageComplete(score=100){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage) return;
+  const stat=IFR_APP.session.stages[stage.id] || {
+    title:stage.title,attempts:0,best:0,completed:false,misses:{}
+  };
+  stat.best=Math.max(stat.best,score);
+  stat.completed=true;
+  IFR_APP.session.stages[stage.id]=stat;
+}
+
+function ifrMeetsLevel(checks,beginnerKeys,intermediateExtra=[]){
+  const level=IFR_APP.config.level||"beginner";
+  let keys=[...beginnerKeys];
+  if(level==="intermediate") keys=[...new Set([...keys,...intermediateExtra])];
+  if(level==="advanced") keys=Object.keys(checks);
+  return keys.every(k=>!!checks[k]);
+}
+
+function ifrRenderFinalReport(){
+  activeReportMode="ifr";
+
+  const stageStats=IFR_STAGES.map(stage=>{
+    const stat=IFR_APP.session.stages[stage.id] || {
+      title:stage.title,attempts:0,best:0,completed:false,misses:{}
+    };
+    return {stage,...stat};
+  });
+
+  const scores=stageStats.map(s=>s.best);
+  const overall=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const completed=stageStats.filter(s=>s.completed).length;
+  const commStages=IFR_STAGES.filter(s=>s.type==="comm").length;
+  const stageAttempts=stageStats.reduce((n,s)=>n+s.attempts,0);
+  const retries=Math.max(0,stageAttempts-commStages);
+
+  $("reportGrade").textContent=`${overall}%`;
+  $("reportSummary").innerHTML=`
+    <div><b>${overall}%</b><span>Overall Score</span></div>
+    <div><b>${completed}/${IFR_STAGES.length}</b><span>Stages Completed</span></div>
+    <div><b>${IFR_APP.session.attempts}</b><span>Radio Calls</span></div>
+    <div><b>${retries}</b><span>Retries</span></div>
+    <div><b>${IFR_APP.session.tuningErrors}</b><span>Tuning Errors</span></div>
+    <div><b>${String(IFR_APP.config.level||"beginner").toUpperCase()}</b><span>Training Level</span></div>
+  `;
+
+  $("reportStages").innerHTML=`
+    <div class="report-table-head">
+      <span>Stage</span><span>Best</span><span>Attempts</span><span>Needs Work</span>
+    </div>
+    ${stageStats.map(s=>{
+      const misses=Object.entries(s.misses)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,2)
+        .map(([name])=>name)
+        .join(", ") || "—";
+      return `<div class="report-table-row">
+        <span>${s.title}</span>
+        <span class="${s.best>=90?"good":s.best>=75?"warn":""}">${s.best}%</span>
+        <span>${s.attempts || (s.stage.type==="atis"?1:0)}</span>
+        <span>${misses}</span>
+      </div>`;
+    }).join("")}
+  `;
+
+  const common=Object.entries(IFR_APP.session.missing)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,4);
+
+  const recommendations=[];
+  if(common.length){
+    recommendations.push(`Practice including ${common.map(([name])=>name).join(", ")} in the IFR call or readback.`);
+  }
+  if(IFR_APP.session.tuningErrors>0){
+    recommendations.push("Practice tuning the assigned frequency before transmitting.");
+  }
+  const weakest=[...stageStats].sort((a,b)=>a.best-b.best)[0];
+  if(weakest && weakest.best<90){
+    recommendations.push(`Repeat ${weakest.title} — it was your lowest-scoring IFR stage at ${weakest.best}%.`);
+  }
+  if(!recommendations.length){
+    recommendations.push(IFR_APP.config.level==="advanced"
+      ?"Strong IFR communication session."
+      :"Strong session. Move up one training level for stricter evaluation and less prompting.");
+  }
+
+  $("reportRecommendations").innerHTML=`
+    <h3>Recommended Practice</h3>
+    <ul>${recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>
+    <div class="report-scenario">
+      IFR Scenario: ${IFR_APP.config.departureAirport} → ${IFR_APP.config.destinationAirport}
+      • ${IFR_APP.config.route==="User Route"?(IFR_APP.config.userRoute||"User / TEC Route"):IFR_APP.config.route}
+      • ${IFR_APP.config.altitude}
+      • ${IFR_APP.config.approachType} Runway ${IFR_APP.config.destRunway}
+      • squawk ${IFR_APP.squawk}
+    </div>
+  `;
+
+  $("finalReport").classList.remove("hidden");
+  showAppPage("report");
+}
+
 function ifrCompleteStage(score=100){
   IFR_APP.stageComplete=true;
   ifr$("score").textContent=`${score}%`;
   ifr$("stageState").textContent="Completed";
   ifr$("stageState").className="small good";
+  ifrRecordStageComplete(score);
   ifr$("next").disabled=false;
+
   if(IFR_APP.stageIndex===IFR_STAGES.length-1){
-    ifr$("next").classList.add("hidden");
+    ifr$("next").classList.remove("hidden");
+    ifr$("next").textContent="FINISH";
     ifr$("reset").classList.remove("hidden");
     ifrRecordCompletedTraining();
-    ifr$("feedback").textContent="IFR training session complete.";
+    ifr$("feedback").textContent="IFR training stages complete. Select FINISH for the End-of-Flight Report.";
   }
+
+  ifrUpdateTuneUI();
 }
 
 function ifrMonitorAtis(){
@@ -9481,9 +9786,30 @@ function ifrMonitorAtis(){
      the same way the VFR trainer does. */
   ifrAppend("atc",atisSpeaker,visual);
 
-  ifrSpeak(`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`);
+  const atisSpoken=`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`;
+  IFR_APP.lastATC={visual,spoken:atisSpoken,speaker:atisSpeaker};
+  ifrUpdateRepeatButton();
+  ifrSpeak(atisSpoken);
   ifr$("feedback").textContent=`ATIS received: information ${code}, Runway ${runway}.`;
   ifrCompleteStage(100);
+}
+
+
+function ifrNormalizeClearanceTranscript(text){
+  let s=ifrNormalizeClearanceReadback(text);
+
+  if(IFR_APP.phase==="clearanceReadback"){
+    const code=String(IFR_APP.squawk||"").replace(/\D/g,"");
+    if(code){
+      const codeRx=new RegExp(`(^|[^0-9])(${code})(?=$|[^0-9])`,"i");
+      const hasSquawk=/\bsquawk\b/i.test(s);
+      if(codeRx.test(s) && !hasSquawk){
+        s=s.replace(codeRx,(m,prefix,matched)=>`${prefix}squawk ${matched}`);
+      }
+    }
+  }
+
+  return s.replace(/\s+/g," ").trim();
 }
 
 function ifrEvaluateTransmission(text){
@@ -9491,6 +9817,11 @@ function ifrEvaluateTransmission(text){
   if(!text) return;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage||stage.type==="atis") return;
+
+  if(stage.id==="clearance" && IFR_APP.phase==="clearanceReadback"){
+    text=ifrNormalizeClearanceTranscript(text);
+    ifr$("pilotText").value=text;
+  }
   if(!ifrTuned()){
     IFR_APP.session.tuningErrors++;
     ifr$("feedback").textContent=`Radio is not tuned to ${stage.freq}.`;
@@ -9506,9 +9837,10 @@ function ifrEvaluateTransmission(text){
     if(IFR_APP.phase==="clearanceInitial"){
       const hasCurrentAtis=n.includes(IFR_APP.config.atis.toLowerCase());
       if(!hasCurrentAtis){
+        checks={atis:false,callsign:ifrContainsCallsign(text),destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport)};
+        score=ifrScoreChecks(stage,checks);
         ifrATC(`${ifrCallsignVisual()}, verify you have information ${IFR_APP.config.atis}.`);
         ifr$("feedback").textContent=`Include current ATIS information ${IFR_APP.config.atis} in the IFR clearance call.`;
-        ifr$("score").textContent="—";
         return;
       }
       checks={
@@ -9519,8 +9851,8 @@ function ifrEvaluateTransmission(text){
         destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
         ifr:n.includes("ifr")||n.includes("ready to copy")||n.includes("copy")
       };
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=70){
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["atis","destination","ifr"],["facility","callsign","location"])){
         const initial=ifrClearanceInitialAltitude();
         const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
         const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial}, expect ${ifrAltitudeNumber()} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
@@ -9532,20 +9864,24 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Initial IFR clearance call incomplete.";
       }
     }else{
+      const clearanceText=ifrNormalizeClearanceReadback(text);
       checks={
-        destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
-        route:ifrRouteReadbackOK(text),
-        altitude:ifrContainsAltitude(text,ifrClearanceInitialAltitude()),
-        expectedAltitude:ifrContainsAltitude(text,ifrAltitudeNumber()),
-        frequency:ifrContainsFrequency(text,ifrFreq(IFR_APP.config.departureAirport,"departure")),
-        squawk:ifrContainsSquawk(text),
-        callsign:ifrContainsCallsign(text)
+        destination:ifrContainsAirport(clearanceText,IFR_APP.config.destinationAirport),
+        route:ifrRouteReadbackOK(clearanceText),
+        altitude:ifrContainsAltitude(clearanceText,ifrClearanceInitialAltitude()),
+        expectedAltitude:ifrClearanceExpectedAltitudeOK(clearanceText),
+        frequency:ifrContainsFrequency(clearanceText,ifrFreq(IFR_APP.config.departureAirport,"departure")),
+        squawk:ifrContainsSquawk(clearanceText),
+        callsign:ifrContainsCallsign(clearanceText)
       };
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(checks.destination&&checks.route&&checks.altitude&&checks.frequency&&checks.squawk){
+      score=ifrScoreChecks(stage,checks);
+      const clearanceRequired=["destination","route","altitude","frequency","squawk"];
+      if(IFR_APP.config.level!=="beginner") clearanceRequired.push("expectedAltitude");
+      if(IFR_APP.config.level==="advanced") clearanceRequired.push("callsign");
+      if(clearanceRequired.every(k=>checks[k])){
         ifrATC(`${ifrCallsignVisual()}, readback correct. Contact Ground when ready to taxi.`);
         ifr$("feedback").textContent="IFR Clearance complete.";
-        ifrCompleteStage(checks.callsign?100:90);
+        ifrCompleteStage(score);
       }else{
         const missing=[];
         if(!checks.destination) missing.push("clearance limit");
@@ -9553,6 +9889,8 @@ function ifrEvaluateTransmission(text){
         if(!checks.altitude) missing.push("initial altitude");
         if(!checks.frequency) missing.push("departure frequency");
         if(!checks.squawk) missing.push("squawk");
+        if(IFR_APP.config.level!=="beginner" && !checks.expectedAltitude) missing.push("expected altitude");
+        if(IFR_APP.config.level==="advanced" && !checks.callsign) missing.push("callsign");
         ifrATC(`${ifrCallsignVisual()}, verify ${missing.join(", ")}.`);
         ifr$("feedback").textContent=`IFR clearance readback incomplete: ${missing.join(", ")}.`;
       }
@@ -9563,8 +9901,8 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="ground"){
     if(IFR_APP.phase==="groundInitial"){
       checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:n.includes(norm(IFR_APP.config.location)),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")&&(n.includes("ifr")||n.includes("departure"))};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=60){
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["callsign","location","request"],["facility","atis"])){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
         const requestedRunup=/\brun[ -]?up\b/i.test(text);
         IFR_APP.taxiway=taxi;
@@ -9580,7 +9918,7 @@ function ifrEvaluateTransmission(text){
       }
     }else{
       checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:n.includes(norm(IFR_APP.taxiway))};
-      score=ifrGrade(checks);
+      score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.taxiway){
         ifrATC(`${ifrCallsignVisual()}, readback correct.`);
         ifrCompleteStage(100);
@@ -9594,14 +9932,15 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="tower"){
     if(IFR_APP.phase==="towerInitial"){
       checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),ready:n.includes("ready"),ifr:n.includes("ifr")||n.includes("departure"),runway:ifrContainsRunway(text,IFR_APP.config.runway)};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=60){
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["callsign","ready","runway"],["facility","ifr"])){
         ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. Fly runway heading. Contact Departure.`);
         IFR_APP.phase="towerReadback";
         ifr$("feedback").textContent="Read back runway, takeoff clearance, and runway heading.";
       }else ifrATC(`${ifrCallsignVisual()}, say again ready for IFR departure.`);
     }else{
       checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:n.includes("takeoff"),heading:n.includes("runway heading")||n.includes("heading")};
+      score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.takeoff&&checks.heading){
         ifrATC(`${ifrCallsignVisual()}, correct. Contact Departure ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
         ifrCompleteStage(100);
@@ -9614,7 +9953,7 @@ function ifrEvaluateTransmission(text){
     if(IFR_APP.phase==="departureInitial"){
       const reportedAltitude=reportedAltitudeFeet(text);
       checks={facility:n.includes("departure")||n.includes("approach"),callsign:ifrContainsCallsign(text),altitude:reportedAltitude>0};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
+      score=ifrScoreChecks(stage,checks);
       if(score>=60){
         const routeInstruction=ifrRouteInstructionText();
         ifrATC(`${ifrCallsignVisual()}, radar contact. Climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}. Proceed ${routeInstruction}.`);
@@ -9623,6 +9962,7 @@ function ifrEvaluateTransmission(text){
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
       checks={altitude:ifrContainsAltitude(text,ifrAltitudeNumber()),route:ifrRouteInstructionReadbackOK(text)};
+      score=ifrScoreChecks(stage,checks);
       if(checks.altitude&&checks.route){
         ifrATC(`${ifrCallsignVisual()}, correct.`);
         ifrCompleteStage(100);
@@ -9633,9 +9973,9 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="enroute"){
     if(IFR_APP.phase==="enrouteInitial"){
-      checks={callsign:ifrContainsCallsign(text),altitude:ifrContainsAltitude(text,ifrAltitudeNumber())||n.includes("level")};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=50){
+      checks={callsign:ifrContainsCallsign(text),altitude:ifrContainsAltitude(text,ifrAltitudeNumber())};
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["altitude"],["callsign"])){
         const descent=Math.min(4000,ifrAltitudeNumber());
         IFR_APP.arrivalAltitude=descent;
         ifrATC(`${ifrCallsignVisual()}, continue ${ifrRouteInstructionText()}. Descend and maintain ${descent.toLocaleString("en-US")}. Expect ${ifrApproachName()}.`);
@@ -9644,6 +9984,7 @@ function ifrEvaluateTransmission(text){
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
       checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:n.includes(norm(IFR_APP.config.approachType.split(" ")[0]))||n.includes("approach")};
+      score=ifrScoreChecks(stage,checks);
       if(checks.route&&checks.altitude&&checks.approach){
         ifrATC(`${ifrCallsignVisual()}, correct. Monitor destination ATIS.`);
         ifrCompleteStage(100);
@@ -9655,9 +9996,9 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="approach"){
     if(IFR_APP.phase==="approachInitial"){
       const reportedApproachAltitude=reportedAltitudeFeet(text);
-      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),altitude:reportedApproachAltitude>0};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=60){
+      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor")||n.includes("instrument"),altitude:reportedApproachAltitude>0};
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["callsign","atis","approach","altitude"],["facility"])){
         IFR_APP.vectorHeading="240";
         IFR_APP.approachAltitude=Math.min(3000,IFR_APP.arrivalAltitude||3000);
         ifrATC(`${ifrCallsignVisual()}, fly heading ${IFR_APP.vectorHeading}. Maintain ${IFR_APP.approachAltitude.toLocaleString("en-US")} until established. Cleared ${ifrApproachName()}.`);
@@ -9665,7 +10006,8 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back heading, altitude restriction, and approach clearance.";
       }else ifrATC(`${ifrCallsignVisual()}, say approach request and ATIS.`);
     }else{
-      checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
+      checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor")||n.includes("instrument"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
+      score=ifrScoreChecks(stage,checks);
       if(checks.heading&&checks.altitude&&checks.approach&&checks.runway){
         ifrATC(`${ifrCallsignVisual()}, correct. Contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower")}.`);
         ifrCompleteStage(100);
@@ -9677,14 +10019,15 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="destTower"){
     if(IFR_APP.phase==="destTowerInitial"){
       checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),runway:ifrContainsRunway(text,IFR_APP.config.destRunway),approach:n.includes("approach")||n.includes("established")||n.includes("final")};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=60){
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["callsign","runway","approach"],["facility"])){
         ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.destRunway}, cleared to land.`);
         IFR_APP.phase="destTowerReadback";
         ifr$("feedback").textContent="Read back runway and landing clearance.";
       }else ifrATC(`${ifrCallsignVisual()}, say position and runway.`);
     }else{
       checks={runway:ifrContainsRunway(text,IFR_APP.config.destRunway),landing:n.includes("land")||n.includes("cleared to land")};
+      score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.landing){
         ifrATC(`${ifrCallsignVisual()}, correct.`);
         ifrCompleteStage(100);
@@ -9696,8 +10039,8 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="destGround"){
     if(IFR_APP.phase==="destGroundInitial"){
       checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),request:n.includes("taxi"),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
-      score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(score>=50){
+      score=ifrScoreChecks(stage,checks);
+      if(ifrMeetsLevel(checks,["callsign","request","parking"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
         IFR_APP.destTaxiway=taxi;
         ifrATC(`${ifrCallsignVisual()}, taxi to parking via ${taxi}.`);
@@ -9706,6 +10049,7 @@ function ifrEvaluateTransmission(text){
       }else ifrATC(`${ifrCallsignVisual()}, say parking request.`);
     }else{
       checks={taxiway:n.includes(norm(IFR_APP.destTaxiway)),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
+      score=ifrScoreChecks(stage,checks);
       if(checks.taxiway){
         ifrATC(`${ifrCallsignVisual()}, readback correct. Good day.`);
         ifrCompleteStage(100);
@@ -9717,11 +10061,24 @@ function ifrEvaluateTransmission(text){
 function ifrNextStage(){
   if(!IFR_APP.stageComplete) return;
   if("speechSynthesis" in window) speechSynthesis.cancel();
-  IFR_APP.lastATC=null;
-  if(IFR_APP.stageIndex>=IFR_STAGES.length-1) return;
-  IFR_APP.stageIndex++;
-  ifrRenderStage(true);
-  window.scrollTo({top:0,behavior:"smooth"});
+
+  if(IFR_APP.stageIndex<IFR_STAGES.length-1){
+    IFR_APP.lastATC=null;
+    IFR_APP.stageIndex++;
+    ifrRenderStage(true);
+    window.scrollTo({top:0,behavior:"smooth"});
+    return;
+  }
+
+  ifr$("feedback").textContent="IFR training flight complete. Review the End-of-Flight Report.";
+  ifr$("next").disabled=true;
+  ifr$("next").classList.add("hidden");
+  ifr$("reset").classList.remove("hidden");
+  ifr$("stageState").textContent="Flight complete";
+  ifr$("stageState").className="small good";
+  ifrRecordCompletedTraining();
+  ifrRenderFinalReport();
+  setTimeout(()=>$("finalReport")?.scrollIntoView({behavior:"smooth",block:"start"}),150);
 }
 function ifrPreviousStage(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
@@ -9756,6 +10113,49 @@ function ifrCollapseSetupAndTop(button){
 }
 window.collapseIFRSetupAndTop=ifrCollapseSetupAndTop;
 
+
+function ifrUpdateRepeatButton(){
+  const btn=ifr$("sayAgain");
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!btn || !stage) return;
+  const enabled=
+    stage.type==="comm" &&
+    ifrTuned() &&
+    !IFR_APP.stageComplete &&
+    !IFR_APP.pttActive &&
+    !!IFR_APP.lastATC?.spoken;
+  btn.disabled=!enabled;
+}
+
+function ifrSayAgainRequest(){
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  if(!stage || stage.type!=="comm"){
+    ifr$("feedback").textContent="Say Again is available during ATC communication stages.";
+    return;
+  }
+  if(!ifrTuned()){
+    ifr$("feedback").textContent=`Tune ${stage.freq} before requesting Say Again.`;
+    return;
+  }
+  if(IFR_APP.stageComplete){
+    ifr$("feedback").textContent="This stage is already complete.";
+    return;
+  }
+  if(!IFR_APP.lastATC?.spoken){
+    ifr$("feedback").textContent="There is no ATC transmission to repeat yet.";
+    return;
+  }
+
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+
+  const request=`${ifrCallsignVisual()}, say again.`;
+  ifrAppend("pilot",ifrCallsignVisual(),request);
+  ifrAppend("atc",IFR_APP.lastATC.speaker||"ATC",IFR_APP.lastATC.visual);
+  ifrSpeak(IFR_APP.lastATC.spoken);
+  ifr$("feedback").textContent='Good clarification phraseology: “Say again.” The previous ATC transmission was repeated.';
+  ifrUpdateRepeatButton();
+}
+
 function ifrUpdatePTTState(){
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   const ptt=ifr$("ptt");
@@ -9766,18 +10166,28 @@ function ifrUpdatePTTState(){
   if(stage.type!=="comm"){
     ptt.disabled=true;
     ifr$("pttLabel").textContent="ATIS";
+    ifrUpdateRepeatButton();
+    return;
+  }
+
+  if(IFR_APP.stageComplete){
+    ptt.disabled=true;
+    ifr$("pttLabel").textContent="STAGE COMPLETE";
+    ifrUpdateRepeatButton();
     return;
   }
 
   if(IFR_APP.pttActive){
     ptt.disabled=false;
     ifr$("pttLabel").textContent="TAP TO END & SEND";
+    ifrUpdateRepeatButton();
     return;
   }
 
   const ok=ifrTuned();
   ptt.disabled=!ok;
   ifr$("pttLabel").textContent=ok?"TAP TO TALK":"TUNE RADIO FIRST";
+  ifrUpdateRepeatButton();
 }
 function ifrJoinRecognitionText(base,addition){
   base=(base||"").trim(); addition=(addition||"").trim();
@@ -9804,6 +10214,7 @@ function ifrStartRecognitionSegment(){
   r.maxAlternatives=1;
   IFR_APP.recognizer=r;
   IFR_APP.recognitionSegment="";
+  IFR_APP.recognitionInterim="";
 
   r.onstart=()=>{
     ifr$("stageState").textContent="Listening";
@@ -9820,11 +10231,14 @@ function ifrStartRecognitionSegment(){
 
     if(finalPart.trim()){
       IFR_APP.recognitionSegment=ifrJoinRecognitionText(IFR_APP.recognitionSegment,finalPart.trim());
+      IFR_APP.recognitionInterim="";
     }
+
+    IFR_APP.recognitionInterim=interimPart.trim();
 
     const display=ifrJoinRecognitionText(
       IFR_APP.recognitionCommitted,
-      ifrJoinRecognitionText(IFR_APP.recognitionSegment,interimPart.trim())
+      ifrJoinRecognitionText(IFR_APP.recognitionSegment,IFR_APP.recognitionInterim)
     );
     ifr$("pilotText").value=display;
   };
@@ -9837,15 +10251,22 @@ function ifrStartRecognitionSegment(){
   };
 
   r.onend=()=>{
-    /* Wait for the recognizer's final result before evaluating the transmission. */
-    if(IFR_APP.recognitionSegment){
+    /* Commit the final segment. If the browser never promoted the last
+       interim phrase to a final result, preserve that phrase as a fallback.
+       This prevents the end of long IFR clearance readbacks from being cut off. */
+    let closingSegment=IFR_APP.recognitionSegment||"";
+    if(IFR_APP.recognitionInterim){
+      closingSegment=ifrJoinRecognitionText(closingSegment,IFR_APP.recognitionInterim);
+    }
+    if(closingSegment){
       IFR_APP.recognitionCommitted=ifrJoinRecognitionText(
         IFR_APP.recognitionCommitted,
-        IFR_APP.recognitionSegment
+        closingSegment
       );
-      IFR_APP.recognitionSegment="";
-      ifr$("pilotText").value=IFR_APP.recognitionCommitted;
     }
+    IFR_APP.recognitionSegment="";
+    IFR_APP.recognitionInterim="";
+    ifr$("pilotText").value=IFR_APP.recognitionCommitted;
 
     IFR_APP.recognizer=null;
 
@@ -9862,7 +10283,9 @@ function ifrStartRecognitionSegment(){
     ifr$("stageState").textContent="Ready";
     ifrUpdatePTTState();
 
-    const text=(IFR_APP.recognitionCommitted||ifr$("pilotText").value||"").trim();
+    const committed=(IFR_APP.recognitionCommitted||"").trim();
+    const displayed=(ifr$("pilotText").value||"").trim();
+    const text=(displayed.length>committed.length?displayed:committed).trim();
     ifr$("pilotText").value=text;
     if(text) ifrEvaluateTransmission(text);
     else ifr$("feedback").textContent="No speech was recognized. Try again.";
@@ -9896,6 +10319,7 @@ async function ifrTogglePTT(){
     IFR_APP.pttActive=true;
     IFR_APP.recognitionCommitted="";
     IFR_APP.recognitionSegment="";
+    IFR_APP.recognitionInterim="";
     ifr$("pilotText").value="";
     ifrUpdatePTTState();
     ifrStartRecognitionSegment();
@@ -9935,6 +10359,7 @@ function ifrInit(){
 
   ifr$("departureAirport").addEventListener("change",()=>ifrUpdateDepartureChoices(false));
   ifr$("destinationAirport").addEventListener("change",()=>ifrUpdateDestinationChoices(false));
+  ifr$("destRunway").addEventListener("change",()=>ifrUpdateApproachChoices(false));
   ifr$("level").addEventListener("change",()=>{
     if(ifr$("trainingLevelDescription")) ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS[ifr$("level").value]||"";
   });
@@ -9961,7 +10386,7 @@ function ifrInit(){
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   ifr$("sendTyped").addEventListener("click",()=>ifrEvaluateTransmission(ifr$("pilotText").value));
   ifr$("clearText").addEventListener("click",()=>{ifr$("pilotText").value="";});
-  ifr$("sayAgain").addEventListener("click",()=>{ if(IFR_APP.lastATC) ifrSpeak(IFR_APP.lastATC); });
+  ifr$("sayAgain").addEventListener("click",ifrSayAgainRequest);
   ifr$("ptt").addEventListener("click",ifrTogglePTT);
   ifr$("next").addEventListener("click",ifrNextStage);
   ifr$("previous").addEventListener("click",ifrPreviousStage);
@@ -9971,10 +10396,19 @@ function ifrInit(){
     btn.addEventListener("click",()=>ifrStepRadioDigit(Number(btn.dataset.digit),Number(btn.dataset.dir)));
   });
 
-  ifrUpdateDepartureChoices(false);
-  ifrUpdateDestinationChoices(false);
-  if(ifr$("altitude")) ifr$("altitude").value=5000;
-  if(ifr$("trainingLevelDescription")) ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS.beginner;
+  const restored=ifrLoadLastSetup();
+  if(!restored){
+    ifrUpdateDepartureChoices(false);
+    ifrUpdateDestinationChoices(false);
+    if(ifr$("altitude")) ifr$("altitude").value=5000;
+  }
+
+  const showRoute=ifr$("direction")?.value==="User Route";
+  ifr$("userRouteLabel")?.classList.toggle("hidden",!showRoute);
+  ifr$("otherAircraftTypeLabel")?.classList.toggle("hidden",ifr$("aircraftType")?.value!=="Other");
+  if(ifr$("trainingLevelDescription")){
+    ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS[ifr$("level")?.value||"beginner"]||"";
+  }
   ifrReadSetup(true);
 }
 
