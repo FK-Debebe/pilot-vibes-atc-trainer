@@ -4273,6 +4273,32 @@ body{overflow-x:hidden}
     visibility:visible !important;
   }
 }
+
+/* =========================================================
+   V4.22 TRANSMISSION WIDTH + IFR ROUTE ENHANCEMENTS
+   ========================================================= */
+#commPanel,
+#ifr-commPanel{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#pilotText,
+#ifr-pilotText{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#ifr-userRouteLabel,
+#ifr-userRoute{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4642,6 +4668,7 @@ body{overflow-x:hidden}
 
   <div class="setup-content">
     <div class="setup-grid">
+
       <div class="setup-section-label">FLIGHT</div>
       <label>Training Level
         <select id="ifr-level">
@@ -4650,6 +4677,29 @@ body{overflow-x:hidden}
           <option value="advanced">Advanced</option>
         </select>
         <div id="ifr-trainingLevelDescription" class="training-level-description">More prompting and simplified IFR clearances.</div>
+      </label>
+
+      <label>Aircraft Type
+        <select id="ifr-aircraftType">
+          <option value="Cessna 152">Cessna 152</option>
+          <option value="Cessna 172" selected>Cessna 172</option>
+          <option value="Skyhawk">Skyhawk</option>
+          <option value="Piper Archer">Piper Archer</option>
+          <option value="Piper Warrior">Piper Warrior</option>
+          <option value="Cirrus SR20">Cirrus SR20</option>
+          <option value="Cirrus SR22">Cirrus SR22</option>
+          <option value="Diamond DA40">Diamond DA40</option>
+          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
+          <option value="Other">Other</option>
+        </select>
+      </label>
+
+      <label id="ifr-otherAircraftTypeLabel" class="hidden">Other Aircraft Type
+        <input id="ifr-otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
+      </label>
+
+      <label>Call Sign
+        <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
       </label>
 
       <div class="setup-section-label">ROUTE</div>
@@ -4707,28 +4757,33 @@ body{overflow-x:hidden}
         </select>
       </label>
 
-      <div class="setup-section-label">AIRCRAFT</div>
-      <label>Aircraft Type
-        <select id="ifr-aircraftType">
-          <option value="Cessna 152">Cessna 152</option>
-          <option value="Cessna 172" selected>Cessna 172</option>
-          <option value="Skyhawk">Skyhawk</option>
-          <option value="Piper Archer">Piper Archer</option>
-          <option value="Piper Warrior">Piper Warrior</option>
-          <option value="Cirrus SR20">Cirrus SR20</option>
-          <option value="Cirrus SR22">Cirrus SR22</option>
-          <option value="Diamond DA40">Diamond DA40</option>
-          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
-          <option value="Other">Other</option>
+      <label>IFR Route
+        <select id="ifr-direction">
+          <option value="As Filed">As Filed</option>
+          <option value="Direct">Direct</option>
+          <option value="Radar Vectors">Radar Vectors</option>
+          <option value="User Route">User / TEC Route</option>
         </select>
       </label>
 
-      <label id="ifr-otherAircraftTypeLabel" class="hidden">Other Aircraft Type
-        <input id="ifr-otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
+      <label id="ifr-userRouteLabel" class="hidden">User / TEC Route
+        <input id="ifr-userRoute" type="text" autocomplete="off"
+          placeholder="Enter a published TEC route or user-defined route">
+        <div class="small" style="margin-top:5px">Example: CSTP21 V23 LAX V299 VTU KWANG</div>
       </label>
 
-      <label>Call Sign
-        <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
+      <label>Requested Altitude
+        <div class="altitude-stepper">
+          <button id="ifr-altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
+          <div class="altitude-input-wrap">
+            <input id="ifr-altitude" type="number" min="0" max="18000" step="500" value="5000" inputmode="numeric" aria-describedby="ifr-vfrAltitudeGuide">
+            <span class="altitude-unit">ft MSL</span>
+          </div>
+          <button id="ifr-altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
+        </div>
+        <div id="ifr-vfrAltitudeGuide" class="vfr-altitude-guide">
+          IFR ALTITUDE — Enter the requested cruise altitude for this training scenario.
+        </div>
       </label>
 
       <div class="setup-section-label">DEPARTURE / ARRIVAL</div>
@@ -4761,6 +4816,8 @@ body{overflow-x:hidden}
             <option>25</option>
           </select>
         </label>
+      </div>
+
       <label>Approach
         <select id="ifr-approachType">
           <option value="RNAV (GPS)">RNAV (GPS)</option>
@@ -4768,29 +4825,6 @@ body{overflow-x:hidden}
           <option value="VOR">VOR</option>
           <option value="Visual">Visual</option>
         </select>
-      </label>
-      </div>
-
-      <label>IFR Route
-        <select id="ifr-direction">
-          <option value="As Filed">As Filed</option>
-          <option value="Direct">Direct</option>
-          <option value="Radar Vectors">Radar Vectors</option>
-        </select>
-      </label>
-
-      <label>Requested Altitude
-        <div class="altitude-stepper">
-          <button id="ifr-altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
-          <div class="altitude-input-wrap">
-            <input id="ifr-altitude" type="number" min="0" max="18000" step="500" value="5000" inputmode="numeric" aria-describedby="ifr-vfrAltitudeGuide">
-            <span class="altitude-unit">ft MSL</span>
-          </div>
-          <button id="ifr-altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
-        </div>
-        <div id="ifr-vfrAltitudeGuide" class="vfr-altitude-guide">
-          IFR ALTITUDE — Enter the requested cruise altitude for this training scenario.
-        </div>
       </label>
 
     </div>
@@ -8751,7 +8785,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.21 mobile menu page-switch fix */
+/* V4.25 User / TEC route label */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -8792,6 +8826,7 @@ const IFR_APP={
     runway:"26L",
     destRunway:"24",
     route:"As Filed",
+    userRoute:"",
     altitude:"5,000 ft",
     approachType:"RNAV (GPS)",
     level:"beginner",
@@ -8868,7 +8903,26 @@ function ifrRouteClearance(){
   const route=IFR_APP.config.route;
   if(route==="Direct") return `direct ${IFR_APP.config.destinationAirport}`;
   if(route==="Radar Vectors") return `radar vectors, then direct ${IFR_APP.config.destinationAirport}`;
+  if(route==="User Route") return IFR_APP.config.userRoute || "as filed";
   return "as filed";
+}
+
+function ifrRouteReadbackOK(text){
+  const n=norm(text);
+  const route=IFR_APP.config.route;
+  if(route==="As Filed") return n.includes("as filed");
+  if(route==="Direct") return n.includes("direct") && ifrContainsAirport(text,IFR_APP.config.destinationAirport);
+  if(route==="Radar Vectors") return n.includes("radar") || n.includes("vector");
+  if(route==="User Route"){
+    const raw=String(IFR_APP.config.userRoute||"").trim();
+    if(!raw) return n.includes("as filed");
+    const tokens=raw.toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(t=>t.length>=2);
+    if(!tokens.length) return true;
+    const compactN=compact(text).toLowerCase();
+    const matched=tokens.filter(t=>n.includes(t)||compactN.includes(t)).length;
+    return matched/Math.max(1,tokens.length)>=0.6;
+  }
+  return true;
 }
 
 function buildIFRStages(){
@@ -8930,6 +8984,7 @@ function ifrReadSetup(generateCodes=true){
     runway:ifr$("runway").value,
     destRunway:ifr$("destRunway").value,
     route:ifr$("direction").value||"As Filed",
+    userRoute:(ifr$("userRoute")?.value||"").trim(),
     altitude:ifrFormatAltitude(ifr$("altitude").value),
     approachType:ifr$("approachType").value||"RNAV (GPS)",
     level:ifr$("level").value||"beginner",
@@ -9095,14 +9150,22 @@ function ifrSpeak(text){
   u.lang="en-US"; u.rate=.94; u.pitch=.92;
   speechSynthesis.speak(u);
 }
-function ifrATC(visual,spoken=visual){
+function ifrATC(visual,spoken=null){
   ifrAppend("atc","ATC",visual);
-  ifrSpeak(spoken);
+  let voiceText=spoken==null ? String(visual) : String(spoken);
+  const visualCallsign=ifrCallsignVisual();
+  if(visualCallsign && voiceText.includes(visualCallsign)){
+    voiceText=voiceText.split(visualCallsign).join(ifrCallsignSpoken());
+  }
+  ifrSpeak(voiceText);
 }
 
 function ifrContainsCallsign(text){
-  const c=norm(text), tail=ifrTail().toLowerCase();
-  return c.includes(tail)||compact(c).includes(tail);
+  const c=norm(text), compactC=compact(c), tail=ifrTail().toLowerCase();
+  if(c.includes(tail)||compactC.includes(tail)) return true;
+  const spoken=[...ifrTail()].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ").toLowerCase();
+  const spokenCompact=compact(spoken);
+  return c.includes(spoken) || compactC.includes(spokenCompact);
 }
 function ifrContainsAirport(text,code){
   const n=norm(text), ap=ifrAirport(code);
@@ -9127,8 +9190,7 @@ function ifrContainsAltitude(text,value){
   return n.includes(target.toLocaleString("en-US"))||n.includes(String(target))||compactN.includes(String(target));
 }
 function ifrContainsFrequency(text,freq){
-  const digits=String(freq).replace(".","");
-  return compact(text).includes(digits)||norm(text).includes(String(freq));
+  return containsFrequency(text,freq);
 }
 function ifrContainsSquawk(text){
   return compact(text).includes(IFR_APP.squawk);
@@ -9189,11 +9251,18 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="clearance"){
     if(IFR_APP.phase==="clearanceInitial"){
+      const hasCurrentAtis=n.includes(IFR_APP.config.atis.toLowerCase());
+      if(!hasCurrentAtis){
+        ifrATC(`${ifrCallsignVisual()}, verify you have information ${IFR_APP.config.atis}.`);
+        ifr$("feedback").textContent=`Include current ATIS information ${IFR_APP.config.atis} in the IFR clearance call.`;
+        ifr$("score").textContent="—";
+        return;
+      }
       checks={
         facility:n.includes("clearance")||ifrContainsAirport(text,IFR_APP.config.departureAirport),
         callsign:ifrContainsCallsign(text),
         location:n.includes(norm(IFR_APP.config.location)),
-        atis:n.includes(IFR_APP.config.atis.toLowerCase()),
+        atis:hasCurrentAtis,
         destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
         ifr:n.includes("ifr")||n.includes("ready to copy")||n.includes("copy")
       };
@@ -9212,19 +9281,27 @@ function ifrEvaluateTransmission(text){
     }else{
       checks={
         destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
+        route:ifrRouteReadbackOK(text),
         altitude:ifrContainsAltitude(text,ifrClearanceInitialAltitude()),
+        expectedAltitude:ifrContainsAltitude(text,ifrAltitudeNumber()),
         frequency:ifrContainsFrequency(text,ifrFreq(IFR_APP.config.departureAirport,"departure")),
         squawk:ifrContainsSquawk(text),
         callsign:ifrContainsCallsign(text)
       };
       score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
-      if(checks.destination&&checks.altitude&&checks.frequency&&checks.squawk){
+      if(checks.destination&&checks.route&&checks.altitude&&checks.frequency&&checks.squawk){
         ifrATC(`${ifrCallsignVisual()}, readback correct. Contact Ground when ready to taxi.`);
         ifr$("feedback").textContent="IFR Clearance complete.";
         ifrCompleteStage(checks.callsign?100:90);
       }else{
-        ifrATC(`${ifrCallsignVisual()}, verify clearance, altitude, departure frequency, and squawk.`);
-        ifr$("feedback").textContent="IFR clearance readback incomplete.";
+        const missing=[];
+        if(!checks.destination) missing.push("clearance limit");
+        if(!checks.route) missing.push("route");
+        if(!checks.altitude) missing.push("initial altitude");
+        if(!checks.frequency) missing.push("departure frequency");
+        if(!checks.squawk) missing.push("squawk");
+        ifrATC(`${ifrCallsignVisual()}, verify ${missing.join(", ")}.`);
+        ifr$("feedback").textContent=`IFR clearance readback incomplete: ${missing.join(", ")}.`;
       }
     }
     return;
@@ -9378,17 +9455,23 @@ function ifrEvaluateTransmission(text){
 
 function ifrNextStage(){
   if(!IFR_APP.stageComplete) return;
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  IFR_APP.lastATC=null;
   if(IFR_APP.stageIndex>=IFR_STAGES.length-1) return;
   IFR_APP.stageIndex++;
   ifrRenderStage(true);
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function ifrPreviousStage(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  IFR_APP.lastATC=null;
   if(IFR_APP.stageIndex<=0) return;
   IFR_APP.stageIndex--;
   ifrRenderStage(true);
 }
 function ifrResetTraining(){
+  if("speechSynthesis" in window) speechSynthesis.cancel();
+  IFR_APP.lastATC=null;
   ifrReadSetup(true);
 }
 function ifrRecordCompletedTraining(){
@@ -9504,6 +9587,13 @@ function ifrInit(){
     const other=ifr$("aircraftType").value==="Other";
     ifr$("otherAircraftTypeLabel")?.classList.toggle("hidden",!other);
   });
+
+  const updateIFRRouteInput=()=>{
+    const show=ifr$("direction")?.value==="User Route";
+    ifr$("userRouteLabel")?.classList.toggle("hidden",!show);
+  };
+  ifr$("direction")?.addEventListener("change",updateIFRRouteInput);
+  updateIFRRouteInput();
 
   ifr$("altitudeDown").addEventListener("click",()=>{ifr$("altitude").value=Math.max(0,(parseInt(ifr$("altitude").value)||0)-500);});
   ifr$("altitudeUp").addEventListener("click",()=>{ifr$("altitude").value=Math.min(18000,(parseInt(ifr$("altitude").value)||0)+500);});
