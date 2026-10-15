@@ -4360,12 +4360,69 @@ body{overflow-x:hidden}
   width:100%;
   min-width:0;
 }
+
+/* =========================================================
+   V4.31 APPLY SETUP CONFIRMATION
+   Non-blocking, auto-dismiss; no user action required.
+   ========================================================= */
+.setup-saved-toast{
+  position:fixed;
+  top:18px;
+  left:50%;
+  transform:translate(-50%,-18px);
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  max-width:min(92vw,420px);
+  padding:11px 16px;
+  border-radius:8px;
+  background:#173f73;
+  color:#fff;
+  font-weight:700;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .18s ease, transform .18s ease, visibility .18s ease;
+}
+.setup-saved-toast.show{
+  opacity:1;
+  visibility:visible;
+  transform:translate(-50%,0);
+}
+.setup-saved-check{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  background:#fff;
+  color:#173f73;
+  font-size:15px;
+  line-height:1;
+}
+@media(max-width:700px){
+  .setup-saved-toast{
+    top:12px;
+    max-width:calc(100vw - 24px);
+    padding:10px 14px;
+    font-size:.92rem;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ATC Trainer">
 </head>
 <body>
+  <div id="setupSavedToast" class="setup-saved-toast" role="status" aria-live="polite" aria-atomic="true">
+    <span class="setup-saved-check" aria-hidden="true">✓</span>
+    <span id="setupSavedToastText">Flight setup saved</span>
+  </div>
+
 <div class="product-layout">
   <header id="sideNav" class="side-nav top-nav" aria-label="Trainer navigation">
     <div class="side-nav-brand">
@@ -8667,6 +8724,26 @@ function previousStage(){
 }
 
 
+
+let setupSavedToastTimer=null;
+function showSetupSavedFeedback(mode="Flight"){
+  const toast=document.getElementById("setupSavedToast");
+  const text=document.getElementById("setupSavedToastText");
+  if(!toast || !text) return;
+
+  clearTimeout(setupSavedToastTimer);
+  text.textContent=`${mode} Flight Setup applied and saved`;
+  toast.classList.remove("show");
+
+  /* Force a fresh transition when Apply Setup is clicked repeatedly. */
+  void toast.offsetWidth;
+  toast.classList.add("show");
+
+  setupSavedToastTimer=setTimeout(()=>{
+    toast.classList.remove("show");
+  },2200);
+}
+
 $("departureAirport").addEventListener("change",()=>{
   updateDepartureChoices(false);
   updateSetupSummary();
@@ -8684,6 +8761,7 @@ $("applySetup").addEventListener("click",()=>{
   readSetup(true);
   collapseSetupAfterApplyIfSmall();
   updateApplicationStatus();
+  showSetupSavedFeedback("VFR");
 });
 $("monitorAtis").addEventListener("click",monitorAtis);
 $("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
@@ -8858,7 +8936,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.30 IFR setup cleanup */
+/* V4.32 IFR ATIS Radio Exchange transcription */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9062,6 +9140,32 @@ function ifrSelectedAircraftType(){
   if(v==="Other") return (ifr$("otherAircraftType")?.value||"Aircraft").trim()||"Aircraft";
   return v;
 }
+
+const IFR_LAST_SETUP_KEY="fk-atc-com-trainer-ifr-last-setup-v1";
+function ifrSaveLastSetup(){
+  try{
+    const saved={
+      level:ifr$("level")?.value,
+      aircraftType:ifr$("aircraftType")?.value,
+      otherAircraftType:ifr$("otherAircraftType")?.value,
+      callsign:ifr$("callsign")?.value,
+      departureAirport:ifr$("departureAirport")?.value,
+      destinationAirport:ifr$("destinationAirport")?.value,
+      runway:ifr$("runway")?.value,
+      location:ifr$("location")?.value,
+      route:ifr$("direction")?.value,
+      userRoute:ifr$("userRoute")?.value,
+      altitude:ifr$("altitude")?.value,
+      destRunway:ifr$("destRunway")?.value,
+      approachType:ifr$("approachType")?.value
+    };
+    localStorage.setItem(IFR_LAST_SETUP_KEY,JSON.stringify(saved));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
 function ifrReadSetup(generateCodes=true){
   const priorAtis=IFR_APP.config.atis, priorArrival=IFR_APP.config.arrivalAtis;
   IFR_APP.config={
@@ -9325,7 +9429,13 @@ function ifrMonitorAtis(){
   const runway=dep?IFR_APP.config.runway:IFR_APP.config.destRunway;
   const airport=ifrAirport(dep?IFR_APP.config.departureAirport:IFR_APP.config.destinationAirport);
   const visual=`${airport.radioName||airport.name} information ${code}. Wind 260 at 8. Visibility 10. Ceiling 4,500 broken. Runway ${runway} in use. Altimeter 30.02.`;
+  const atisSpeaker=`${airport.radioName||airport.name} ATIS`;
   ifr$("atisText").textContent=visual;
+
+  /* Transcribe every ATIS broadcast into the Radio Exchange panel,
+     the same way the VFR trainer does. */
+  ifrAppend("atc",atisSpeaker,visual);
+
   ifrSpeak(`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`);
   ifr$("feedback").textContent=`ATIS received: information ${code}, Runway ${runway}.`;
   ifrCompleteStage(100);
@@ -9718,7 +9828,11 @@ function ifrInit(){
   ifr$("altitudeDown").addEventListener("click",()=>{ifr$("altitude").value=Math.max(0,(parseInt(ifr$("altitude").value)||0)-500);});
   ifr$("altitudeUp").addEventListener("click",()=>{ifr$("altitude").value=Math.min(18000,(parseInt(ifr$("altitude").value)||0)+500);});
 
-  ifr$("applySetup").addEventListener("click",()=>ifrReadSetup(true));
+  ifr$("applySetup").addEventListener("click",()=>{
+    ifrReadSetup(true);
+    ifrSaveLastSetup();
+    showSetupSavedFeedback("IFR");
+  });
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   ifr$("sendTyped").addEventListener("click",()=>ifrEvaluateTransmission(ifr$("pilotText").value));
   ifr$("clearText").addEventListener("click",()=>{ifr$("pilotText").value="";});
