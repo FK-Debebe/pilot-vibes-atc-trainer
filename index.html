@@ -8940,7 +8940,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.33 persistent transcript, ground runup, aviation pronunciation */
+/* V4.34 IFR clearance speech-capture robustness */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9409,10 +9409,34 @@ function ifrContainsRunway(text,runway){
 function ifrContainsAltitude(text,value){
   const target=parseInt(String(value||"").replace(/\D/g,""),10);
   if(!Number.isFinite(target)) return false;
+
+  const n=norm(text).replace(/[-_/]/g," ").replace(/\s+/g," ").trim();
+  const targetText=String(target);
+
+  /* Match the requested altitude independently so a clearance readback can
+     contain both the initial altitude and the expected altitude. */
+  if(new RegExp(`(^|[^0-9])${targetText}([^0-9]|$)`).test(n.replace(/,/g,""))) return true;
+
+  const comma=target.toLocaleString("en-US");
+  if(n.includes(comma.toLowerCase())) return true;
+
+  const spoken=altitudeSpoken(formatAltitude(target)).toLowerCase();
+  if(spoken && n.includes(spoken)) return true;
+
   return reportedAltitudeFeet(text)===target;
 }
 function ifrContainsFrequency(text,freq){
-  return containsFrequency(text,freq);
+  if(containsFrequency(text,freq)) return true;
+
+  /* Speech recognition commonly renders spoken "two" as "to" or "too"
+     inside a frequency. Limit this repair to the frequency phrase. */
+  const n=norm(text);
+  const m=n.match(/\b(?:departure\s+)?frequency\s+([^,;]+)/i);
+  if(!m) return false;
+  const repaired=m[1]
+    .replace(/\bto\b/g,"two")
+    .replace(/\btoo\b/g,"two");
+  return containsFrequency(repaired,freq);
 }
 function ifrContainsSquawk(text){
   const target=String(IFR_APP.squawk||"").replace(/\D/g,"");
@@ -9772,36 +9796,90 @@ function ifrStartRecognitionSegment(){
     ifr$("feedback").textContent="Speech recognition is unavailable in this browser.";
     IFR_APP.pttActive=false; ifrUpdatePTTState(); return;
   }
+
   const r=new SR();
-  r.lang="en-US"; r.continuous=false; r.interimResults=true; r.maxAlternatives=1;
-  IFR_APP.recognizer=r; IFR_APP.recognitionSegment="";
-  r.onstart=()=>{ifr$("stageState").textContent="Listening";ifr$("feedback").textContent="Listening... tap again when finished.";};
+  r.lang="en-US";
+  r.continuous=false;
+  r.interimResults=true;
+  r.maxAlternatives=1;
+  IFR_APP.recognizer=r;
+  IFR_APP.recognitionSegment="";
+
+  r.onstart=()=>{
+    ifr$("stageState").textContent="Listening";
+    ifr$("feedback").textContent="Listening... tap again when finished.";
+  };
+
   r.onresult=event=>{
     let finalPart="",interimPart="";
     for(let i=event.resultIndex;i<event.results.length;i++){
       const t=event.results[i][0].transcript;
-      if(event.results[i].isFinal) finalPart+=" "+t; else interimPart+=" "+t;
+      if(event.results[i].isFinal) finalPart+=" "+t;
+      else interimPart+=" "+t;
     }
+
     if(finalPart.trim()){
-      IFR_APP.recognitionCommitted=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,finalPart.trim());
-      IFR_APP.recognitionSegment="";
-    }else IFR_APP.recognitionSegment=interimPart.trim();
-    ifr$("pilotText").value=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,IFR_APP.recognitionSegment);
+      IFR_APP.recognitionSegment=ifrJoinRecognitionText(IFR_APP.recognitionSegment,finalPart.trim());
+    }
+
+    const display=ifrJoinRecognitionText(
+      IFR_APP.recognitionCommitted,
+      ifrJoinRecognitionText(IFR_APP.recognitionSegment,interimPart.trim())
+    );
+    ifr$("pilotText").value=display;
   };
+
   r.onerror=e=>{
-    if(e.error!=="no-speech"&&e.error!=="aborted") ifr$("feedback").textContent=`Speech recognition: ${e.error}.`;
+    if(IFR_APP.pttActive&&!IFR_APP.pttStopping && (e.error==="no-speech"||e.error==="aborted")) return;
+    if(e.error!=="no-speech"&&e.error!=="aborted"){
+      ifr$("feedback").textContent=`Speech recognition: ${e.error}.`;
+    }
   };
+
   r.onend=()=>{
+    /* Wait for the recognizer's final result before evaluating the transmission. */
+    if(IFR_APP.recognitionSegment){
+      IFR_APP.recognitionCommitted=ifrJoinRecognitionText(
+        IFR_APP.recognitionCommitted,
+        IFR_APP.recognitionSegment
+      );
+      IFR_APP.recognitionSegment="";
+      ifr$("pilotText").value=IFR_APP.recognitionCommitted;
+    }
+
+    IFR_APP.recognizer=null;
+
+    if(IFR_APP.pttActive&&!IFR_APP.pttStopping){
+      clearTimeout(IFR_APP.recognitionRestartTimer);
+      IFR_APP.recognitionRestartTimer=setTimeout(()=>{
+        if(IFR_APP.pttActive&&!IFR_APP.pttStopping) ifrStartRecognitionSegment();
+      },180);
+      return;
+    }
+
+    IFR_APP.pttActive=false;
+    IFR_APP.pttStopping=false;
+    ifr$("stageState").textContent="Ready";
+    ifrUpdatePTTState();
+
+    const text=(IFR_APP.recognitionCommitted||ifr$("pilotText").value||"").trim();
+    ifr$("pilotText").value=text;
+    if(text) ifrEvaluateTransmission(text);
+    else ifr$("feedback").textContent="No speech was recognized. Try again.";
+  };
+
+  try{r.start()}catch(e){
     IFR_APP.recognizer=null;
     if(IFR_APP.pttActive&&!IFR_APP.pttStopping){
       clearTimeout(IFR_APP.recognitionRestartTimer);
-      IFR_APP.recognitionRestartTimer=setTimeout(ifrStartRecognitionSegment,120);
+      IFR_APP.recognitionRestartTimer=setTimeout(ifrStartRecognitionSegment,250);
     }
-  };
-  try{r.start()}catch(e){}
+  }
 }
+
 async function ifrTogglePTT(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
+
   if(!IFR_APP.pttActive){
     if(!IFR_APP.micAllowed&&navigator.mediaDevices?.getUserMedia){
       try{
@@ -9813,21 +9891,42 @@ async function ifrTogglePTT(){
         return;
       }
     }
-    IFR_APP.pttStopping=false; IFR_APP.pttActive=true;
-    IFR_APP.recognitionCommitted=""; IFR_APP.recognitionSegment="";
+
+    IFR_APP.pttStopping=false;
+    IFR_APP.pttActive=true;
+    IFR_APP.recognitionCommitted="";
+    IFR_APP.recognitionSegment="";
     ifr$("pilotText").value="";
-    ifrUpdatePTTState(); ifrStartRecognitionSegment();
-  }else{
-    IFR_APP.pttStopping=true; IFR_APP.pttActive=false;
-    clearTimeout(IFR_APP.recognitionRestartTimer);
-    try{IFR_APP.recognizer?.stop()}catch(e){}
-    const text=ifrJoinRecognitionText(IFR_APP.recognitionCommitted,IFR_APP.recognitionSegment).trim();
-    ifr$("pilotText").value=text;
     ifrUpdatePTTState();
-    setTimeout(()=>{
+    ifrStartRecognitionSegment();
+    return;
+  }
+
+  if(IFR_APP.pttStopping) return;
+  IFR_APP.pttStopping=true;
+  IFR_APP.pttActive=false;
+  clearTimeout(IFR_APP.recognitionRestartTimer);
+  IFR_APP.recognitionRestartTimer=null;
+  ifr$("feedback").textContent="Ending transmission...";
+
+  if(IFR_APP.recognizer){
+    try{
+      /* onend commits the final result, then evaluates. */
+      IFR_APP.recognizer.stop();
+    }catch(e){
+      IFR_APP.recognizer=null;
       IFR_APP.pttStopping=false;
+      ifrUpdatePTTState();
+      const text=(IFR_APP.recognitionCommitted||ifr$("pilotText").value||"").trim();
       if(text) ifrEvaluateTransmission(text);
-    },160);
+      else ifr$("feedback").textContent="No speech was recognized. Try again.";
+    }
+  }else{
+    IFR_APP.pttStopping=false;
+    ifrUpdatePTTState();
+    const text=(IFR_APP.recognitionCommitted||ifr$("pilotText").value||"").trim();
+    if(text) ifrEvaluateTransmission(text);
+    else ifr$("feedback").textContent="No speech was recognized. Try again.";
   }
 }
 
