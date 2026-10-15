@@ -4333,6 +4333,14 @@ body{overflow-x:hidden}
     grid-template-columns:1fr;
   }
 }
+
+/* V4.28 publisher */
+.publisher-line{
+  display:inline-block;
+  margin-top:4px;
+  font-size:.78em;
+  opacity:.85;
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4352,7 +4360,7 @@ body{overflow-x:hidden}
       <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Report</span></button>
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
     </nav>
-    <div class="side-nav-footer">Pilot Vibes • FWD Skill Zone</div>
+    <div class="side-nav-footer">Pilot Vibes • FWD Skill Zone<br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
   </header>
 
   <main class="product-main">
@@ -8831,7 +8839,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.27 IFR PTT activation fix */
+/* V4.29 publisher domain correction */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -8971,6 +8979,22 @@ function ifrRouteReadbackOK(text){
   return true;
 }
 
+
+
+function ifrRouteInstructionText(){
+  const route=IFR_APP.config.route;
+  if(route==="User Route"){
+    const raw=String(IFR_APP.config.userRoute||"").trim();
+    return raw || "as filed";
+  }
+  if(route==="As Filed") return "as filed";
+  if(route==="Radar Vectors") return `radar vectors, then direct ${IFR_APP.config.destinationAirport}`;
+  return `direct ${IFR_APP.config.destinationAirport}`;
+}
+
+function ifrRouteInstructionReadbackOK(text){
+  return ifrRouteReadbackOK(text);
+}
 function buildIFRStages(){
   const c=IFR_APP.config, dep=ifrAirport(c.departureAirport), dest=ifrAirport(c.destinationAirport);
   return [
@@ -8980,7 +9004,7 @@ function buildIFRStages(){
     {id:"tower",title:"TOWER / IFR RELEASE",facility:ifrFacility(c.departureAirport,"tower"),freq:ifrFreq(c.departureAirport,"tower"),type:"comm"},
     {id:"departure",title:"DEPARTURE",facility:ifrFacility(c.departureAirport,"departure"),freq:ifrFreq(c.departureAirport,"departure"),type:"comm"},
     {id:"enroute",title:"ENROUTE",facility:"Center / Approach",freq:enrouteFrequency(c.departureAirport,c.destinationAirport),type:"comm"},
-    {id:"arrivalAtis",title:"ARRIVAL ATIS",facility:`${dest.radioName||dest.name} ATIS`,freq:ifrFreq(c.destinationAirport,"arrivalAtis")||ifrFreq(c.destinationAirport,"atis"),type:"atis"},
+    {id:"arrivalAtis",title:"ARRIVAL ATIS",facility:`${dest.radioName||dest.name} ATIS`,freq:String(dest?.frequencies?.arrivalAtis || dest?.frequencies?.atis || "121.500"),type:"atis"},
     {id:"approach",title:"APPROACH",facility:ifrFacility(c.destinationAirport,"approach"),freq:ifrFreq(c.destinationAirport,"approach"),type:"comm"},
     {id:"destTower",title:"DESTINATION TOWER",facility:ifrFacility(c.destinationAirport,"tower"),freq:ifrFreq(c.destinationAirport,"tower"),type:"comm"},
     {id:"destGround",title:"DESTINATION GROUND",facility:ifrFacility(c.destinationAirport,"ground"),freq:ifrFreq(c.destinationAirport,"ground"),type:"comm"}
@@ -9236,27 +9260,19 @@ function ifrContainsAirport(text,code){
   return vals.some(v=>v&&n.includes(v));
 }
 function ifrContainsRunway(text,runway){
-  const n=norm(text).replace(/\s+/g," ");
-  const r=String(runway||"").toLowerCase();
-  const m=r.match(/^(\d+)([lrc])?$/);
-  if(!m) return n.includes(r);
-  const digits=m[1],side=m[2]?({l:"left",r:"right",c:"center"}[m[2]]):"";
-  const spoken=[...digits].map(d=>DIGIT[d]).join(" ");
-  const patterns=[`runway ${digits}`,digits,`runway ${spoken}`,spoken];
-  if(side) patterns.push(`${digits} ${side}`,`${spoken} ${side}`,`runway ${digits} ${side}`,`runway ${spoken} ${side}`);
-  return patterns.some(p=>new RegExp(`(^|[^a-z0-9])${p.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}([^a-z0-9]|$)`).test(n));
+  return containsRunway(text,runway);
 }
 function ifrContainsAltitude(text,value){
   const target=parseInt(String(value||"").replace(/\D/g,""),10);
   if(!Number.isFinite(target)) return false;
-  const n=norm(text), compactN=compact(text);
-  return n.includes(target.toLocaleString("en-US"))||n.includes(String(target))||compactN.includes(String(target));
+  return reportedAltitudeFeet(text)===target;
 }
 function ifrContainsFrequency(text,freq){
   return containsFrequency(text,freq);
 }
 function ifrContainsSquawk(text){
-  return compact(text).includes(IFR_APP.squawk);
+  const target=String(IFR_APP.squawk||"").replace(/\D/g,"");
+  return target && textDigits(text).includes(target);
 }
 function ifrGrade(checks){
   const vals=Object.values(checks);
@@ -9417,19 +9433,21 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="departure"){
     if(IFR_APP.phase==="departureInitial"){
-      checks={facility:n.includes("departure")||n.includes("approach"),callsign:ifrContainsCallsign(text),altitude:/\d/.test(n)||n.includes("passing")||n.includes("climbing")};
+      const reportedAltitude=reportedAltitudeFeet(text);
+      checks={facility:n.includes("departure")||n.includes("approach"),callsign:ifrContainsCallsign(text),altitude:reportedAltitude>0};
       score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
       if(score>=60){
-        ifrATC(`${ifrCallsignVisual()}, radar contact. Climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}. Proceed direct ${IFR_APP.config.destinationAirport}.`);
+        const routeInstruction=ifrRouteInstructionText();
+        ifrATC(`${ifrCallsignVisual()}, radar contact. Climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}. Proceed ${routeInstruction}.`);
         IFR_APP.phase="departureReadback";
-        ifr$("feedback").textContent="Read back assigned altitude and direct instruction.";
+        ifr$("feedback").textContent="Read back assigned altitude and route instruction.";
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
-      checks={altitude:ifrContainsAltitude(text,ifrAltitudeNumber()),direct:n.includes("direct")||ifrContainsAirport(text,IFR_APP.config.destinationAirport)};
-      if(checks.altitude&&checks.direct){
+      checks={altitude:ifrContainsAltitude(text,ifrAltitudeNumber()),route:ifrRouteInstructionReadbackOK(text)};
+      if(checks.altitude&&checks.route){
         ifrATC(`${ifrCallsignVisual()}, correct.`);
         ifrCompleteStage(100);
-      }else ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}, direct ${IFR_APP.config.destinationAirport}.`);
+      }else ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}, proceed ${ifrRouteInstructionText()}.`);
     }
     return;
   }
@@ -9441,23 +9459,24 @@ function ifrEvaluateTransmission(text){
       if(score>=50){
         const descent=Math.min(4000,ifrAltitudeNumber());
         IFR_APP.arrivalAltitude=descent;
-        ifrATC(`${ifrCallsignVisual()}, proceed direct ${IFR_APP.config.destinationAirport}. Descend and maintain ${descent.toLocaleString("en-US")}. Expect ${ifrApproachName()}.`);
+        ifrATC(`${ifrCallsignVisual()}, continue ${ifrRouteInstructionText()}. Descend and maintain ${descent.toLocaleString("en-US")}. Expect ${ifrApproachName()}.`);
         IFR_APP.phase="enrouteReadback";
-        ifr$("feedback").textContent="Read back direct, descent altitude, and expected approach.";
+        ifr$("feedback").textContent="Read back route, descent altitude, and expected approach.";
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
-      checks={direct:n.includes("direct")||ifrContainsAirport(text,IFR_APP.config.destinationAirport),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:n.includes(norm(IFR_APP.config.approachType.split(" ")[0]))||n.includes("approach")};
-      if(checks.direct&&checks.altitude&&checks.approach){
+      checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:n.includes(norm(IFR_APP.config.approachType.split(" ")[0]))||n.includes("approach")};
+      if(checks.route&&checks.altitude&&checks.approach){
         ifrATC(`${ifrCallsignVisual()}, correct. Monitor destination ATIS.`);
         ifrCompleteStage(100);
-      }else ifrATC(`${ifrCallsignVisual()}, verify direct ${IFR_APP.config.destinationAirport}, descend and maintain ${IFR_APP.arrivalAltitude}, expect ${ifrApproachName()}.`);
+      }else ifrATC(`${ifrCallsignVisual()}, verify ${ifrRouteInstructionText()}, descend and maintain ${IFR_APP.arrivalAltitude}, expect ${ifrApproachName()}.`);
     }
     return;
   }
 
   if(stage.id==="approach"){
     if(IFR_APP.phase==="approachInitial"){
-      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),altitude:/\d/.test(n)||n.includes("level")};
+      const reportedApproachAltitude=reportedAltitudeFeet(text);
+      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),altitude:reportedApproachAltitude>0};
       score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
       if(score>=60){
         IFR_APP.vectorHeading="240";
@@ -9467,7 +9486,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back heading, altitude restriction, and approach clearance.";
       }else ifrATC(`${ifrCallsignVisual()}, say approach request and ATIS.`);
     }else{
-      checks={heading:n.includes(IFR_APP.vectorHeading)||n.includes("heading"),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
+      checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
       if(checks.heading&&checks.altitude&&checks.approach&&checks.runway){
         ifrATC(`${ifrCallsignVisual()}, correct. Contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower")}.`);
         ifrCompleteStage(100);
