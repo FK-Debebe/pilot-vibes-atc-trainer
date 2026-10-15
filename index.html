@@ -6434,6 +6434,7 @@ function collapseSetupAfterApplyIfSmall(){
 
 function readSetup(generateCodes=true){
   if(!app.scenario) newScenario();
+  if(generateCodes && $("transcript")) $("transcript").innerHTML="";
   const depCode=$("departureAirport").value || "KLGB";
   const destCode=$("destinationAirport").value || "KCRQ";
 
@@ -6572,7 +6573,7 @@ function renderStage(resetFrequency=true){
   $("next").textContent=app.stageIndex===STAGES.length-1?"FINISH":"NEXT →";
   $("previous").disabled=app.stageIndex===0;
   $("reset").classList.add("hidden");
-  $("transcript").innerHTML="";
+  /* Keep the full Radio Exchange history across stage changes. */
   append("system","TRAINER",`${stage.title} stage loaded.`);
 
   if(resetFrequency) $("frequency").value="121.500";
@@ -8008,11 +8009,14 @@ function evaluateTransmission(text){
             ? `Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.`
             : `Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, and callsign.`;
         }else{
-          replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdVisual}.`;
-          replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdSpoken}.`;
+          const requestedRunup=/\brun[ -]?up\b/i.test(text);
+          const runupVisual=requestedRunup?" Runup approved.":"";
+          const runupSpoken=requestedRunup?" Runup approved.":"";
+          replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdVisual}.${runupVisual}`;
+          replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdSpoken}.${runupSpoken}`;
           $("feedback").textContent=holdShort
-            ? `Ground responded. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.`
-            : `Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.`;
+            ? `Ground responded. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.${requestedRunup?" Runup approved.":""}`
+            : `Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.${requestedRunup?" Runup approved.":""}`;
         }
         app.phase="groundReadback";
       }
@@ -8936,7 +8940,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.32 IFR ATIS Radio Exchange transcription */
+/* V4.33 persistent transcript, ground runup, aviation pronunciation */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9167,6 +9171,7 @@ function ifrSaveLastSetup(){
 }
 
 function ifrReadSetup(generateCodes=true){
+  if(generateCodes && ifr$("transcript")) ifr$("transcript").innerHTML="";
   const priorAtis=IFR_APP.config.atis, priorArrival=IFR_APP.config.arrivalAtis;
   IFR_APP.config={
     departureAirport:ifr$("departureAirport").value||"KLGB",
@@ -9334,7 +9339,8 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
   ifr$("next").disabled=true;
   ifr$("previous").disabled=IFR_APP.stageIndex===0;
-  ifr$("transcript").innerHTML="";
+  /* Keep the full Radio Exchange history across stage changes. */
+  ifrAppend("system","TRAINER",`${stage.title} stage loaded.`);
   ifr$("atisPanel").classList.toggle("hidden",stage.type!=="atis");
   ifr$("commPanel").classList.toggle("hidden",stage.type==="atis");
   if(stage.id==="atis") ifr$("atisText").textContent="";
@@ -9347,9 +9353,14 @@ function ifrRenderStage(resetFrequency=true){
 function ifrAppend(type,speaker,text){
   const el=document.createElement("div");
   el.className=`msg ${type}`;
-  el.innerHTML=`<div class="speaker">${speaker}</div><div class="bubble"></div>`;
+  let direction="LOG";
+  if(type==="pilot") direction="TX";
+  else if(type==="atc") direction="RX";
+  el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker"></span></div><div class="bubble"></div>`;
+  el.querySelector(".speaker").textContent=String(speaker||"").toUpperCase();
   el.querySelector(".bubble").textContent=text;
   ifr$("transcript").appendChild(el);
+  /* Preserve prior exchanges and automatically show the newest/current section. */
   ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
 }
 function ifrSpeak(text){
@@ -9367,6 +9378,16 @@ function ifrATC(visual,spoken=null){
   if(visualCallsign && voiceText.includes(visualCallsign)){
     voiceText=voiceText.split(visualCallsign).join(ifrCallsignSpoken());
   }
+
+  /* Aviation pronunciation for runway identifiers and COM frequencies. */
+  voiceText=voiceText.replace(/Runway\s+(\d{1,2})([LRC])?/gi,(match,num,side)=>{
+    const runway=`${num}${side||""}`;
+    return `Runway ${ifrRunwaySpoken(runway)}`;
+  });
+  voiceText=voiceText.replace(/\b(1[12]\d|13[0-7])\.(\d{1,3})\b/g,(match,whole,frac)=>{
+    return frequencySpoken(`${whole}.${frac.padEnd(3,"0")}`);
+  });
+
   ifrSpeak(voiceText);
 }
 
@@ -9478,7 +9499,7 @@ function ifrEvaluateTransmission(text){
       if(score>=70){
         const initial=ifrClearanceInitialAltitude();
         const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
-        const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial}, expect ${ifrAltitudeNumber()} ten minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial}, expect ${ifrAltitudeNumber()} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         ifrATC(visual,spoken);
         IFR_APP.phase="clearanceReadback";
         ifr$("feedback").textContent="Read back the IFR clearance: clearance limit/route, altitude, departure frequency, and squawk.";
@@ -9521,21 +9542,26 @@ function ifrEvaluateTransmission(text){
       score=ifrGrade(checks); ifr$("score").textContent=`${score}%`;
       if(score>=60){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
+        const requestedRunup=/\brun[ -]?up\b/i.test(text);
         IFR_APP.taxiway=taxi;
-        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, taxi via ${taxi}, hold short Runway ${IFR_APP.config.runway}.`);
+        IFR_APP.runupApproved=requestedRunup;
+        const runupText=requestedRunup?" Runup approved.":"";
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, taxi via ${taxi}.${runupText}`);
         IFR_APP.phase="groundReadback";
-        ifr$("feedback").textContent="Read back runway, taxiway, and hold-short instruction.";
+        ifr$("feedback").textContent=requestedRunup
+          ? "Ground responded. Read back runway and taxiway. Runup approved."
+          : "Ground responded. Read back runway and taxiway.";
       }else{
         ifrATC(`${ifrCallsignVisual()}, say again position, ATIS, and IFR taxi request.`);
       }
     }else{
-      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:n.includes(norm(IFR_APP.taxiway)),hold:n.includes("hold short")||n.includes("holding short")};
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:n.includes(norm(IFR_APP.taxiway))};
       score=ifrGrade(checks);
-      if(checks.runway&&checks.taxiway&&checks.hold){
+      if(checks.runway&&checks.taxiway){
         ifrATC(`${ifrCallsignVisual()}, readback correct.`);
         ifrCompleteStage(100);
       }else{
-        ifrATC(`${ifrCallsignVisual()}, verify taxi via ${IFR_APP.taxiway}, hold short Runway ${IFR_APP.config.runway}.`);
+        ifrATC(`${ifrCallsignVisual()}, verify Runway ${IFR_APP.config.runway}, taxi via ${IFR_APP.taxiway}.`);
       }
     }
     return;
