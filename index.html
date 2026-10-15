@@ -4299,6 +4299,40 @@ body{overflow-x:hidden}
   min-width:0 !important;
   box-sizing:border-box !important;
 }
+
+/* =========================================================
+   V4.26 IFR FLIGHT SETUP FLOW
+   ========================================================= */
+#ifr-userRouteLabel{
+  width:100%;
+}
+
+#ifr-vfrAltitudeGuide{
+  margin-top:-2px;
+}
+
+/* Pair related setup fields while keeping them usable in the narrow setup column. */
+#page-ifr-trainer .ifr-setup-pair{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  width:100%;
+}
+#page-ifr-trainer .ifr-setup-pair > label{
+  min-width:0;
+}
+#page-ifr-trainer .ifr-setup-pair select,
+#page-ifr-trainer .ifr-setup-pair input{
+  width:100%;
+  min-width:0;
+}
+
+/* Very narrow phones: stack each logical pair for readability. */
+@media(max-width:430px){
+  #page-ifr-trainer .ifr-setup-pair{
+    grid-template-columns:1fr;
+  }
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4667,9 +4701,9 @@ body{overflow-x:hidden}
   </summary>
 
   <div class="setup-content">
-    <div class="setup-grid">
+    <div class="setup-grid ifr-setup-flow">
 
-      <div class="setup-section-label">FLIGHT</div>
+      <div class="setup-section-label">TRAINING</div>
       <label>Training Level
         <select id="ifr-level">
           <option value="beginner">Beginner</option>
@@ -4679,32 +4713,36 @@ body{overflow-x:hidden}
         <div id="ifr-trainingLevelDescription" class="training-level-description">More prompting and simplified IFR clearances.</div>
       </label>
 
-      <label>Aircraft Type
-        <select id="ifr-aircraftType">
-          <option value="Cessna 152">Cessna 152</option>
-          <option value="Cessna 172" selected>Cessna 172</option>
-          <option value="Skyhawk">Skyhawk</option>
-          <option value="Piper Archer">Piper Archer</option>
-          <option value="Piper Warrior">Piper Warrior</option>
-          <option value="Cirrus SR20">Cirrus SR20</option>
-          <option value="Cirrus SR22">Cirrus SR22</option>
-          <option value="Diamond DA40">Diamond DA40</option>
-          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
-          <option value="Other">Other</option>
-        </select>
-      </label>
+      <div class="setup-section-label">AIRCRAFT</div>
+      <div class="ifr-setup-pair">
+        <label>Aircraft Type
+          <select id="ifr-aircraftType">
+            <option value="Cessna 152">Cessna 152</option>
+            <option value="Cessna 172" selected>Cessna 172</option>
+            <option value="Skyhawk">Skyhawk</option>
+            <option value="Piper Archer">Piper Archer</option>
+            <option value="Piper Warrior">Piper Warrior</option>
+            <option value="Cirrus SR20">Cirrus SR20</option>
+            <option value="Cirrus SR22">Cirrus SR22</option>
+            <option value="Diamond DA40">Diamond DA40</option>
+            <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+
+        <label>Call Sign
+          <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
 
       <label id="ifr-otherAircraftTypeLabel" class="hidden">Other Aircraft Type
         <input id="ifr-otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
       </label>
 
-      <label>Call Sign
-        <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
-      </label>
-
-      <div class="setup-section-label">ROUTE</div>
-      <label>Departure Airport
-        <select id="ifr-departureAirport">
+      <div class="setup-section-label">AIRPORTS</div>
+      <div class="ifr-setup-pair">
+        <label>Departure Airport
+          <select id="ifr-departureAirport">
 <option value="KBUR">KBUR — Hollywood Burbank</option>
 <option value="KCMA">KCMA — Camarillo</option>
 <option value="KCNO">KCNO — Chino</option>
@@ -4728,10 +4766,10 @@ body{overflow-x:hidden}
 <option value="KVNY">KVNY — Van Nuys</option>
 <option value="KWHP">KWHP — Whiteman</option>
         </select>
-      </label>
+        </label>
 
-      <label>Destination Airport
-        <select id="ifr-destinationAirport">
+        <label>Destination Airport
+          <select id="ifr-destinationAirport">
 <option value="KBUR">KBUR — Hollywood Burbank</option>
 <option value="KCMA">KCMA — Camarillo</option>
 <option value="KCNO">KCNO — Chino</option>
@@ -4755,49 +4793,11 @@ body{overflow-x:hidden}
 <option value="KVNY">KVNY — Van Nuys</option>
 <option value="KWHP">KWHP — Whiteman</option>
         </select>
-      </label>
+        </label>
+      </div>
 
-      <label>IFR Route
-        <select id="ifr-direction">
-          <option value="As Filed">As Filed</option>
-          <option value="Direct">Direct</option>
-          <option value="Radar Vectors">Radar Vectors</option>
-          <option value="User Route">User / TEC Route</option>
-        </select>
-      </label>
-
-      <label id="ifr-userRouteLabel" class="hidden">User / TEC Route
-        <input id="ifr-userRoute" type="text" autocomplete="off"
-          placeholder="Enter a published TEC route or user-defined route">
-        <div class="small" style="margin-top:5px">Example: CSTP21 V23 LAX V299 VTU KWANG</div>
-      </label>
-
-      <label>Requested Altitude
-        <div class="altitude-stepper">
-          <button id="ifr-altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
-          <div class="altitude-input-wrap">
-            <input id="ifr-altitude" type="number" min="0" max="18000" step="500" value="5000" inputmode="numeric" aria-describedby="ifr-vfrAltitudeGuide">
-            <span class="altitude-unit">ft MSL</span>
-          </div>
-          <button id="ifr-altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
-        </div>
-        <div id="ifr-vfrAltitudeGuide" class="vfr-altitude-guide">
-          IFR ALTITUDE — Enter the requested cruise altitude for this training scenario.
-        </div>
-      </label>
-
-      <div class="setup-section-label">DEPARTURE / ARRIVAL</div>
-      <label>Starting Location
-        <select id="ifr-location">
-          <option>Long Beach Flying Club</option>
-          <option>Signature Ramp</option>
-          <option>Atlantic Ramp</option>
-          <option>West Ramp</option>
-          <option>South Ramp</option>
-        </select>
-      </label>
-
-      <div class="runway-pair">
+      <div class="setup-section-label">DEPARTURE</div>
+      <div class="ifr-setup-pair">
         <label>Takeoff Runway
           <select id="ifr-runway">
             <option>26L</option>
@@ -4809,6 +4809,52 @@ body{overflow-x:hidden}
           </select>
         </label>
 
+        <label>Starting Location
+          <select id="ifr-location">
+            <option>Long Beach Flying Club</option>
+            <option>Signature Ramp</option>
+            <option>Atlantic Ramp</option>
+            <option>West Ramp</option>
+            <option>South Ramp</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="setup-section-label">ROUTE</div>
+      <div class="ifr-setup-pair">
+        <label>IFR Route
+          <select id="ifr-direction">
+            <option value="As Filed">As Filed</option>
+            <option value="Direct">Direct</option>
+            <option value="Radar Vectors">Radar Vectors</option>
+            <option value="User Route">User / TEC Route</option>
+          </select>
+        </label>
+
+        <label>Requested Altitude
+          <div class="altitude-stepper">
+            <button id="ifr-altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
+            <div class="altitude-input-wrap">
+              <input id="ifr-altitude" type="number" min="0" max="18000" step="500" value="5000" inputmode="numeric" aria-describedby="ifr-vfrAltitudeGuide">
+              <span class="altitude-unit">ft MSL</span>
+            </div>
+            <button id="ifr-altitudeUp" class="altitude-step-btn" type="button" aria-label="Increase requested altitude by 500 feet">+</button>
+          </div>
+        </label>
+      </div>
+
+      <label id="ifr-userRouteLabel" class="hidden">User / TEC Route
+        <input id="ifr-userRoute" type="text" autocomplete="off"
+          placeholder="Enter a published TEC route or user-defined route">
+        <div class="small" style="margin-top:5px">Example: CSTP21 V23 LAX V299 VTU KWANG</div>
+      </label>
+
+      <div id="ifr-vfrAltitudeGuide" class="vfr-altitude-guide">
+        IFR ALTITUDE — Enter the requested cruise altitude for this training scenario.
+      </div>
+
+      <div class="setup-section-label">ARRIVAL</div>
+      <div class="ifr-setup-pair">
         <label>Destination Runway
           <select id="ifr-destRunway">
             <option selected>24</option>
@@ -4816,16 +4862,16 @@ body{overflow-x:hidden}
             <option>25</option>
           </select>
         </label>
-      </div>
 
-      <label>Approach
-        <select id="ifr-approachType">
-          <option value="RNAV (GPS)">RNAV (GPS)</option>
-          <option value="ILS">ILS</option>
-          <option value="VOR">VOR</option>
-          <option value="Visual">Visual</option>
-        </select>
-      </label>
+        <label>Approach
+          <select id="ifr-approachType">
+            <option value="RNAV (GPS)">RNAV (GPS)</option>
+            <option value="ILS">ILS</option>
+            <option value="VOR">VOR</option>
+            <option value="Visual">Visual</option>
+          </select>
+        </label>
+      </div>
 
     </div>
 
@@ -8785,7 +8831,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.25 User / TEC route label */
+/* V4.27 IFR PTT activation fix */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9106,6 +9152,22 @@ function ifrUpdateTuneUI(){
   ifr$("radioReadyState").textContent=ok?"READY":"NOT READY";
   ifr$("radioReadyState").className=`radio-ready-state ${ok?"ready":"not-ready"}`;
   ifr$("tuneMsg").textContent=ok?`${stage.facility} selected.`:`Tune ${stage.freq} for ${stage.facility}.`;
+
+  /* Keep pilot controls synchronized with radio tuning. */
+  const isComm=stage.type==="comm";
+  if(ifr$("ptt")){
+    ifr$("ptt").disabled=!isComm || (!ok && !IFR_APP.pttActive);
+  }
+  if(ifr$("pilotText")){
+    ifr$("pilotText").disabled=!isComm || !ok;
+  }
+  if(ifr$("sendTyped")){
+    ifr$("sendTyped").disabled=!isComm || !ok;
+  }
+  if(ifr$("clearText")){
+    ifr$("clearText").disabled=!isComm;
+  }
+  ifrUpdatePTTState();
 }
 
 function ifrRenderStage(resetFrequency=true){
@@ -9131,6 +9193,7 @@ function ifrRenderStage(resetFrequency=true){
   if(stage.id==="atis") ifr$("atisText").textContent="";
   if(stage.id==="arrivalAtis") ifr$("atisText").textContent="";
   if(resetFrequency) ifrSetRadioFrequency(121,500); else ifrUpdateTuneUI();
+  ifrUpdatePTTState();
   ifrRenderProgress();
 }
 
@@ -9496,8 +9559,27 @@ function ifrCollapseSetupAndTop(button){
 window.collapseIFRSetupAndTop=ifrCollapseSetupAndTop;
 
 function ifrUpdatePTTState(){
-  ifr$("ptt").classList.toggle("listening",IFR_APP.pttActive);
-  ifr$("pttLabel").textContent=IFR_APP.pttActive?"TAP TO END & SEND":"TAP TO TALK";
+  const stage=IFR_STAGES[IFR_APP.stageIndex];
+  const ptt=ifr$("ptt");
+  if(!stage || !ptt) return;
+
+  ptt.classList.toggle("listening",IFR_APP.pttActive);
+
+  if(stage.type!=="comm"){
+    ptt.disabled=true;
+    ifr$("pttLabel").textContent="ATIS";
+    return;
+  }
+
+  if(IFR_APP.pttActive){
+    ptt.disabled=false;
+    ifr$("pttLabel").textContent="TAP TO END & SEND";
+    return;
+  }
+
+  const ok=ifrTuned();
+  ptt.disabled=!ok;
+  ifr$("pttLabel").textContent=ok?"TAP TO TALK":"TUNE RADIO FIRST";
 }
 function ifrJoinRecognitionText(base,addition){
   base=(base||"").trim(); addition=(addition||"").trim();
