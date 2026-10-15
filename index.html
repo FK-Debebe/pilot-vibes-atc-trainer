@@ -4341,6 +4341,25 @@ body{overflow-x:hidden}
   font-size:.78em;
   opacity:.85;
 }
+
+/* =========================================================
+   V4.30 IFR SETUP CLEANUP
+   ========================================================= */
+#page-ifr-trainer .ifr-setup-stack{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  width:100%;
+}
+#page-ifr-trainer .ifr-setup-stack > label{
+  min-width:0;
+  width:100%;
+}
+#page-ifr-trainer .ifr-setup-stack select,
+#page-ifr-trainer .ifr-setup-stack input{
+  width:100%;
+  min-width:0;
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4805,7 +4824,7 @@ body{overflow-x:hidden}
       </div>
 
       <div class="setup-section-label">DEPARTURE</div>
-      <div class="ifr-setup-pair">
+      <div class="ifr-setup-stack">
         <label>Takeoff Runway
           <select id="ifr-runway">
             <option>26L</option>
@@ -4829,7 +4848,7 @@ body{overflow-x:hidden}
       </div>
 
       <div class="setup-section-label">ROUTE</div>
-      <div class="ifr-setup-pair">
+      <div class="ifr-setup-stack">
         <label>IFR Route
           <select id="ifr-direction">
             <option value="As Filed">As Filed</option>
@@ -8839,7 +8858,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.29 publisher domain correction */
+/* V4.30 IFR setup cleanup */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
