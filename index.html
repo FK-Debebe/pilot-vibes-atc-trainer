@@ -10040,9 +10040,12 @@ function ifrEvaluateTransmission(text){
       checks={altitude:ifrContainsAltitude(text,ifrAltitudeNumber()),route:ifrRouteInstructionReadbackOK(text)};
       score=ifrScoreChecks(stage,checks);
       if(checks.altitude&&checks.route){
-        ifrATC(`${ifrCallsignVisual()}, correct.`);
-        ifrCompleteStage(100);
-      }else ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}, proceed ${ifrRouteInstructionText()}.`);
+        ifrAppend("system","TRAINER","Readback accepted. Continue on the assigned clearance.");
+        ifr$("feedback").textContent="Departure readback accepted.";
+        ifrCompleteStage(score);
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}, proceed ${ifrRouteInstructionText()}.`);
+      }
     }
     return;
   }
@@ -10062,9 +10065,11 @@ function ifrEvaluateTransmission(text){
       checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:ifrApproachPhraseOK(text)};
       score=ifrScoreChecks(stage,checks);
       if(checks.route&&checks.altitude&&checks.approach){
-        ifrATC(`${ifrCallsignVisual()}, correct. Monitor destination ATIS.`);
-        ifrCompleteStage(100);
-      }else ifrATC(`${ifrCallsignVisual()}, verify ${ifrRouteInstructionText()}, descend and maintain ${IFR_APP.arrivalAltitude}, expect ${ifrApproachName()}.`);
+        ifrATC(`${ifrCallsignVisual()}, monitor destination ATIS.`);
+        ifrCompleteStage(score);
+      }else{
+        ifrATC(`${ifrCallsignVisual()}, verify ${ifrRouteInstructionText()}, descend and maintain ${IFR_APP.arrivalAltitude}, expect ${ifrApproachName()}.`);
+      }
     }
     return;
   }
