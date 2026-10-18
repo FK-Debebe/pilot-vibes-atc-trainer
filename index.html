@@ -4427,7 +4427,7 @@ body{overflow-x:hidden}
   <header id="sideNav" class="side-nav top-nav" aria-label="Trainer navigation">
     <div class="side-nav-brand">
       <div class="side-nav-title">FK ATC COM Trainer</div>
-      <div class="side-nav-subtitle">RADIO COMMUNICATION TRAINING</div>
+      <div id="sideNavTrainingMode" class="side-nav-subtitle">VFR RADIO COMMUNICATION TRAINER</div>
     </div>
     <nav class="side-nav-menu">
       <button class="side-nav-item active" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
@@ -4442,7 +4442,7 @@ body{overflow-x:hidden}
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div class="app-subtitle">RADIO COMMUNICATION TRAINING</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5230,9 +5230,22 @@ const APP_PAGE_TITLES={
   "how-to":"HOW TO USE"
 };
 
+let activeTrainingMode="vfr";
+
+function updateTrainingModeHeading(){
+  const label=activeTrainingMode==="ifr"
+    ? "IFR RADIO COMMUNICATION TRAINER"
+    : "VFR RADIO COMMUNICATION TRAINER";
+  if($("appTrainingMode")) $("appTrainingMode").textContent=label;
+  if($("sideNavTrainingMode")) $("sideNavTrainingMode").textContent=label;
+}
+
 function showAppPage(page,options={}){
   const target=document.getElementById(`page-${page}`);
   if(!target) return;
+  if(page==="trainer") activeTrainingMode="vfr";
+  if(page==="ifr-trainer") activeTrainingMode="ifr";
+  updateTrainingModeHeading();
   document.querySelectorAll(".app-page").forEach(el=>el.classList.toggle("active",el===target));
   document.querySelectorAll(".side-nav-item").forEach(btn=>btn.classList.toggle("active",btn.dataset.page===page));
   if($("pageTitle")) $("pageTitle").textContent=APP_PAGE_TITLES[page]||target.dataset.title||"";
@@ -8949,7 +8962,7 @@ function collapseSetupAndTop(button){
 }
 
 
-/* V4.37 squawk transcript recovery + approach availability correction */
+/* V4.38 IFR reuses mature VFR aviation parsers + dynamic training heading */
 updateSetupSummary();
 updateTrainingLevelDescription();
 updateApplicationStatus();
@@ -9078,6 +9091,7 @@ function ifrRouteClearance(){
 }
 
 function ifrRouteReadbackOK(text){
+  text=ifrNormalizeAviationTranscript(text);
   const n=norm(text);
   const route=IFR_APP.config.route;
   if(route==="As Filed") return n.includes("as filed");
@@ -9506,12 +9520,61 @@ function ifrATC(visual,spoken=null){
   ifrSpeak(voiceText);
 }
 
+
+/* =========================================================
+   V4.38 IFR AVIATION SPEECH NORMALIZATION
+   Reuse the mature VFR parser layer wherever possible.
+   ========================================================= */
+function ifrNormalizeAviationTranscript(text){
+  return String(text||"")
+    .replace(/\bfore\b/gi,"four")
+    .replace(/\bfor\b/gi,"four")
+    .replace(/\bas\s+file\b/gi,"as filed")
+    .replace(/\bare\s+nav\b/gi,"rnav")
+    .replace(/\br\s+nav\b/gi,"rnav")
+    .replace(/\bare\s+now\b/gi,"rnav")
+    .replace(/\btake\s+off\b/gi,"takeoff")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function ifrContainsTaxiway(text,taxiway){
+  const expected=String(taxiway||"").trim();
+  if(!expected) return false;
+  if(containsTaxiway(ifrNormalizeAviationTranscript(text),expected)) return true;
+  const n=norm(ifrNormalizeAviationTranscript(text));
+  const expectedWord=(TAXIWAY_PHONETIC[expected]||expected).toLowerCase();
+  const letter=expectedWord.charAt(0);
+  const tailCompact=aviationCompact(ifrNormalizeAviationTranscript(ifrTail()));
+  if(tailCompact){
+    const glued=`${letter}${tailCompact}`;
+    const viaCompact=aviationCompact(n.match(/(?:taxi\s+via|via)\s+(.+)/i)?.[1]||"");
+    if(viaCompact.includes(glued)) return true;
+  }
+  return false;
+}
+
+function ifrTakeoffReadbackOK(text){
+  const n=norm(ifrNormalizeAviationTranscript(text));
+  return n.includes("takeoff") || n.includes("cleared");
+}
+
+function ifrApproachPhraseOK(text){
+  const n=norm(ifrNormalizeAviationTranscript(text));
+  return n.includes("approach") || n.includes("rnav") || n.includes("ils") || n.includes("vor") || n.includes("instrument");
+}
+
 function ifrContainsCallsign(text){
-  const c=norm(text), compactC=compact(c), tail=ifrTail().toLowerCase();
-  if(c.includes(tail)||compactC.includes(tail)) return true;
-  const spoken=[...ifrTail()].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ").toLowerCase();
-  const spokenCompact=compact(spoken);
-  return c.includes(spoken) || compactC.includes(spokenCompact);
+  const normalized=ifrNormalizeAviationTranscript(text);
+  const textCompact=aviationCompact(normalized);
+  const tail=ifrTail();
+  const tailCompact=aviationCompact(tail);
+  if(tailCompact && textCompact.includes(tailCompact)) return true;
+  const fullCompact=aviationCompact(`${ifrAircraftPrefix()} ${tail}`);
+  if(fullCompact && textCompact.includes(fullCompact)) return true;
+  const spoken=[...tail].map(ch=>DIGIT[ch]||PHONETIC[ch]||ch).join(" ");
+  const spokenCompact=aviationCompact(spoken);
+  return !!(spokenCompact && textCompact.includes(spokenCompact));
 }
 function ifrContainsAirport(text,code){
   const n=norm(text), ap=ifrAirport(code);
@@ -9548,7 +9611,7 @@ function ifrNormalizeClearanceReadback(text){
     s=s.replace(rx2,`${expected} one zero minutes`);
   }
 
-  return s.replace(/\s+/g," ").trim();
+  return ifrNormalizeAviationTranscript(s);
 }
 
 function ifrClearanceExpectedAltitudeOK(text){
@@ -9572,6 +9635,14 @@ function ifrContainsAltitude(text,value){
 
   const spoken=altitudeSpoken(formatAltitude(target)).toLowerCase();
   if(spoken && n.includes(spoken)) return true;
+
+  if(target>=1000 && target%100===0){
+    const hundreds=target/100;
+    if(hundreds<100){
+      const hundredStyle=`${numberUnderHundred(hundreds)} hundred`;
+      if(n.includes(hundredStyle)) return true;
+    }
+  }
 
   return reportedAltitudeFeet(text)===target;
 }
@@ -9818,10 +9889,11 @@ function ifrEvaluateTransmission(text){
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage||stage.type==="atis") return;
 
+  text=ifrNormalizeAviationTranscript(text);
   if(stage.id==="clearance" && IFR_APP.phase==="clearanceReadback"){
     text=ifrNormalizeClearanceTranscript(text);
-    ifr$("pilotText").value=text;
   }
+  ifr$("pilotText").value=text;
   if(!ifrTuned()){
     IFR_APP.session.tuningErrors++;
     ifr$("feedback").textContent=`Radio is not tuned to ${stage.freq}.`;
@@ -9900,7 +9972,7 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="ground"){
     if(IFR_APP.phase==="groundInitial"){
-      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:n.includes(norm(IFR_APP.config.location)),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")&&(n.includes("ifr")||n.includes("departure"))};
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:n.includes(norm(IFR_APP.config.location)),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","location","request"],["facility","atis"])){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
@@ -9917,7 +9989,7 @@ function ifrEvaluateTransmission(text){
         ifrATC(`${ifrCallsignVisual()}, say again position, ATIS, and IFR taxi request.`);
       }
     }else{
-      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:n.includes(norm(IFR_APP.taxiway))};
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),taxiway:ifrContainsTaxiway(text,IFR_APP.taxiway)};
       score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.taxiway){
         ifrATC(`${ifrCallsignVisual()}, readback correct.`);
@@ -9939,7 +10011,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back runway, takeoff clearance, and runway heading.";
       }else ifrATC(`${ifrCallsignVisual()}, say again ready for IFR departure.`);
     }else{
-      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:n.includes("takeoff"),heading:n.includes("runway heading")||n.includes("heading")};
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:ifrTakeoffReadbackOK(text),heading:n.includes("runway heading")||n.includes("heading")};
       score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.takeoff&&checks.heading){
         ifrATC(`${ifrCallsignVisual()}, correct. Contact Departure ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
@@ -9983,7 +10055,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back route, descent altitude, and expected approach.";
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
-      checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:n.includes(norm(IFR_APP.config.approachType.split(" ")[0]))||n.includes("approach")};
+      checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:ifrApproachPhraseOK(text)};
       score=ifrScoreChecks(stage,checks);
       if(checks.route&&checks.altitude&&checks.approach){
         ifrATC(`${ifrCallsignVisual()}, correct. Monitor destination ATIS.`);
@@ -9996,7 +10068,7 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="approach"){
     if(IFR_APP.phase==="approachInitial"){
       const reportedApproachAltitude=reportedAltitudeFeet(text);
-      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor")||n.includes("instrument"),altitude:reportedApproachAltitude>0};
+      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:ifrApproachPhraseOK(text),altitude:reportedApproachAltitude>0};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","atis","approach","altitude"],["facility"])){
         IFR_APP.vectorHeading="240";
@@ -10006,7 +10078,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back heading, altitude restriction, and approach clearance.";
       }else ifrATC(`${ifrCallsignVisual()}, say approach request and ATIS.`);
     }else{
-      checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||n.includes("approach")||n.includes("rnav")||n.includes("ils")||n.includes("vor")||n.includes("instrument"),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
+      checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||ifrApproachPhraseOK(text),runway:ifrContainsRunway(text,IFR_APP.config.destRunway)};
       score=ifrScoreChecks(stage,checks);
       if(checks.heading&&checks.altitude&&checks.approach&&checks.runway){
         ifrATC(`${ifrCallsignVisual()}, correct. Contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower")}.`);
@@ -10048,7 +10120,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back taxiway and parking destination.";
       }else ifrATC(`${ifrCallsignVisual()}, say parking request.`);
     }else{
-      checks={taxiway:n.includes(norm(IFR_APP.destTaxiway)),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
+      checks={taxiway:ifrContainsTaxiway(text,IFR_APP.destTaxiway),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
       score=ifrScoreChecks(stage,checks);
       if(checks.taxiway){
         ifrATC(`${ifrCallsignVisual()}, readback correct. Good day.`);
