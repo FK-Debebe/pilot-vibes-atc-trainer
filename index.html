@@ -9522,13 +9522,13 @@ function ifrATC(visual,spoken=null){
 
 
 /* =========================================================
-   V4.38 IFR AVIATION SPEECH NORMALIZATION
+   V4.39 IFR AVIATION SPEECH NORMALIZATION
    Reuse the mature VFR parser layer wherever possible.
    ========================================================= */
 function ifrNormalizeAviationTranscript(text){
   return String(text||"")
-    .replace(/\bfore\b/gi,"four")
-    .replace(/\bfor\b/gi,"four")
+    /* Keep normal phraseology such as "for IFR departure" unchanged.
+       Callsign-only for/fore -> four normalization is handled below. */
     .replace(/\bas\s+file\b/gi,"as filed")
     .replace(/\bare\s+nav\b/gi,"rnav")
     .replace(/\br\s+nav\b/gi,"rnav")
@@ -9565,8 +9565,12 @@ function ifrApproachPhraseOK(text){
 }
 
 function ifrContainsCallsign(text){
-  const normalized=ifrNormalizeAviationTranscript(text);
-  const textCompact=aviationCompact(normalized);
+  /* Mirror VFR behavior: "for/fore" may represent digit four only while
+     matching the callsign, never in the whole radio transmission. */
+  const callsignText=ifrNormalizeAviationTranscript(text)
+    .replace(/\bfor\b/gi,"four")
+    .replace(/\bfore\b/gi,"four");
+  const textCompact=aviationCompact(callsignText);
   const tail=ifrTail();
   const tailCompact=aviationCompact(tail);
   if(tailCompact && textCompact.includes(tailCompact)) return true;
