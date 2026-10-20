@@ -4412,6 +4412,100 @@ body{overflow-x:hidden}
     font-size:.92rem;
   }
 }
+
+/* V4.42 Flight Setup header action */
+.setup-title-row{
+  grid-template-columns:minmax(0,1fr) auto !important;
+  gap:10px !important;
+  align-items:center;
+}
+.setup-top-apply{
+  min-height:32px;
+  padding:6px 11px !important;
+  font-size:10px !important;
+  line-height:1.1;
+  border-radius:7px;
+  white-space:nowrap;
+  justify-self:end;
+}
+@media(max-width:420px){
+  .setup-title-row{gap:6px !important;}
+  .setup-top-apply{
+    min-height:30px;
+    padding:5px 8px !important;
+    font-size:9px !important;
+  }
+}
+
+/* V4.42 bottom setup control: collapse only */
+.setup-action-row-collapse-only{
+  grid-template-columns:1fr !important;
+}
+.setup-action-row-collapse-only .setup-bottom-toggle{
+  width:100%;
+}
+
+/* V4.49 VFR top/bottom setup actions + beginner prompt text removed */
+#page-trainer .vfr-setup-top-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;margin-bottom:10px;}
+#page-trainer .vfr-setup-top-actions>button{width:100%;min-width:0;}
+#page-trainer .vfr-setup-title-alone{display:block;width:100%;margin:0 0 4px 0;}
+#page-trainer .setup-top-toggle{min-height:32px;padding:6px 11px;font-size:10px;line-height:1.1;border-radius:7px;white-space:nowrap;}
+@media(max-width:420px){#page-trainer .vfr-setup-top-actions{gap:6px;}#page-trainer .setup-top-toggle{min-height:30px;padding:5px 8px;font-size:9px;}}
+
+
+/* =========================================================
+   V4.48 PERSISTENT FLIGHT SETUP CONTROLS
+   Top Apply/Expand controls stay visible even when <details> is collapsed.
+   ========================================================= */
+#page-trainer .persistent-setup-actions,
+#page-ifr-trainer .persistent-setup-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  width:100%;
+  margin:0 0 8px 0;
+}
+#page-trainer .persistent-setup-actions > button,
+#page-ifr-trainer .persistent-setup-actions > button{
+  width:100%;
+  min-width:0;
+}
+#page-trainer .vfr-setup-title-route-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  width:100%;
+  min-width:0;
+}
+#page-trainer .vfr-setup-title-route-row .vfr-setup-title-alone,
+#page-trainer .vfr-setup-title-route-row #routeHeading{
+  margin:0;
+  white-space:nowrap;
+}
+#page-trainer .vfr-setup-title-route-row #routeHeading{
+  text-align:right;
+  font-size:1.08rem;
+}
+#page-ifr-trainer .setup-title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+#page-ifr-trainer .setup-title-row #ifr-routeHeading{
+  margin:0;
+  white-space:nowrap;
+  text-align:right;
+  font-size:1.08rem;
+}
+@media(max-width:420px){
+  #page-trainer .persistent-setup-actions,
+  #page-ifr-trainer .persistent-setup-actions{gap:6px}
+  #page-trainer .vfr-setup-title-route-row #routeHeading,
+  #page-ifr-trainer .setup-title-row #ifr-routeHeading{font-size:.98rem}
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4449,14 +4543,17 @@ body{overflow-x:hidden}
     <section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="Flight Setup">
-<details class="card setup" open>
+  <div class="setup-top-actions persistent-setup-actions vfr-setup-top-actions">
+    <button id="applySetupTop" type="button" class="btn primary setup-top-apply">APPLY SETUP</button>
+    <button id="vfrSetupToggleTop" type="button" class="setup-bottom-toggle setup-top-toggle" onclick="toggleVFRSetupById()">Tap To Collapse ▲</button>
+  </div>
+<details id="vfrFlightSetupDetails" class="card setup" open>
   <summary class="setup-summary">
     <div class="setup-summary-title">
-      <div class="setup-title-row">
-        <div class="eyebrow">VFR FLIGHT SETUP</div>
-        <span class="setup-summary-hint"></span>
+      <div class="vfr-setup-title-route-row">
+        <div class="eyebrow vfr-setup-title-alone">VFR FLIGHT SETUP</div>
+        <h2 id="routeHeading">KLGB → KCRQ</h2>
       </div>
-      <h2 id="routeHeading">KLGB → KCRQ</h2>
     </div>
   </summary>
 
@@ -4469,7 +4566,7 @@ body{overflow-x:hidden}
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
-        <div id="trainingLevelDescription" class="training-level-description">More prompting and fewer unexpected ATC changes.</div>
+        <div id="trainingLevelDescription" class="training-level-description"></div>
       </label>
 
       <div class="setup-section-label">ROUTE</div>
@@ -4608,13 +4705,9 @@ body{overflow-x:hidden}
 
     </div>
 
-    <div class="setup-action-row">
-      <button id="applySetup" class="btn primary setup-action-btn">
-        APPLY SETUP
-      </button>
-      <button type="button" class="setup-bottom-toggle setup-action-btn" onclick="collapseSetupAndTop(this)">
-        Tap To Collapse ▲
-      </button>
+    <div class="setup-action-row vfr-setup-bottom-actions">
+      <button id="applySetupBottom" type="button" class="btn primary setup-action-btn">APPLY SETUP</button>
+      <button id="vfrSetupToggleBottom" type="button" class="setup-bottom-toggle setup-action-btn" onclick="toggleVFRSetup(this)">Tap To Collapse ▲</button>
     </div>
     <div class="small setup-note">Airport-specific training profiles automatically load runway choices, facility names, frequencies, and taxiway logic.</div>
   </div>
@@ -4773,14 +4866,17 @@ body{overflow-x:hidden}
 
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="IFR Flight Setup">
-<details class="card setup" open>
+  <div class="setup-top-actions persistent-setup-actions ifr-setup-top-actions">
+    <button id="ifr-applySetupTop" type="button" class="btn primary setup-top-apply">APPLY SETUP</button>
+    <button id="ifrSetupToggleTop" type="button" class="setup-bottom-toggle setup-top-toggle" onclick="toggleIFRSetupById()">Tap To Collapse ▲</button>
+  </div>
+<details id="ifrFlightSetupDetails" class="card setup" open>
   <summary class="setup-summary">
     <div class="setup-summary-title">
       <div class="setup-title-row">
         <div class="eyebrow">IFR FLIGHT SETUP</div>
-        <span class="setup-summary-hint"></span>
+        <h2 id="ifr-routeHeading">KLGB → KCRQ</h2>
       </div>
-      <h2 id="ifr-routeHeading">KLGB → KCRQ</h2>
     </div>
   </summary>
 
@@ -4959,11 +5055,8 @@ body{overflow-x:hidden}
 
     </div>
 
-    <div class="setup-action-row">
-      <button id="ifr-applySetup" class="btn primary setup-action-btn">
-        APPLY SETUP
-      </button>
-      <button type="button" class="setup-bottom-toggle setup-action-btn" onclick="collapseIFRSetupAndTop(this)">
+    <div class="setup-action-row setup-action-row-collapse-only">
+      <button id="ifrSetupToggleBottom" type="button" class="setup-bottom-toggle setup-action-btn" onclick="toggleIFRSetupBottom()">
         Tap To Collapse ▲
       </button>
     </div>
@@ -5321,7 +5414,7 @@ function updateSetupSummary(){
 function updateTrainingLevelDescription(){
   const level=$("level")?.value || (typeof app!=="undefined" ? app.config?.level : "beginner") || "beginner";
   const descriptions={
-    beginner:"More prompting and fewer unexpected ATC changes.",
+    beginner:"",
     intermediate:"Reduced prompting with more unexpected ATC changes.",
     advanced:"Minimal prompting with the most unexpected ATC changes."
   };
@@ -8783,11 +8876,24 @@ $("level").addEventListener("change",()=>{
   updateApplicationStatus();
 });
 
-$("applySetup").addEventListener("click",()=>{
+function applyVFRSetup(){
   readSetup(true);
-  collapseSetupAfterApplyIfSmall();
   updateApplicationStatus();
   showSetupSavedFeedback("VFR");
+}
+$("applySetupTop")?.addEventListener("click",(e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+  applyVFRSetup();
+});
+$("applySetupBottom")?.addEventListener("click",(e)=>{
+  e.preventDefault();
+  applyVFRSetup();
+  if(window.matchMedia("(max-width:700px)").matches){
+    const details=document.getElementById("vfrFlightSetupDetails");
+    if(details) details.open=false;
+    requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
+  }
 });
 $("monitorAtis").addEventListener("click",monitorAtis);
 $("sendTyped").addEventListener("click",()=>evaluateTransmission($("pilotText").value.trim()));
@@ -8960,6 +9066,55 @@ function collapseSetupAndTop(button){
     window.scrollTo({top:0,left:0,behavior:"smooth"});
   });
 }
+
+function syncSetupToggleLabels(details, topId, bottomId){
+  if(!details) return;
+  const text=details.open ? "Tap To Collapse ▲" : "Tap to Expand ▼";
+  const top=document.getElementById(topId);
+  const bottom=document.getElementById(bottomId);
+  if(top) top.textContent=text;
+  if(bottom) bottom.textContent=text;
+}
+function toggleVFRSetupById(){
+  const details=document.getElementById("vfrFlightSetupDetails");
+  if(!details) return;
+  details.open=!details.open;
+  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom");
+}
+function toggleVFRSetup(button){
+  const details=document.getElementById("vfrFlightSetupDetails");
+  if(!details) return;
+  const isCollapsing=details.open;
+  details.open=!details.open;
+  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom");
+  if(isCollapsing && button?.id==="vfrSetupToggleBottom"){
+    requestAnimationFrame(()=>{
+      window.scrollTo({top:0,left:0,behavior:"smooth"});
+    });
+  }
+}
+function toggleIFRSetupById(){
+  const details=document.getElementById("ifrFlightSetupDetails");
+  if(!details) return;
+  details.open=!details.open;
+  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+}
+function toggleIFRSetupBottom(){
+  const details=document.getElementById("ifrFlightSetupDetails");
+  if(!details) return;
+  const isCollapsing=details.open;
+  details.open=!details.open;
+  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+  if(isCollapsing){
+    requestAnimationFrame(()=>{
+      window.scrollTo({top:0,left:0,behavior:"smooth"});
+    });
+  }
+}
+const vfrSetupDetails=document.getElementById("vfrFlightSetupDetails");
+const ifrSetupDetails=document.getElementById("ifrFlightSetupDetails");
+vfrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom"));
+ifrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom"));
 
 
 /* V4.38 IFR reuses mature VFR aviation parsers + dynamic training heading */
@@ -10188,8 +10343,11 @@ function ifrRecordCompletedTraining(){
 }
 
 function ifrCollapseSetupAndTop(button){
-  const details=button.closest("details");
-  if(details) details.open=false;
+  const details=document.getElementById("ifrFlightSetupDetails") || button?.closest("details");
+  if(details){
+    details.open=false;
+    syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+  }
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
 window.collapseIFRSetupAndTop=ifrCollapseSetupAndTop;
@@ -10459,10 +10617,15 @@ function ifrInit(){
   ifr$("altitudeDown").addEventListener("click",()=>{ifr$("altitude").value=Math.max(0,(parseInt(ifr$("altitude").value)||0)-500);});
   ifr$("altitudeUp").addEventListener("click",()=>{ifr$("altitude").value=Math.min(18000,(parseInt(ifr$("altitude").value)||0)+500);});
 
-  ifr$("applySetup").addEventListener("click",()=>{
+  const applyIFRSetup=()=>{
     ifrReadSetup(true);
     ifrSaveLastSetup();
     showSetupSavedFeedback("IFR");
+  };
+  ifr$("applySetupTop")?.addEventListener("click",(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    applyIFRSetup();
   });
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   ifr$("sendTyped").addEventListener("click",()=>ifrEvaluateTransmission(ifr$("pilotText").value));
@@ -10504,8 +10667,14 @@ function applyResponsiveSetupDefaultState(){
   const isMobile=window.matchMedia("(max-width:700px)").matches;
   const vfrSetup=document.querySelector("#page-trainer details.setup");
   const ifrSetup=document.querySelector("#page-ifr-trainer details.setup");
-  if(vfrSetup) vfrSetup.open=!isMobile;
-  if(ifrSetup) ifrSetup.open=!isMobile;
+  if(vfrSetup){
+    vfrSetup.open=!isMobile;
+    syncSetupToggleLabels(vfrSetup,"vfrSetupToggleTop","vfrSetupToggleBottom");
+  }
+  if(ifrSetup){
+    ifrSetup.open=!isMobile;
+    syncSetupToggleLabels(ifrSetup,"ifrSetupToggleTop","ifrSetupToggleBottom");
+  }
 }
 
 /* Apply after all trainer initialization has completed. */
