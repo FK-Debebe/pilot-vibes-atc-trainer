@@ -4445,7 +4445,7 @@ body{overflow-x:hidden}
   width:100%;
 }
 
-/* V4.49 VFR top/bottom setup actions + beginner prompt text removed */
+/* V4.50 VFR top/bottom setup actions + beginner prompt text removed */
 #page-trainer .vfr-setup-top-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;width:100%;margin-bottom:10px;}
 #page-trainer .vfr-setup-top-actions>button{width:100%;min-width:0;}
 #page-trainer .vfr-setup-title-alone{display:block;width:100%;margin:0 0 4px 0;}
@@ -4504,6 +4504,32 @@ body{overflow-x:hidden}
   #page-ifr-trainer .persistent-setup-actions{gap:6px}
   #page-trainer .vfr-setup-title-route-row #routeHeading,
   #page-ifr-trainer .setup-title-row #ifr-routeHeading{font-size:.98rem}
+}
+
+
+/* V4.52: when Flight Setup is collapsed, hide Apply Setup while preserving
+   the two-column layout so Tap to Expand stays the same size and position. */
+.persistent-setup-actions.setup-actions-collapsed{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+}
+.persistent-setup-actions.setup-actions-collapsed .setup-top-toggle{
+  grid-column:2;
+  width:100% !important;
+}
+.persistent-setup-actions .setup-top-apply[hidden]{
+  display:none !important;
+}
+
+/* V4.52 IFR bottom setup actions match VFR: Apply Setup + Tap To Collapse. */
+#page-ifr-trainer .ifr-setup-bottom-actions{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  width:100%;
+}
+#page-ifr-trainer .ifr-setup-bottom-actions>button{
+  width:100%;
+  min-width:0;
 }
 
 </style>
@@ -5055,7 +5081,8 @@ body{overflow-x:hidden}
 
     </div>
 
-    <div class="setup-action-row setup-action-row-collapse-only">
+    <div class="setup-action-row ifr-setup-bottom-actions">
+      <button id="ifr-applySetupBottom" type="button" class="btn primary setup-action-btn">APPLY SETUP</button>
       <button id="ifrSetupToggleBottom" type="button" class="setup-bottom-toggle setup-action-btn" onclick="toggleIFRSetupBottom()">
         Tap To Collapse ▲
       </button>
@@ -9067,26 +9094,34 @@ function collapseSetupAndTop(button){
   });
 }
 
-function syncSetupToggleLabels(details, topId, bottomId){
+function syncSetupToggleLabels(details, topId, bottomId, applyTopId){
   if(!details) return;
-  const text=details.open ? "Tap To Collapse ▲" : "Tap to Expand ▼";
+  const isOpen=details.open;
+  const text=isOpen ? "Tap To Collapse ▲" : "Tap to Expand ▼";
   const top=document.getElementById(topId);
   const bottom=document.getElementById(bottomId);
+  const applyTop=document.getElementById(applyTopId);
   if(top) top.textContent=text;
   if(bottom) bottom.textContent=text;
+
+  /* Apply Setup is useful only while the setup form is visible.
+     When collapsed, keep only Tap to Expand visible. */
+  if(applyTop) applyTop.hidden=!isOpen;
+  const actionRow=top?.closest(".persistent-setup-actions");
+  if(actionRow) actionRow.classList.toggle("setup-actions-collapsed",!isOpen);
 }
 function toggleVFRSetupById(){
   const details=document.getElementById("vfrFlightSetupDetails");
   if(!details) return;
   details.open=!details.open;
-  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom");
+  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom","applySetupTop");
 }
 function toggleVFRSetup(button){
   const details=document.getElementById("vfrFlightSetupDetails");
   if(!details) return;
   const isCollapsing=details.open;
   details.open=!details.open;
-  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom");
+  syncSetupToggleLabels(details,"vfrSetupToggleTop","vfrSetupToggleBottom","applySetupTop");
   if(isCollapsing && button?.id==="vfrSetupToggleBottom"){
     requestAnimationFrame(()=>{
       window.scrollTo({top:0,left:0,behavior:"smooth"});
@@ -9097,14 +9132,14 @@ function toggleIFRSetupById(){
   const details=document.getElementById("ifrFlightSetupDetails");
   if(!details) return;
   details.open=!details.open;
-  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
 }
 function toggleIFRSetupBottom(){
   const details=document.getElementById("ifrFlightSetupDetails");
   if(!details) return;
   const isCollapsing=details.open;
   details.open=!details.open;
-  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+  syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
   if(isCollapsing){
     requestAnimationFrame(()=>{
       window.scrollTo({top:0,left:0,behavior:"smooth"});
@@ -9113,8 +9148,11 @@ function toggleIFRSetupBottom(){
 }
 const vfrSetupDetails=document.getElementById("vfrFlightSetupDetails");
 const ifrSetupDetails=document.getElementById("ifrFlightSetupDetails");
-vfrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom"));
-ifrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom"));
+vfrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom","applySetupTop"));
+ifrSetupDetails?.addEventListener("toggle",()=>syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop"));
+/* Sync the persistent controls immediately on initial load. */
+syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom","applySetupTop");
+syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
 
 
 /* V4.38 IFR reuses mature VFR aviation parsers + dynamic training heading */
@@ -10346,7 +10384,7 @@ function ifrCollapseSetupAndTop(button){
   const details=document.getElementById("ifrFlightSetupDetails") || button?.closest("details");
   if(details){
     details.open=false;
-    syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom");
+    syncSetupToggleLabels(details,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
   }
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
@@ -10626,6 +10664,17 @@ function ifrInit(){
     e.preventDefault();
     e.stopPropagation();
     applyIFRSetup();
+  });
+  ifr$("applySetupBottom")?.addEventListener("click",(e)=>{
+    e.preventDefault();
+    applyIFRSetup();
+    /* Match VFR behavior: on cellphone-size screens only, the bottom
+       Apply Setup button also collapses the Flight Setup panel. */
+    if(window.matchMedia("(max-width:700px)").matches){
+      const details=document.getElementById("ifrFlightSetupDetails");
+      if(details) details.open=false;
+      requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
+    }
   });
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   ifr$("sendTyped").addEventListener("click",()=>ifrEvaluateTransmission(ifr$("pilotText").value));
