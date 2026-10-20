@@ -4532,6 +4532,15 @@ body{overflow-x:hidden}
   min-width:0;
 }
 
+
+/* V4.61 Footer brand links */
+.footer a,
+.app-footer a,
+footer a{color:inherit;text-decoration:none;}
+.footer a:hover,
+.app-footer a:hover,
+footer a:hover{text-decoration:underline;}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4556,7 +4565,7 @@ body{overflow-x:hidden}
       <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Report</span></button>
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
     </nav>
-    <div class="side-nav-footer">Pilot Vibes • FWD Skill Zone<br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
+    <div class="side-nav-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a><br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
   </header>
 
   <main class="product-main">
@@ -5335,7 +5344,7 @@ body{overflow-x:hidden}
       </div>
     </section>
 
-    <p class="small product-footer">Pilot Vibes • FWD Skill Zone • Training aid only — not for operational ATC use</p>
+    <p class="small product-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a> • Training aid only — not for operational ATC use</p>
   </main>
 </div>
 
@@ -5393,13 +5402,21 @@ function initSideNavigation(){
 
   $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup(activeReportMode));
   $("repeatSameRoute")?.addEventListener("click",()=>{
-    if(activeReportMode==="ifr"){
-      ifrResetTraining();
-      showAppPage("ifr-trainer");
-    }else{
-      resetTraining();
-      showAppPage("trainer");
+    /* V4.59: return to the trainer page first, then reset the same flight. */
+    const mode=activeReportMode==="ifr" ? "ifr" : "vfr";
+    const trainerPage=mode==="ifr" ? "ifr-trainer" : "trainer";
+
+    $("finalReport")?.classList.add("hidden");
+    showAppPage(trainerPage,{noScroll:true});
+
+    try{
+      if(mode==="ifr") restartIfrSameSetup();
+      else restartVfrSameSetup();
+    }catch(err){
+      console.error("Repeat Same Route reset failed:",err);
     }
+
+    window.scrollTo({top:0,left:0,behavior:"smooth"});
   });
 
   $("mobileNavToggle")?.addEventListener("click",()=>document.body.classList.toggle("nav-open"));
@@ -5809,24 +5826,33 @@ function containsAircraftType(text){
   });
 }
 
-function containsStartingLocation(text){
+function containsLocationAlias(text,configuredLocation){
   const n=norm(text)
     .replace(/[-_/]/g," ")
     .replace(/\s+/g," ")
     .trim();
 
-  const location=norm(app.config.location)
+  const location=norm(configuredLocation)
     .replace(/[-_/]/g," ")
     .replace(/\s+/g," ")
     .trim();
 
   if(location && n.includes(location)) return true;
 
+  /* Common aviation position aliases. */
+  if(location.includes("general aviation ramp","general aviation")){
+    if(/\bga\s+ramp\b/.test(n) || /\bg\s*a\s+ramp\b/.test(n)) return true;
+  }
+
   /* Permit common shortened position/location calls such as "at the ramp". */
   const important=location.split(" ")
     .filter(w=>w.length>=4 && !["from","with","club"].includes(w));
 
   return important.length>0 && important.every(w=>n.includes(w));
+}
+
+function containsStartingLocation(text){
+  return containsLocationAlias(text,app.config.location);
 }
 
 function containsAltitudeValue(text,value){
@@ -5877,7 +5903,7 @@ function routeDistanceNm(depCode,destCode){
   return 3440.065*central;
 }
 
-/* V4.56: very short VFR airport-to-airport hops retain departure and arrival ATIS.
+/* V4.59: very short VFR airport-to-airport hops retain departure and arrival ATIS.
    10 NM keeps KBUR → KWHP (~6 NM) in this mode without affecting normal XC routes. */
 function isVeryShortVFRRoute(depCode,destCode){
   const distance=routeDistanceNm(depCode,destCode);
@@ -8933,6 +8959,15 @@ function resetTraining(){
   renderStage(true);
   window.scrollTo({top:0,behavior:"smooth"});
 }
+
+function restartVfrSameSetup(){
+  /* V4.61: RESET / START OVER always returns to the VFR trainer and
+     starts a fresh session with the current flight setup carried over. */
+  $("finalReport")?.classList.add("hidden");
+  showAppPage("trainer",{noScroll:true});
+  resetTraining();
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
+}
 function previousStage(){
   if(app.stageIndex===0) return;
   if("speechSynthesis" in window) speechSynthesis.cancel();
@@ -8999,7 +9034,7 @@ $("clearText").addEventListener("click",()=>{$("pilotText").value=""});
 $("sayAgain").addEventListener("click",sayAgainRequest);
 $("next").addEventListener("click",nextStage);
 $("previous").addEventListener("click",previousStage);
-$("reset").addEventListener("click",resetTraining);
+$("reset").addEventListener("click",restartVfrSameSetup);
 
 function radioValueParts(){
   const value=parseFloat($("frequency").value)||121.500;
@@ -10221,7 +10256,7 @@ function ifrEvaluateTransmission(text){
       checks={
         facility:n.includes("clearance")||ifrContainsAirport(text,IFR_APP.config.departureAirport),
         callsign:ifrContainsCallsign(text),
-        location:n.includes(norm(IFR_APP.config.location)),
+        location:containsLocationAlias(text,IFR_APP.config.location),
         atis:hasCurrentAtis,
         destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport),
         ifr:n.includes("ifr")||n.includes("ready to copy")||n.includes("copy")
@@ -10275,7 +10310,7 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="ground"){
     if(IFR_APP.phase==="groundInitial"){
-      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:n.includes(norm(IFR_APP.config.location)),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")};
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:containsLocationAlias(text,IFR_APP.config.location),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","location","atis","request"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
@@ -10504,6 +10539,15 @@ function ifrResetTraining(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
   IFR_APP.lastATC=null;
   ifrReadSetup(true);
+}
+
+function restartIfrSameSetup(){
+  /* V4.61: RESET / START OVER always returns to the IFR trainer and
+     starts a fresh session with the current IFR setup carried over. */
+  $("finalReport")?.classList.add("hidden");
+  showAppPage("ifr-trainer",{noScroll:true});
+  ifrResetTraining();
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
 function ifrRecordCompletedTraining(){
   if(IFR_APP.session.historyRecorded) return;
@@ -10826,7 +10870,7 @@ function ifrInit(){
   ifr$("ptt").addEventListener("click",ifrTogglePTT);
   ifr$("next").addEventListener("click",ifrNextStage);
   ifr$("previous").addEventListener("click",ifrPreviousStage);
-  ifr$("reset").addEventListener("click",ifrResetTraining);
+  ifr$("reset").addEventListener("click",restartIfrSameSetup);
 
   document.querySelectorAll("#page-ifr-trainer .digit-btn").forEach(btn=>{
     btn.addEventListener("click",()=>ifrStepRadioDigit(Number(btn.dataset.digit),Number(btn.dataset.dir)));
