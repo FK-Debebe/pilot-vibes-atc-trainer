@@ -5318,7 +5318,7 @@ body{overflow-x:hidden}
           <h3>Typical VFR Sequence</h3>
           <p>Departure ATIS → Clearance / Flight Following → Ground → Tower → Departure → Enroute when applicable → Arrival ATIS → Arrival / Approach → Destination Tower → Destination Ground.</p>
           <p><strong>Very short VFR routes (10 NM or less):</strong> the trainer uses a compact sequence:</p>
-          <p><strong>Clearance → Ground → Departure Tower → Destination Tower → Destination Ground</strong></p>
+          <p><strong>Departure ATIS → Clearance → Ground → Departure Tower → Arrival ATIS → Destination Tower → Destination Ground</strong></p>
         </section>
 
         <section class="card howto-reference">
@@ -5877,7 +5877,7 @@ function routeDistanceNm(depCode,destCode){
   return 3440.065*central;
 }
 
-/* V4.55: very short VFR airport-to-airport hops use a compact tower-to-tower flow.
+/* V4.56: very short VFR airport-to-airport hops retain departure and arrival ATIS.
    10 NM keeps KBUR → KWHP (~6 NM) in this mode without affecting normal XC routes. */
 function isVeryShortVFRRoute(depCode,destCode){
   const distance=routeDistanceNm(depCode,destCode);
@@ -5957,12 +5957,15 @@ function buildStages(depCode,destCode){
   const dep=airportData(depCode);
   const dest=airportData(destCode);
 
-  /* Very short VFR hop: clearance → ground → departure tower → destination tower → destination ground. */
+  /* Very short VFR hop: keep departure/arrival ATIS, but skip Departure,
+     Enroute, and Arrival/Approach controller stages. */
   if(isVeryShortVFRRoute(depCode,destCode)){
     return [
+      {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.radioName||dep.name} ATIS`, freq:airportFrequency(dep,"atis"), type:"atis"},
       {id:"clearance", title:"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
       {id:"ground", title:"GROUND", facility:airportFacility(dep,"ground"), freq:airportFrequency(dep,"ground"), type:"comm"},
       {id:"tower", title:"TOWER", facility:airportFacility(dep,"tower"), freq:airportFrequency(dep,"tower"), type:"comm"},
+      {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
       {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
       {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
     ];
@@ -6656,10 +6659,10 @@ function instructionFor(stage){
   const beginner={
     atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Record the ATIS information and runway after you receive the broadcast.`,
     clearance:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
-      ? `Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, request VFR to ${dest.name}, departure direction ${c.direction.toLowerCase()}, and requested altitude ${c.altitude}.`
+      ? `Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, information ${c.atis}, request VFR to ${dest.name}, departure direction ${c.direction.toLowerCase()}, and requested altitude ${c.altitude}.`
       : `Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
     ground:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
-      ? `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign and request taxi for a ${c.direction.toLowerCase()} departure.`
+      ? `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`
       : `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
     tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure.`,
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
@@ -6667,7 +6670,7 @@ function instructionFor(stage){
     arrival:`Contact ${airportFacility(dest,"approach")} for ${dest.name}. Include callsign, destination, and request.`,
     arrivalAtis:`Before calling ${airportFacility(dest,"tower")}, tune ${stage.freq} and monitor ${dest.radioName||dest.name} ATIS. Record the information code and landing runway after you receive the broadcast.`,
     destTower:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
-      ? `After the departure-tower handoff, call ${airportFacility(dest,"tower")} with callsign, position, inbound request, and runway ${c.destRunway}.`
+      ? `After monitoring ${dest.radioName||dest.name} ATIS, call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`
       : `Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
     destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to parking.`
   };
@@ -8113,7 +8116,7 @@ function evaluateTransmission(text){
         checks.callsign &&
         checks.type &&
         checks.location &&
-        (veryShort || checks.atis) &&
+        checks.atis &&
         checks.destination &&
         checks.request &&
         checks.altitude;
@@ -8189,15 +8192,11 @@ function evaluateTransmission(text){
         request:n.includes("taxi")||n.includes("departure")
       };
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
-      const essentialGround=checks.facility&&checks.callsign&&checks.location&&checks.request&&(veryShort||checks.atis);
+      const essentialGround=checks.facility&&checks.callsign&&checks.location&&checks.request&&checks.atis;
       const s=grade(checks); $("score").textContent=(essentialGround?Math.max(s,80):s)+"%";
       if(!essentialGround){
-        replyVisual=veryShort
-          ? `${app.config.aircraft}, say again your position and request.`
-          : `${app.config.aircraft}, say again your position, ATIS, and request.`;
-        replySpoken=veryShort
-          ? `${callsignSpoken()}, say again your position and request.`
-          : `${callsignSpoken()}, say again your position, A T I S, and request.`;
+        replyVisual=`${app.config.aircraft}, say again your position, ATIS, and request.`;
+        replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
       }else{
         const changed=unexpectedEnabled("runwayChange")&&!unexpectedTriggered("runwayChange")&&triggerRunwayChange();
@@ -8296,10 +8295,11 @@ function evaluateTransmission(text){
       }else if(essential){
         const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
         if(veryShort){
-          const nextStage=STAGES[app.stageIndex+1];
-          replyVisual=`${app.config.aircraft}, contact ${nextStage.facility} ${nextStage.freq}.`;
-          replySpoken=`${callsignSpoken()}, contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
-          $("feedback").textContent=`Tower stage complete. Contact ${nextStage.facility} on ${nextStage.freq}.`;
+          const dest=destAirport();
+          const atisFreq=airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis");
+          replyVisual=`${app.config.aircraft}, frequency change approved.`;
+          replySpoken=`${callsignSpoken()}, frequency change approved.`;
+          $("feedback").textContent=`Tower stage complete. Monitor ${dest.radioName||dest.name} ATIS on ${atisFreq}, then contact ${airportFacility(dest,"tower")}.`;
         }else{
           replyVisual=`${app.config.aircraft}, readback correct.`;
           replySpoken=`${callsignSpoken()}, readback correct.`;
@@ -8474,7 +8474,7 @@ function evaluateTransmission(text){
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
       const s=grade(checks); $("score").textContent=s+"%";
       const wrongRunway=wrongRunwayMention(text,app.config.destRunway,destAirport());
-      const essential=checks.facility&&checks.callsign&&(veryShort||checks.atis)&&checks.position&&checks.inbound;
+      const essential=checks.facility&&checks.callsign&&checks.atis&&checks.position&&checks.inbound;
 
       if(wrongRunway){
         replyVisual=`${app.config.aircraft}, negative, Runway ${app.config.destRunway}.`;
