@@ -4601,8 +4601,7 @@ footer a:hover{text-decoration:underline;}
           <option value="intermediate">Intermediate</option>
           <option value="advanced">Advanced</option>
         </select>
-        <div id="trainingLevelDescription" class="training-level-description"></div>
-      </label>
+</label>
 
       <div class="setup-section-label">ROUTE</div>
       <label>Departure Airport
@@ -5325,7 +5324,7 @@ footer a:hover{text-decoration:underline;}
         <section class="card howto-reference">
           <div class="eyebrow">VFR WORKFLOW</div>
           <h3>Typical VFR Sequence</h3>
-          <p>Departure ATIS → Clearance / Flight Following → Ground → Tower → Departure → Enroute when applicable → Arrival ATIS → Arrival / Approach → Destination Tower → Destination Ground.</p>
+          <p>Departure ATIS → Clearance / Flight Following → Ground → Tower → Departure → Enroute (for VFR routes greater than 50 NM) → Arrival ATIS → Arrival / Approach → Destination Tower → Destination Ground.</p>
           <p><strong>Very short VFR routes (10 NM or less):</strong> the trainer uses a compact sequence:</p>
           <p><strong>Departure ATIS → Clearance → Ground → Departure Tower → Arrival ATIS → Destination Tower → Destination Ground</strong></p>
         </section>
@@ -7236,6 +7235,17 @@ function containsRunway(text,r=app.config.runway){
   );
   if(numericPattern.test(n)) return true;
 
+  /* Numeric digits separated by speech recognition spaces, e.g.
+     "2 6 Left" or "holding short 2 6 Left". For runways without a
+     side designator, require an explicit runway / hold-short context so
+     ordinary spaced digits in callsigns are not misread as a runway. */
+  const spacedDigits=[...digits].join("\\s+");
+  const spacedSide=side ? `\\s*(?:${side}|${sideWord})` : "";
+  const spacedNumericPattern=side
+    ? new RegExp(`(?:^|[^a-z0-9])${spacedDigits}${spacedSide}(?=$|[^a-z0-9])`,"i")
+    : new RegExp(`(?:runway|hold short|holding short)\\s+${spacedDigits}(?=$|[^a-z0-9])`,"i");
+  if(spacedNumericPattern.test(n)) return true;
+
   /* Spoken digit forms such as "two six right". */
   const spokenForms=[
     spokenDigits + (sideWord ? " "+sideWord : ""),
@@ -8288,9 +8298,11 @@ function evaluateTransmission(text){
       const s=grade(checks); $("score").textContent=s+"%";
       const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
       if(wrongRunway){
-        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}.`;
-        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}.`;
-        $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.runway}. Make the tower call again.`;
+        /* Never issue a takeoff clearance when the pilot reports the wrong runway.
+           This is especially important after Ground has issued a runway change. */
+        replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
+        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
+        $("feedback").textContent=`Runway mismatch: you reported Runway ${wrongRunway}, but the active assigned runway is ${app.config.runway}. Verify the runway and make the tower call again.`;
       }else if(s>=75){
         const changed=unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
@@ -8315,9 +8327,9 @@ function evaluateTransmission(text){
       const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(wrongRunway){
-        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway}, cleared for takeoff.`;
-        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, cleared for takeoff.`;
-        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.runway}. Read back the clearance again.`;
+        replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
+        replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
+        $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Assigned runway is ${app.config.runway}. Verify the runway before continuing.`;
       }else if(essential){
         const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
         if(veryShort){
@@ -9261,6 +9273,7 @@ syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom"
 syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
 
 
+/* V4.64 runway-change / tower runway mismatch protection */
 /* V4.38 IFR reuses mature VFR aviation parsers + dynamic training heading */
 updateSetupSummary();
 updateTrainingLevelDescription();
