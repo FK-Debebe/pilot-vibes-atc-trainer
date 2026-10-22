@@ -4696,7 +4696,7 @@ footer a:hover{text-decoration:underline;}
 .install-help-card p{margin:0 0 16px;line-height:1.5}
 
 
-/* V4.71 Keep FK COM 1 on one line at all radio-panel widths */
+/* V4.73 Keep FK COM 1 on one line at all radio-panel widths */
 #comPanel .com-label,
 #ifr-comPanel .com-label,
 #commPanel .com-label,
@@ -8283,6 +8283,23 @@ function missingItems(checks){
     .map(([key])=>CHECK_LABELS[key]||key);
 }
 
+
+function vfrMissingAtisReply(){
+  const code=app?.atisCode || app?.departureAtisCode || app?.arrivalAtisCode || "";
+  const cs=app?.config?.aircraft || "Aircraft";
+  return code
+    ? `${cs}, advise when you have information ${code}.`
+    : `${cs}, advise when you have the current ATIS.`;
+}
+
+function ifrMissingAtisReply(){
+  const code=IFR_APP?.atisCode || IFR_APP?.departureAtisCode || IFR_APP?.arrivalAtisCode || "";
+  const cs=ifrCallsignVisual ? ifrCallsignVisual() : "Aircraft";
+  return code
+    ? `${cs}, advise when you have information ${code}.`
+    : `${cs}, advise when you have the current ATIS.`;
+}
+
 function missingFeedback(checks){
   const missing=missingItems(checks);
   return missing.length ? ` Missing: ${missing.join(", ")}.` : "";
@@ -9141,6 +9158,16 @@ function evaluateTransmission(text){
     replySpoken=abbreviated.spoken;
   }
 
+  /* V4.73 ATIS-specific correction:
+     If ATIS is the missing required item, use realistic controller phraseology. */
+  if(checks && Object.prototype.hasOwnProperty.call(checks,"atis") && checks.atis===false){
+    const missingKeys=Object.entries(checks).filter(([k,v])=>v===false).map(([k])=>k);
+    if(missingKeys.length===1 && missingKeys[0]==="atis"){
+      replyVisual=vfrMissingAtisReply();
+      replySpoken=replyVisual;
+    }
+  }
+
   if(replyVisual){
     append("atc",stage.facility.toUpperCase(),replyVisual);
     rememberATC(replyVisual,replySpoken,stage.facility,currentVoiceRole());
@@ -9200,6 +9227,23 @@ function completeStage(){
   },1100);
 }
 
+
+function compactAtisText(text){
+  return String(text||"")
+    .replace(/\binformation\b/gi,"INFO")
+    .replace(/\bWind\s+(\d{3})\s+at\s+(\d+)/gi,"WND $1/$2")
+    .replace(/\bVisibility\s+(\d+(?:\.\d+)?)/gi,"VIS $1")
+    .replace(/\bSky clear\b/gi,"SKC")
+    .replace(/\bCeiling\s+([\d,]+)\s+broken\b/gi,"CIG $1 BKN")
+    .replace(/\bCeiling\s+([\d,]+)\s+overcast\b/gi,"CIG $1 OVC")
+    .replace(/\bTemperature\s+(-?\d+)/gi,"TMP $1")
+    .replace(/\bDew point\s+(-?\d+)/gi,"DP $1")
+    .replace(/\bAltimeter\s+(\d{2}\.\d{2})/gi,"ALT $1")
+    .replace(/\bRunway\s+([0-9]{1,2}[LRC]?)\s+in use\b/gi,"RWY $1 IN USE")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
 function monitorAtis(){
   const stage=STAGES[app.stageIndex];
   if(stage?.type!=="atis") return;
@@ -9230,7 +9274,7 @@ function monitorAtis(){
     spoken=`${dep.name} Airport information ${code}. Winned ${[...String(sc.depWindDir)].map(d=>DIGIT[d]).join(" ")} at ${[...String(sc.depWindSpeed)].map(d=>DIGIT[d]).join(" ")}. Visibility ${[...String(sc.depVisibility)].map(d=>DIGIT[d]).join(" ")}. Sky clear. Temperature ${[...String(sc.depTemp)].map(d=>DIGIT[d]).join(" ")}. Dew point ${[...String(sc.depDew)].map(d=>DIGIT[d]).join(" ")}. Altimeter ${frequencySpoken(sc.depAltimeter)}. Landing and departing runway ${runwaySpoken()}. Advise on initial contact you have ${code}.`;
   }
 
-  $("atisText").textContent=visual;
+  $("atisText").textContent=compactAtisText(visual);
   append("atc",label,visual);
   rememberATC(visual,spoken,label,"atis");
   speak(spoken,"atis");
@@ -10590,13 +10634,13 @@ function ifrMonitorAtis(){
   const code=dep?IFR_APP.config.atis:IFR_APP.config.arrivalAtis;
   const runway=dep?IFR_APP.config.runway:IFR_APP.config.destRunway;
   const airport=ifrAirport(dep?IFR_APP.config.departureAirport:IFR_APP.config.destinationAirport);
-  const visual=`${airport.radioName||airport.name} information ${code}. Wind 260 at 8. Visibility 10. Ceiling 4,500 broken. Runway ${runway} in use. Altimeter 30.02.`;
+  const visual=`${airport.radioName||airport.name} INFO ${code}. WND 260/8. VIS 10. CIG 4,500 BKN. RWY ${runway} IN USE. ALT 30.02.`;
   const atisSpeaker=`${airport.radioName||airport.name} ATIS`;
-  ifr$("atisText").textContent=visual;
+  ifr$("atisText").textContent=compactAtisText(visual);
 
   /* Transcribe every ATIS broadcast into the Radio Exchange panel,
      the same way the VFR trainer does. */
-  ifrAppend("atc",atisSpeaker,visual);
+  ifrAppend("atc",atisSpeaker,compactAtisText(visual));
 
   const atisSpoken=`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`;
   IFR_APP.lastATC={visual,spoken:atisSpoken,speaker:atisSpeaker};
