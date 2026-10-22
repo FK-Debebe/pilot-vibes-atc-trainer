@@ -4696,7 +4696,7 @@ footer a:hover{text-decoration:underline;}
 .install-help-card p{margin:0 0 16px;line-height:1.5}
 
 
-/* V4.73 Keep FK COM 1 on one line at all radio-panel widths */
+/* V4.74 Keep FK COM 1 on one line at all radio-panel widths */
 #comPanel .com-label,
 #ifr-comPanel .com-label,
 #commPanel .com-label,
@@ -8286,18 +8286,30 @@ function missingItems(checks){
 
 function vfrMissingAtisReply(){
   const code=app?.atisCode || app?.departureAtisCode || app?.arrivalAtisCode || "";
-  const cs=app?.config?.aircraft || "Aircraft";
-  return code
-    ? `${cs}, advise when you have information ${code}.`
-    : `${cs}, advise when you have the current ATIS.`;
+  const visualCallsign=app?.config?.aircraft || "Aircraft";
+  const spokenCallsign=(typeof callsignSpoken==="function") ? callsignSpoken() : visualCallsign;
+  return {
+    visual: code
+      ? `${visualCallsign}, advise when you have information ${code}.`
+      : `${visualCallsign}, advise when you have the current ATIS.`,
+    spoken: code
+      ? `${spokenCallsign}, advise when you have information ${code}.`
+      : `${spokenCallsign}, advise when you have the current ATIS.`
+  };
 }
 
 function ifrMissingAtisReply(){
   const code=IFR_APP?.atisCode || IFR_APP?.departureAtisCode || IFR_APP?.arrivalAtisCode || "";
-  const cs=ifrCallsignVisual ? ifrCallsignVisual() : "Aircraft";
-  return code
-    ? `${cs}, advise when you have information ${code}.`
-    : `${cs}, advise when you have the current ATIS.`;
+  const visualCallsign=(typeof ifrCallsignVisual==="function") ? ifrCallsignVisual() : "Aircraft";
+  const spokenCallsign=(typeof ifrCallsignSpoken==="function") ? ifrCallsignSpoken() : visualCallsign;
+  return {
+    visual: code
+      ? `${visualCallsign}, advise when you have information ${code}.`
+      : `${visualCallsign}, advise when you have the current ATIS.`,
+    spoken: code
+      ? `${spokenCallsign}, advise when you have information ${code}.`
+      : `${spokenCallsign}, advise when you have the current ATIS.`
+  };
 }
 
 function missingFeedback(checks){
@@ -9163,8 +9175,11 @@ function evaluateTransmission(text){
   if(checks && Object.prototype.hasOwnProperty.call(checks,"atis") && checks.atis===false){
     const missingKeys=Object.entries(checks).filter(([k,v])=>v===false).map(([k])=>k);
     if(missingKeys.length===1 && missingKeys[0]==="atis"){
-      replyVisual=vfrMissingAtisReply();
-      replySpoken=replyVisual;
+      {
+        const atisReply=vfrMissingAtisReply();
+        replyVisual=atisReply.visual;
+        replySpoken=atisReply.spoken;
+      }
     }
   }
 
