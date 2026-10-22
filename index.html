@@ -4695,6 +4695,30 @@ footer a:hover{text-decoration:underline;}
 .install-help-card h2{margin:5px 0 10px}
 .install-help-card p{margin:0 0 16px;line-height:1.5}
 
+
+/* V4.71 Keep FK COM 1 on one line at all radio-panel widths */
+#comPanel .com-label,
+#ifr-comPanel .com-label,
+#commPanel .com-label,
+#ifr-commPanel .com-label{
+  white-space:nowrap !important;
+  overflow:hidden;
+  text-overflow:clip;
+  font-size:clamp(10px,2.2vw,16px);
+  line-height:1.1;
+  min-width:0;
+  flex-shrink:1;
+}
+
+
+.fk-com-title{
+  white-space:nowrap !important;
+  display:inline-block;
+  max-width:100%;
+  font-size:clamp(10px,2.2vw,16px);
+  line-height:1.1;
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4940,7 +4964,7 @@ footer a:hover{text-decoration:underline;}
         <div class="com-header">
           <div class="com-brand-block">
             <div class="com-brand-row">
-              <div class="com-brand">FK COM 1</div>
+              <div class="com-brand fk-com-title">FK COM 1</div>
               <div id="radioReadyState" class="radio-ready-state not-ready">NOT READY</div>
             </div>
             <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
@@ -9158,7 +9182,7 @@ function completeStage(){
   const nextStage=STAGES[app.stageIndex+1];
   $("feedback").classList.add("stage-complete-alert");
   if(nextStage){
-    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Switch freq to ${nextStage.facility}.`;
+    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and switch freq to ${nextStage.facility}.`;
   }else{
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
@@ -9311,6 +9335,7 @@ function applyVFRSetup(){
   readSetup(true);
   updateApplicationStatus();
   showSetupSavedFeedback("VFR");
+  requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
 $("applySetupTop")?.addEventListener("click",(e)=>{
   e.preventDefault();
@@ -11225,6 +11250,7 @@ function ifrInit(){
     ifrReadSetup(true);
     ifrSaveLastSetup();
     showSetupSavedFeedback("IFR");
+    requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
   };
   ifr$("applySetupTop")?.addEventListener("click",(e)=>{
     e.preventDefault();
