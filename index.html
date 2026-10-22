@@ -98,6 +98,38 @@ h2{margin:4px 0 12px;color:var(--navy)}
   white-space:nowrap;
 }
 .feedback{background:#f7fafc;border:1px solid var(--line);border-radius:11px;padding:13px;line-height:1.45}
+/* V4.67 Stage-complete / next-action callout */
+.feedback.stage-complete-alert{
+  position:relative;
+  background:#fff8df;
+  border:2px solid #d59b18;
+  border-left:7px solid #d59b18;
+  border-radius:12px;
+  padding:30px 15px 15px;
+  color:#17324d;
+  font-size:15px;
+  font-weight:800;
+  line-height:1.45;
+  box-shadow:0 5px 16px rgba(59,72,90,.16);
+}
+.feedback.stage-complete-alert::before{
+  content:"NEXT ACTION";
+  position:absolute;
+  top:8px;
+  left:14px;
+  font-size:9px;
+  line-height:1;
+  letter-spacing:.12em;
+  font-weight:900;
+  color:#7a5200;
+}
+@media(max-width:700px){
+  .feedback.stage-complete-alert{
+    padding:28px 12px 13px;
+    font-size:14px;
+  }
+}
+
 .nav-row{display:flex;justify-content:space-between;gap:10px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
 .hidden{display:none!important}
 .small{font-size:11px;color:var(--muted)}
@@ -1571,6 +1603,90 @@ details.setup:not([open]) .setup-bottom-toggle{
   }
 }
 
+
+/* =========================================================
+   V4.68 PERSISTENT FLIGHT REPORT HISTORY
+   ========================================================= */
+.flight-report-history{
+  max-width:1320px;
+  margin:14px auto 0;
+}
+.flight-report-history-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding-bottom:10px;
+  border-bottom:1px solid var(--line);
+}
+.flight-report-history-head h2{
+  margin:3px 0 0;
+  color:#12395f;
+}
+.flight-report-history-list{
+  display:grid;
+  gap:8px;
+  margin-top:10px;
+}
+.flight-report-history-empty{
+  padding:16px;
+  border:1px dashed var(--line);
+  border-radius:9px;
+  color:var(--muted);
+  text-align:center;
+  background:#fafcfd;
+}
+.flight-report-history-item{
+  border:1px solid var(--line);
+  border-radius:10px;
+  overflow:hidden;
+  background:white;
+}
+.flight-report-history-item>summary{
+  list-style:none;
+  cursor:pointer;
+  display:grid;
+  grid-template-columns:minmax(150px,1.4fr) 70px 70px minmax(145px,1fr) 24px;
+  gap:8px;
+  align-items:center;
+  padding:11px 12px;
+  background:#f7fafc;
+  color:#183e5f;
+  font-size:11px;
+  font-weight:800;
+}
+.flight-report-history-item>summary::-webkit-details-marker{display:none}
+.flight-report-history-item>summary:hover{background:#eef5fa}
+.flight-report-history-route{font-size:12px}
+.flight-report-history-mode{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:999px;
+  padding:4px 7px;
+  background:#e8f2f9;
+  color:#155f91;
+  font-size:9px;
+}
+.flight-report-history-score{font-size:13px;color:#12395f}
+.flight-report-history-date{color:var(--muted);font-weight:700;text-align:right}
+.flight-report-history-caret{font-size:14px;text-align:right;transition:transform .15s ease}
+.flight-report-history-item[open] .flight-report-history-caret{transform:rotate(180deg)}
+.flight-report-history-body{padding:12px}
+.flight-report-history-body .report-summary{margin-top:0}
+.flight-report-history-body .report-action-row{display:none}
+@media(max-width:700px){
+  .flight-report-history-item>summary{
+    grid-template-columns:minmax(110px,1fr) 54px 54px 20px;
+    gap:5px;
+    padding:10px 8px;
+  }
+  .flight-report-history-date{
+    grid-column:1 / -1;
+    text-align:left;
+    font-size:9px;
+  }
+}
 
 /* =========================================================
    V3.20 COMPACT NAVIGATION ABOVE FK COM 1
@@ -4541,6 +4657,44 @@ footer a{color:inherit;text-decoration:none;}
 .app-footer a:hover,
 footer a:hover{text-decoration:underline;}
 
+
+/* V4.65 PWA install button */
+.install-app-button{
+  margin-left:auto;
+  min-height:36px;
+  padding:8px 14px;
+  border:1px solid rgba(255,255,255,.42);
+  border-radius:8px;
+  background:#ffffff;
+  color:#0b2e4f;
+  font:inherit;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.04em;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.install-app-button:hover{filter:brightness(.96)}
+.install-app-button:focus-visible{outline:2px solid #8bd0ff;outline-offset:2px}
+.install-app-button[hidden]{display:none !important}
+@media(max-width:700px){
+  .top-nav .side-nav-menu .install-app-button{
+    display:block;
+    width:calc(100% - 20px);
+    margin:8px 10px 2px;
+    min-height:44px;
+    text-align:center;
+    font-size:11px;
+  }
+}
+
+
+.install-help{position:fixed;inset:0;z-index:10000;background:rgba(5,24,38,.55);display:grid;place-items:center;padding:18px}
+.install-help[hidden]{display:none !important}
+.install-help-card{width:min(430px,100%);background:#fff;border:1px solid #cbd9e5;border-radius:14px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.24)}
+.install-help-card h2{margin:5px 0 10px}
+.install-help-card p{margin:0 0 16px;line-height:1.5}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4552,6 +4706,15 @@ footer a:hover{text-decoration:underline;}
     <span id="setupSavedToastText">Flight setup saved</span>
   </div>
 
+<div id="installHelp" class="install-help" hidden role="dialog" aria-modal="true" aria-labelledby="installHelpTitle">
+  <div class="install-help-card">
+    <div class="eyebrow">INSTALL APP</div>
+    <h2 id="installHelpTitle">Install FK ATC COM Trainer</h2>
+    <p id="installHelpText">Use your browser's install option to add the trainer to your device.</p>
+    <button id="installHelpClose" class="btn primary" type="button">CLOSE</button>
+  </div>
+</div>
+
 <div class="product-layout">
   <header id="sideNav" class="side-nav top-nav" aria-label="Trainer navigation">
     <div class="side-nav-brand">
@@ -4562,8 +4725,9 @@ footer a:hover{text-decoration:underline;}
       <button class="side-nav-item active" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">02</span><span>IFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
-      <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Report</span></button>
+      <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Reports</span></button>
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
+      <button id="installAppButton" class="install-app-button" type="button" aria-label="Install FK ATC COM Trainer app">INSTALL APP</button>
     </nav>
     <div class="side-nav-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a><br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
   </header>
@@ -5260,7 +5424,7 @@ footer a:hover{text-decoration:underline;}
 </section>
     </section>
 
-    <section id="page-report" class="app-page" data-title="END-OF-FLIGHT REPORT">
+    <section id="page-report" class="app-page" data-title="FLIGHT REPORTS">
 <section id="finalReport" class="card final-report hidden">
   <div class="report-head">
     <div>
@@ -5276,6 +5440,17 @@ footer a:hover{text-decoration:underline;}
     <button id="repeatSameRoute" class="btn primary" type="button">REPEAT SAME ROUTE</button>
     <button id="reportNewFlight" class="btn" type="button">NEW FLIGHT</button>
   </div>
+</section>
+
+<section id="flightReportHistory" class="card flight-report-history">
+  <div class="flight-report-history-head">
+    <div>
+      <div class="eyebrow">FLIGHT REPORTS</div>
+      <h2>Report History</h2>
+    </div>
+    <div id="flightReportHistoryCount" class="small">0 reports</div>
+  </div>
+  <div id="flightReportHistoryList" class="flight-report-history-list"></div>
 </section>
     </section>
 
@@ -5316,9 +5491,9 @@ footer a:hover{text-decoration:underline;}
 
           <article class="card howto-card"><div class="howto-step">14</div><h3>Training Levels</h3><p><strong>Beginner</strong> provides more prompting and fewer unexpected changes. <strong>Intermediate</strong> reduces prompting and introduces more variation. <strong>Advanced</strong> provides minimal prompting and the most unexpected changes.</p></article>
 
-          <article class="card howto-card"><div class="howto-step">15</div><h3>Unexpected ATC Changes</h3><p>Depending on training level and scenario, ATC may issue runway changes, amended altitudes, different departure directions, stand-by instructions, unable responses, extended downwind, or go-around instructions.</p><p>Respond to the new clearance rather than repeating the original plan.</p></article>
+          <article class="card howto-card"><div class="howto-step">15</div><h3>Unexpected ATC Changes</h3><p>Depending on training level and scenario, ATC may issue amended altitudes, different departure directions, stand-by instructions, unable responses, extended downwind, or go-around instructions.</p><p>Respond to the new clearance rather than repeating the original plan.</p></article>
 
-          <article class="card howto-card"><div class="howto-step">16</div><h3>Training Log and Flight Report</h3><p>Completed sessions are added to the <strong>Training Log</strong>. At the end of a flight, use the <strong>Flight Report</strong> to review the session, repeat the same route, or start another flight.</p></article>
+          <article class="card howto-card"><div class="howto-step">16</div><h3>Training Log and Flight Report</h3><p>Completed sessions are added to the <strong>Training Log</strong>. At the end of a flight, use <strong>Flight Reports</strong> to review the session, repeat the same route, or start another flight. Completed reports are saved as collapsible history rows on this device/browser.</p></article>
         </section>
 
         <section class="card howto-reference">
@@ -5356,7 +5531,7 @@ const APP_PAGE_TITLES={
   "trainer":"VFR RADIO TRAINER",
   "ifr-trainer":"IFR RADIO TRAINER",
   "training-log":"TRAINING LOG",
-  "report":"END-OF-FLIGHT REPORT",
+  "report":"FLIGHT REPORTS",
   "how-to":"HOW TO USE"
 };
 
@@ -5383,6 +5558,7 @@ function showAppPage(page,options={}){
   document.body.classList.toggle("ifr-page-active",page==="ifr-trainer");
   document.body.classList.remove("nav-open");
   updateApplicationStatus();
+  if(page==="report" && typeof renderFlightReportHistory==="function") renderFlightReportHistory();
   if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -5427,6 +5603,7 @@ function initSideNavigation(){
   document.addEventListener("keydown",event=>{
     if(event.key==="Escape") document.body.classList.remove("nav-open");
   });
+  renderFlightReportHistory();
   showAppPage("trainer",{noScroll:true});
 }
 
@@ -5601,7 +5778,7 @@ const AIRPORTS = {
     aliases:["palm springs"],
     coords:{lat:33.8297,lon:-116.5067},
     frequencies:{atis:"124.650",clearance:"128.350",ground:"121.900",tower:"119.700",departure:"126.700",approach:"126.700"},
-    facilities:{clearance:"Palm Springs Clearance",ground:"Palm Springs Ground",tower:"Palm Springs Tower",departure:"Palm Springs Departure",approach:"Palm Springs Approach"},
+    facilities:{clearance:"Palm Springs Clearance",ground:"Palm Springs Ground",tower:"Palm Springs Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"3000",
     runways:["31L","31R","13L","13R"], preferredRunway:"31L",
     taxiwaysByRunway:{"31L":"Alpha","31R":"Alpha","13L":"Alpha","13R":"Alpha"}, parkingTaxiway:"Alpha",
@@ -6227,7 +6404,8 @@ const app = {
     trafficAdvisories:0,
     stages:{},
     missing:{},
-    historyRecorded:false
+    historyRecorded:false,
+    reportStored:false
   }
 };
 
@@ -6774,6 +6952,7 @@ function renderStage(resetFrequency=true){
   $("atisText").textContent="";
   $("pilotText").value="";
   $("score").textContent="—";
+  $("feedback").classList.remove("stage-complete-alert");
   $("feedback").textContent="Tune the radio to begin.";
   $("next").disabled=true;
   $("next").classList.remove("next-complete-blink");
@@ -7704,7 +7883,10 @@ function alternateAltitude(current){
 function configureUnexpectedEvents(){
   const level=app.config.level||"beginner";
   const counts={beginner:2,intermediate:3,advanced:4};
-  const pool=Object.keys(UNEXPECTED_EVENT_LABELS);
+  /* Keep the departure runway consistent with the current ATIS.
+     Random Ground-issued runway changes are disabled; the selected/ATIS runway
+     remains authoritative for the departure sequence. */
+  const pool=Object.keys(UNEXPECTED_EVENT_LABELS).filter(key=>key!=="runwayChange");
 
   /* Shuffle once per training flight, then activate a level-based subset. */
   const shuffled=[...pool];
@@ -7926,6 +8108,100 @@ function recordCompletedTraining(){
   }
 }
 
+const FLIGHT_REPORT_HISTORY_KEY="fk-atc-com-trainer-flight-reports-v1";
+const FLIGHT_REPORT_HISTORY_LIMIT=50;
+
+function loadFlightReportHistory(){
+  try{
+    const raw=localStorage.getItem(FLIGHT_REPORT_HISTORY_KEY);
+    const parsed=raw?JSON.parse(raw):[];
+    return Array.isArray(parsed)?parsed:[];
+  }catch(e){
+    return [];
+  }
+}
+
+function saveFlightReportHistory(history){
+  try{
+    localStorage.setItem(FLIGHT_REPORT_HISTORY_KEY,JSON.stringify(history.slice(0,FLIGHT_REPORT_HISTORY_LIMIT)));
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function flightReportDate(iso){
+  try{
+    return new Date(iso).toLocaleString([],{
+      year:"numeric",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"
+    });
+  }catch(e){
+    return String(iso||"");
+  }
+}
+
+function escapeReportText(value){
+  return String(value??"")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/\"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
+
+function storeCurrentFlightReport({mode,route,level,overall}){
+  const session=mode==="ifr"?IFR_APP?.session:app?.session;
+  if(!session || session.reportStored) return;
+
+  const item={
+    id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+    completedAt:new Date().toISOString(),
+    mode:mode==="ifr"?"IFR":"VFR",
+    route:String(route||"Completed training"),
+    level:String(level||"beginner"),
+    overall:Number(overall)||0,
+    summaryHtml:$("reportSummary")?.innerHTML||"",
+    stagesHtml:$("reportStages")?.innerHTML||"",
+    recommendationsHtml:$("reportRecommendations")?.innerHTML||""
+  };
+
+  const history=loadFlightReportHistory();
+  history.unshift(item);
+  if(saveFlightReportHistory(history)) session.reportStored=true;
+  renderFlightReportHistory();
+}
+
+function renderFlightReportHistory(){
+  const holder=$("flightReportHistoryList");
+  const count=$("flightReportHistoryCount");
+  if(!holder) return;
+  const history=loadFlightReportHistory();
+  if(count) count.textContent=`${history.length} ${history.length===1?"report":"reports"}`;
+
+  if(!history.length){
+    holder.innerHTML='<div class="flight-report-history-empty">Completed VFR and IFR flight reports will appear here.</div>';
+    return;
+  }
+
+  holder.innerHTML=history.map(item=>`
+    <details class="flight-report-history-item">
+      <summary>
+        <span class="flight-report-history-route">${escapeReportText(item.route)}</span>
+        <span class="flight-report-history-mode">${escapeReportText(item.mode)}</span>
+        <span class="flight-report-history-score">${Number(item.overall)||0}%</span>
+        <span class="flight-report-history-date">${escapeReportText(flightReportDate(item.completedAt))}</span>
+        <span class="flight-report-history-caret">⌄</span>
+      </summary>
+      <div class="flight-report-history-body">
+        <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}</div>
+        <div class="report-summary">${item.summaryHtml||""}</div>
+        <div class="report-stages">${item.stagesHtml||""}</div>
+        <div class="report-recommendations">${item.recommendationsHtml||""}</div>
+      </div>
+    </details>
+  `).join("");
+}
+
 function resetSessionStats(){
   app.session={
     attempts:0,
@@ -7933,7 +8209,8 @@ function resetSessionStats(){
     unexpected:[],
     trafficAdvisories:0,
     stages:{},
-    missing:{}
+    missing:{},
+    reportStored:false
   };
   $("finalReport").classList.add("hidden");
   $("reportSummary").innerHTML="";
@@ -8109,6 +8386,12 @@ function renderFinalReport(){
     </div>
   `;
 
+  storeCurrentFlightReport({
+    mode:"vfr",
+    route:`${app.config.departureAirport} → ${app.config.destinationAirport}`,
+    level:app.config.level,
+    overall
+  });
   $("finalReport").classList.remove("hidden");
   showAppPage("report");
 }
@@ -8235,7 +8518,8 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
       }else{
-        const changed=unexpectedEnabled("runwayChange")&&!unexpectedTriggered("runwayChange")&&triggerRunwayChange();
+        /* Ground must use the runway carried from the current ATIS/setup. */
+        const changed=false;
         const holdShort=departureHoldShortRunway();
         const holdVisual=holdShort?`, hold short Runway ${holdShort}`:"";
         const holdSpoken=holdShort?`, hold short runway ${runwaySpoken(holdShort)}`:"";
@@ -8872,6 +9156,7 @@ function completeStage(){
 
   const stage=STAGES[app.stageIndex];
   const nextStage=STAGES[app.stageIndex+1];
+  $("feedback").classList.add("stage-complete-alert");
   if(nextStage){
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Switch freq to ${nextStage.facility}.`;
   }else{
@@ -8939,6 +9224,7 @@ function nextStage(){
     renderStage(true);
     window.scrollTo({top:0,behavior:"smooth"});
   }else{
+    $("feedback").classList.remove("stage-complete-alert");
     $("feedback").textContent="Training flight complete. Review your End-of-Flight Report below.";
     $("next").disabled=true;
     $("next").classList.add("hidden");
@@ -9194,6 +9480,76 @@ renderStudyHistory();
 /* =========================================================
    PWA SERVICE WORKER
    ========================================================= */
+/* V4.65 PWA install workflow */
+let deferredInstallPrompt=null;
+
+function isStandaloneApp(){
+  return window.matchMedia?.("(display-mode: standalone)")?.matches ||
+         window.navigator.standalone===true;
+}
+
+function isIOSDevice(){
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+         (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+}
+
+function updateInstallAppButton(){
+  const btn=document.getElementById("installAppButton");
+  if(!btn) return;
+  btn.hidden=isStandaloneApp();
+}
+
+function showInstallHelp(message){
+  const modal=document.getElementById("installHelp");
+  const text=document.getElementById("installHelpText");
+  if(text) text.textContent=message;
+  if(modal) modal.hidden=false;
+}
+
+window.addEventListener("beforeinstallprompt",event=>{
+  event.preventDefault();
+  deferredInstallPrompt=event;
+  updateInstallAppButton();
+});
+
+window.addEventListener("appinstalled",()=>{
+  deferredInstallPrompt=null;
+  updateInstallAppButton();
+});
+
+document.getElementById("installAppButton")?.addEventListener("click",async()=>{
+  if(isStandaloneApp()){
+    updateInstallAppButton();
+    return;
+  }
+
+  if(deferredInstallPrompt){
+    deferredInstallPrompt.prompt();
+    try{ await deferredInstallPrompt.userChoice; }catch(e){}
+    deferredInstallPrompt=null;
+    updateInstallAppButton();
+    document.body.classList.remove("nav-open");
+    return;
+  }
+
+  if(isIOSDevice()){
+    showInstallHelp("On iPhone or iPad in Safari, tap Share, then choose Add to Home Screen.");
+  }else{
+    showInstallHelp("Open your browser menu and choose Install app, Install FK ATC COM Trainer, or Add to Home Screen.");
+  }
+});
+
+document.getElementById("installHelpClose")?.addEventListener("click",()=>{
+  const modal=document.getElementById("installHelp");
+  if(modal) modal.hidden=true;
+});
+
+document.getElementById("installHelp")?.addEventListener("click",event=>{
+  if(event.target===event.currentTarget) event.currentTarget.hidden=true;
+});
+
+updateInstallAppButton();
+
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
     navigator.serviceWorker.register("./service-worker.js").catch(err=>{
@@ -9273,7 +9629,7 @@ syncSetupToggleLabels(vfrSetupDetails,"vfrSetupToggleTop","vfrSetupToggleBottom"
 syncSetupToggleLabels(ifrSetupDetails,"ifrSetupToggleTop","ifrSetupToggleBottom","ifr-applySetupTop");
 
 
-/* V4.64 runway-change / tower runway mismatch protection */
+/* V4.65 runway-change / tower runway mismatch protection */
 /* V4.38 IFR reuses mature VFR aviation parsers + dynamic training heading */
 updateSetupSummary();
 updateTrainingLevelDescription();
@@ -9327,7 +9683,8 @@ const IFR_APP={
     tuningErrors:0,
     stages:{},
     missing:{},
-    historyRecorded:false
+    historyRecorded:false,
+    reportStored:false
   }
 };
 
@@ -9657,7 +10014,7 @@ function ifrReadSetup(generateCodes=true){
   IFR_APP.squawk=ifrRandomSquawk();
   IFR_APP.stageIndex=0;
   IFR_APP.stageComplete=false;
-  IFR_APP.session={attempts:0,tuningErrors:0,stages:{},missing:{},historyRecorded:false};
+  IFR_APP.session={attempts:0,tuningErrors:0,stages:{},missing:{},historyRecorded:false,reportStored:false};
   IFR_STAGES=buildIFRStages();
   ifr$("next").classList.remove("hidden");
   ifr$("reset").classList.add("hidden");
@@ -9805,6 +10162,7 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("stageState").className="small";
   ifr$("instruction").textContent=ifrInstructionFor(stage);
   ifr$("score").textContent="—";
+  ifr$("feedback").classList.remove("stage-complete-alert");
   ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
   ifr$("next").disabled=true;
   ifr$("next").classList.remove("hidden");
@@ -10165,12 +10523,19 @@ function ifrRenderFinalReport(){
     </div>
   `;
 
+  storeCurrentFlightReport({
+    mode:"ifr",
+    route:`${IFR_APP.config.departureAirport} → ${IFR_APP.config.destinationAirport}`,
+    level:IFR_APP.config.level,
+    overall
+  });
   $("finalReport").classList.remove("hidden");
   showAppPage("report");
 }
 
 function ifrCompleteStage(score=100){
   IFR_APP.stageComplete=true;
+  ifr$("feedback")?.classList.add("stage-complete-alert");
   ifr$("score").textContent=`${score}%`;
   ifr$("stageState").textContent="Completed";
   ifr$("stageState").className="small good";
@@ -10531,6 +10896,7 @@ function ifrNextStage(){
     return;
   }
 
+  ifr$("feedback").classList.remove("stage-complete-alert");
   ifr$("feedback").textContent="IFR training flight complete. Review the End-of-Flight Report.";
   ifr$("next").disabled=true;
   ifr$("next").classList.add("hidden");
