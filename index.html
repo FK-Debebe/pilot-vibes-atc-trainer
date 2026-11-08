@@ -4875,6 +4875,18 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 .v505-ptt-heard{margin-top:8px;padding:8px;border-radius:7px;background:#f4f7f9;color:#49667a;font-size:9px}
 @media(max-width:650px){.v505-ptt-steps{grid-template-columns:1fr 1fr}}
 
+
+.setup-collapsed-label{display:none}
+.setup-actions-collapsed .setup-collapsed-label{
+  display:block;
+  align-self:center;
+  justify-self:end;
+  margin:0;
+  text-transform:none;
+}
+.scorebar:not(:has(> .feedback)){display:none!important}
+.stage-heading + div:not(:empty) > .stage-complete-alert{margin-top:8px}
+.stage-heading + div:not(:empty) + .nav-row{margin-top:6px;padding-top:0;border-top:0}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4903,8 +4915,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     </div>
     <nav class="side-nav-menu">
       <button class="side-nav-item" data-page="home" type="button"><span class="side-nav-number">00</span><span>Home</span></button>
-      <button class="side-nav-item" data-page="xplane" type="button"><span class="side-nav-number">XP</span><span>X-Plane Mode</span></button>
-      <button class="side-nav-item" data-page="xp-diagnostics" type="button"><span class="side-nav-number">DX</span><span>XP Diagnostics</span></button>
       <button class="side-nav-item" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">02</span><span>IFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
@@ -4924,15 +4934,14 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
 
     <section id="page-home" class="app-page" data-title="HOME">
-      <div class="v492-hero"><div class="eyebrow">FK ATC COM TRAINER</div><h2>Choose your training experience</h2><p>Use X-Plane as the cockpit interface, or use the complete standalone trainer without a simulator.</p></div>
+      <div class="v492-hero"><div class="eyebrow">FK ATC COM TRAINER</div><h2>Practice VFR and IFR radio communication</h2><p>Practice ATC communications directly in your browser.</p></div>
       <section class="v492-card" style="margin-top:16px">
         <div class="eyebrow">ABOUT FK ATC</div>
         <h3 style="margin:5px 0 8px;color:#173e5c">Practice realistic ATC communication before and during your flights</h3>
-        <p style="margin:0;color:#647d8f;font-size:11px;line-height:1.65">FK ATC COM Trainer is an interactive VFR and IFR radio communication trainer designed to help pilots and student pilots build confidence with real-world ATC phraseology, frequency changes, readbacks, position reports, and common flight scenarios. Use it as a standalone trainer, or connect it to X-Plane for a more immersive cockpit-based experience using your simulator radios and aircraft PTT.</p>
+        <p style="margin:0;color:#647d8f;font-size:11px;line-height:1.65">FK ATC COM Trainer is an interactive VFR and IFR radio communication trainer designed to help pilots and student pilots build confidence with real-world ATC phraseology, frequency changes, readbacks, position reports, and common flight scenarios.</p>
       </section>
       <div class="v492-choice-grid">
-        <article class="v492-choice primary"><div class="eyebrow">SIMULATOR MODE</div><h3>FK ATC + X-Plane</h3><p>X-Plane controls COM tuning and aircraft PTT while FK ATC handles the ATC communication exercise.</p><div class="v492-list"><div>Live COM1 and transponder integration</div><div>Aircraft PTT transmission</div><div>Automatic ATIS on the correct frequency</div><div>Position and flight-state awareness</div></div><button id="v492OpenXP" class="btn primary" type="button">OPEN X-PLANE MODE →</button></article>
-        <article class="v492-choice"><div class="eyebrow">STANDALONE MODE</div><h3>FK ATC without X-Plane</h3><p>Use the original VFR/IFR trainer with FK COM, Monitor ATIS and Tap To Talk.</p><div class="v492-list"><div>No simulator required</div><div>Full VFR and IFR setup</div><div>Built-in FK COM radio</div><div>Training Log and Flight Reports</div></div><button id="v492OpenStandalone" class="btn" type="button">OPEN STANDALONE TRAINER →</button></article>
+        <article class="v492-choice"><div class="eyebrow">STANDALONE MODE</div><h3>FK ATC Standalone Trainer</h3><p>Use the VFR and IFR trainer with FK COM, Monitor ATIS and Tap To Talk.</p><div class="v492-list"><div>No simulator required</div><div>Full VFR and IFR setup</div><div>Built-in FK COM radio</div><div>Training Log and Flight Reports</div></div><button id="v492OpenStandalone" class="btn" type="button">OPEN STANDALONE TRAINER →</button></article>
       </div>
     </section>
 
@@ -5092,6 +5101,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <aside class="trainer-setup-column" aria-label="Flight Setup">
   <div class="setup-top-actions persistent-setup-actions vfr-setup-top-actions">
     <button id="applySetupTop" type="button" class="btn primary setup-top-apply">APPLY SETUP</button>
+    <span class="eyebrow setup-collapsed-label">Flight Setup</span>
     <button id="vfrSetupToggleTop" type="button" class="setup-bottom-toggle setup-top-toggle" onclick="toggleVFRSetupById()">Tap To Collapse ▲</button>
   </div>
 <details id="vfrFlightSetupDetails" class="card setup" open>
@@ -5272,6 +5282,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div id="stageState" class="small stage-bottom-right">Not completed</div>
     </div>
 
+    <div id="nextActionSlot"></div>
     <div id="navRow" class="nav-row">
       <button id="previous" class="btn">← PREVIOUS</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
@@ -5382,7 +5393,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
     </div>
 
-    <div class="scorebar">
+    <div id="feedbackSlot" class="scorebar">
       <div id="feedback" class="feedback">Tune the radio to begin.</div>
     </div>
 
@@ -5414,6 +5425,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <aside class="trainer-setup-column" aria-label="IFR Flight Setup">
   <div class="setup-top-actions persistent-setup-actions ifr-setup-top-actions">
     <button id="ifr-applySetupTop" type="button" class="btn primary setup-top-apply">APPLY SETUP</button>
+    <span class="eyebrow setup-collapsed-label">Flight Setup</span>
     <button id="ifrSetupToggleTop" type="button" class="setup-bottom-toggle setup-top-toggle" onclick="toggleIFRSetupById()">Tap To Collapse ▲</button>
   </div>
 <details id="ifrFlightSetupDetails" class="card setup" open>
@@ -5624,6 +5636,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div id="ifr-stageState" class="small stage-bottom-right">Not completed</div>
     </div>
 
+    <div id="ifr-nextActionSlot"></div>
     <div id="ifr-navRow" class="nav-row">
       <button id="ifr-previous" class="btn">← PREVIOUS</button>
       <button id="ifr-next" class="btn primary" disabled>NEXT →</button>
@@ -5734,7 +5747,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
     </div>
 
-    <div class="scorebar">
+    <div id="ifr-feedbackSlot" class="scorebar">
       <div id="ifr-feedback" class="feedback">Tune the radio to begin.</div>
     </div>
 
@@ -5823,7 +5836,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
           <article class="card howto-card"><div class="howto-step">06</div><h3>Monitor ATIS</h3><p>During an ATIS stage, tune the correct frequency and select <strong>MONITOR ATIS</strong>. Listen for the information code, runway, wind, ceiling, visibility, and altimeter.</p><p>The trainer carries the information code into later radio calls where appropriate.</p></article>
 
-          <article class="card howto-card"><div class="howto-step">07</div><h3>Use Tap To Talk / X-Plane PTT</h3><p>Select <strong>TAP TO TALK</strong> once to start listening. Speak your complete transmission. Select it a second time to <strong>end and send</strong>.</p><p>The trainer evaluates the speech only after you end the transmission.</p></article>
+          <article class="card howto-card"><div class="howto-step">07</div><h3>Use Tap To Talk</h3><p>Select <strong>TAP TO TALK</strong> once to start listening. Speak your complete transmission. Select it a second time to <strong>end and send</strong>.</p><p>The trainer evaluates the speech only after you end the transmission.</p></article>
 
           <article class="card howto-card"><div class="howto-step">08</div><h3>Allow Microphone Access</h3><p>The first time you use Tap To Talk, your browser may request microphone permission. Allow access for the trainer website.</p><p>For reliable microphone operation, use <strong>HTTPS</strong> or <strong>localhost</strong>. Some embedded website frames may restrict microphone access.</p></article>
 
@@ -5934,6 +5947,7 @@ function updateTrainingModeHeading(){
 }
 
 function showAppPage(page,options={}){
+  if(page==="xplane" || page==="xp-diagnostics") return;
   const target=document.getElementById(`page-${page}`);
   if(!target) return;
   if(page==="trainer") activeTrainingMode="vfr";
@@ -7350,7 +7364,7 @@ function renderStage(resetFrequency=true){
   $("atisText").textContent="";
   $("pilotText").value="";
   $("score").textContent="—";
-  $("feedback").classList.remove("stage-complete-alert");
+  positionStageFeedback("",false);
   $("feedback").textContent="Tune the radio to begin.";
   $("next").disabled=true;
   $("next").classList.remove("next-complete-blink");
@@ -9777,7 +9791,7 @@ function completeStage(){
 
   const stage=STAGES[app.stageIndex];
   const nextStage=STAGES[app.stageIndex+1];
-  $("feedback").classList.add("stage-complete-alert");
+  positionStageFeedback("",true);
   if(nextStage){
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and switch freq to ${nextStage.facility}.`;
   }else{
@@ -9862,7 +9876,7 @@ function nextStage(){
     renderStage(true);
     window.scrollTo({top:0,behavior:"smooth"});
   }else{
-    $("feedback").classList.remove("stage-complete-alert");
+    positionStageFeedback("",false);
     $("feedback").textContent="Training flight complete. Review your End-of-Flight Report below.";
     $("next").disabled=true;
     $("next").classList.add("hidden");
@@ -10230,6 +10244,13 @@ function collapseSetupAndTop(button){
   });
 }
 
+function positionStageFeedback(prefix, completed){
+  const feedback=document.getElementById(prefix+"feedback");
+  feedback.classList.toggle("stage-complete-alert",completed);
+  const slot=document.getElementById(prefix+(completed ? "nextActionSlot" : "feedbackSlot"));
+  if(feedback.parentElement!==slot) slot.appendChild(feedback);
+}
+
 function syncSetupToggleLabels(details, topId, bottomId, applyTopId){
   if(!details) return;
   const isOpen=details.open;
@@ -10241,7 +10262,7 @@ function syncSetupToggleLabels(details, topId, bottomId, applyTopId){
   if(bottom) bottom.textContent=text;
 
   /* Apply Setup is useful only while the setup form is visible.
-     When collapsed, keep only Tap to Expand visible. */
+     When collapsed, show the Flight Setup label beside Tap to Expand. */
   if(applyTop) applyTop.hidden=!isOpen;
   const actionRow=top?.closest(".persistent-setup-actions");
   if(actionRow) actionRow.classList.toggle("setup-actions-collapsed",!isOpen);
@@ -10829,7 +10850,7 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("stageState").className="small";
   ifr$("instruction").textContent=ifrInstructionFor(stage);
   ifr$("score").textContent="—";
-  ifr$("feedback").classList.remove("stage-complete-alert");
+  positionStageFeedback("ifr-",false);
   ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
   ifr$("next").disabled=true;
   ifr$("next").classList.remove("hidden");
@@ -11201,7 +11222,7 @@ function ifrRenderFinalReport(){
 
 function ifrCompleteStage(score=100){
   IFR_APP.stageComplete=true;
-  ifr$("feedback")?.classList.add("stage-complete-alert");
+  positionStageFeedback("ifr-",true);
   ifr$("score").textContent=`${score}%`;
   ifr$("stageState").textContent="Completed";
   ifr$("stageState").className="small good";
@@ -11563,7 +11584,7 @@ function ifrNextStage(){
     return;
   }
 
-  ifr$("feedback").classList.remove("stage-complete-alert");
+  positionStageFeedback("ifr-",false);
   ifr$("feedback").textContent="IFR training flight complete. Review the End-of-Flight Report.";
   ifr$("next").disabled=true;
   ifr$("next").classList.add("hidden");
@@ -13568,44 +13589,9 @@ function v492Refresh(){
   put("v492Feedback",g("feedback")?.textContent||"Tune the correct frequency in X-Plane.");if(v492("v492Transcript"))v492("v492Transcript").innerHTML=g("transcript")?.innerHTML?.trim()||'<div class="muted">Radio exchange will appear here.</div>';
   if(v492("v492Connect"))v492("v492Connect").disabled=!!XP_STATE?.connected;if(v492("v492Disconnect"))v492("v492Disconnect").disabled=!XP_STATE?.connected;
 }
-function v492Init(){
-  try{XP_STATE.micApprovedPreviously=localStorage.getItem("fk-atc-microphone-approved-v1")==="1";}catch(_){}
-  xpGetMicrophonePermissionState?.();
-  /* Reparent only after all original V4.87 startup code has completed. */
-  const mount=v492("v492XpPanelMount"),panel=v492("xpPanel");if(mount&&panel)mount.appendChild(panel);
-  v492("v492Departure").value="KLGB";v492("v492Destination").value="KCRQ";v492SetXpMode("vfr");
-  v492("v492OpenXP")?.addEventListener("click",()=>{v492SetUiMode("xplane");showAppPage("xplane");v492SetXpMode("vfr");});
-  v492("v492OpenStandalone")?.addEventListener("click",()=>{v492SetUiMode("standalone");showAppPage("trainer");});
-  v492("v492ModeVFR")?.addEventListener("click",()=>v492SetXpMode("vfr"));v492("v492ModeIFR")?.addEventListener("click",()=>v492SetXpMode("ifr"));v492("v492Apply")?.addEventListener("click",v492Apply);v492("v492Connect")?.addEventListener("click",async()=>{await xpConnect();v492Refresh();});v492("v492Disconnect")?.addEventListener("click",async()=>{await xpDisconnect();v492Refresh();});
-  v492("v492Departure")?.addEventListener("change",v492SyncAdvanced);v492("v492Destination")?.addEventListener("change",v492SyncAdvanced);
-  v492("v505StartTest")?.addEventListener("click",xpStartPttTest);
-  v492("v505ResetTest")?.addEventListener("click",xpResetPttTest);
-  xpPttTestRefresh();
-  const optionBindings=[
-    ["v500OptAutoSquawk","autoSquawk"],["v500OptAutoHandoff","autoHandoff"],
-    ["v500OptDelay","realisticDelay"],["v500OptTraffic","backgroundTraffic"],
-    ["v500OptCongestion","congestion"]
-  ];
-  optionBindings.forEach(([id,key])=>{
-    const el=v492(id);if(!el)return;el.checked=!!XP_TRAINING_OPTIONS[key];
-    el.addEventListener("change",()=>{XP_TRAINING_OPTIONS[key]=el.checked;if(key==="backgroundTraffic")xpScheduleTraffic();});
-  });
-  v492("v500RunDiagnostics")?.addEventListener("click",xpRunDiagnostics);
-  v492("v500OpenXpMode")?.addEventListener("click",()=>showAppPage("xplane"));
-
-  document.querySelectorAll('.side-nav-item').forEach(btn=>btn.addEventListener('click',()=>{const page=btn.dataset.page;if(page==='xplane'||page==='xp-diagnostics')v492SetUiMode('xplane');else if(page==='trainer'||page==='ifr-trainer'||page==='home')v492SetUiMode(page==='home'?'home':'standalone');}));
-  v492SetUiMode("home");showAppPage("home",{noScroll:true});setInterval(()=>{if(v492("page-xplane")?.classList.contains("active"))v492Refresh();},650);
-}
 document.addEventListener("DOMContentLoaded",()=>{
-  v492Init();
-  document.getElementById("xpConnectBtn")?.addEventListener("click",xpConnect);
-  document.getElementById("xpDisconnectBtn")?.addEventListener("click",xpDisconnect);
-
-  document.getElementById("xpLoadStandbyBtn")?.addEventListener("click",xpLoadTargetToStandby);
-  document.getElementById("xpSetSquawkBtn")?.addEventListener("click",xpSetAssignedSquawk);
-  document.getElementById("xpLoadTargetSquawkBtn")?.addEventListener("click",xpLoadTargetSquawk);
-  document.getElementById("xpSwapComBtn")?.addEventListener("click",xpSwapCom1);
-  document.getElementById("xpAutoStageBtn")?.addEventListener("click",xpToggleAutoStage);
+  $("v492OpenStandalone").addEventListener("click",()=>showAppPage("trainer"));
+  showAppPage("home",{noScroll:true});
 });
 
 
