@@ -4914,7 +4914,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div id="sideNavTrainingMode" class="side-nav-subtitle">VFR RADIO COMMUNICATION TRAINER</div>
     </div>
     <nav class="side-nav-menu">
-      <button class="side-nav-item" data-page="home" type="button"><span class="side-nav-number">00</span><span>Home</span></button>
       <button class="side-nav-item" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">02</span><span>IFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
@@ -4932,18 +4931,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
-
-    <section id="page-home" class="app-page" data-title="HOME">
-      <div class="v492-hero"><div class="eyebrow">FK ATC COM TRAINER</div><h2>Practice VFR and IFR radio communication</h2><p>Practice ATC communications directly in your browser.</p></div>
-      <section class="v492-card" style="margin-top:16px">
-        <div class="eyebrow">ABOUT FK ATC</div>
-        <h3 style="margin:5px 0 8px;color:#173e5c">Practice realistic ATC communication before and during your flights</h3>
-        <p style="margin:0;color:#647d8f;font-size:11px;line-height:1.65">FK ATC COM Trainer is an interactive VFR and IFR radio communication trainer designed to help pilots and student pilots build confidence with real-world ATC phraseology, frequency changes, readbacks, position reports, and common flight scenarios.</p>
-      </section>
-      <div class="v492-choice-grid">
-        <article class="v492-choice"><div class="eyebrow">STANDALONE MODE</div><h3>FK ATC Standalone Trainer</h3><p>Use the VFR and IFR trainer with FK COM, Monitor ATIS and Tap To Talk.</p><div class="v492-list"><div>No simulator required</div><div>Full VFR and IFR setup</div><div>Built-in FK COM radio</div><div>Training Log and Flight Reports</div></div><button id="v492OpenStandalone" class="btn" type="button">OPEN STANDALONE TRAINER →</button></article>
-      </div>
-    </section>
 
     <section id="page-xplane" class="app-page" data-title="X-PLANE MODE">
       <div class="v492-xp-head"><div><div class="eyebrow">CONNECTED SIMULATOR TRAINING</div><h2>FK ATC + X-Plane</h2><p>Use the aircraft radio and PTT; FK ATC handles ATC communication and feedback.</p></div><div class="v492-mode-switch"><button id="v492ModeVFR" class="active" type="button">VFR</button><button id="v492ModeIFR" type="button">IFR</button></div></div>
@@ -5235,6 +5222,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           </select>
         </label>
       </div>
+
+      <label>Arrival Parking
+        <select id="arrivalParking">
+          <option value="">Airport Default</option>
+          <option value="ga">General Aviation (GA) Parking</option>
+        </select>
+      </label>
 
       <label>Departure Direction
         <select id="direction">
@@ -5600,7 +5594,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <option>25</option>
           </select>
         </label>
-
         <label>Approach
           <select id="ifr-approachType">
             <option value="RNAV (GPS)">RNAV (GPS)</option>
@@ -5610,6 +5603,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           </select>
         </label>
       </div>
+
+      <label>Arrival Parking
+        <select id="ifr-arrivalParking">
+          <option value="">Airport Default</option>
+          <option value="ga">General Aviation (GA) Parking</option>
+        </select>
+      </label>
 
     </div>
 
@@ -5918,7 +5918,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
 <script>
 /* V4.92 UI state is declared before any trainer initialization. */
-var FK_UI_MODE="home";
+var FK_UI_MODE="standalone";
 var FK_XP_MODE="vfr";
 
 "use strict";
@@ -5926,7 +5926,6 @@ var FK_XP_MODE="vfr";
 const $ = id => document.getElementById(id);
 
 const APP_PAGE_TITLES={
-  "home":"HOME",
   "xplane":"X-PLANE MODE",
   "xp-diagnostics":"XP DIAGNOSTICS",
   "trainer":"VFR RADIO TRAINER",
@@ -6405,6 +6404,8 @@ function containsAircraftType(text){
   });
 }
 
+const GA_PARKING_OPTION="General Aviation (GA) Parking";
+
 function containsLocationAlias(text,configuredLocation){
   const n=norm(text)
     .replace(/[-_/]/g," ")
@@ -6416,6 +6417,9 @@ function containsLocationAlias(text,configuredLocation){
     .replace(/\s+/g," ")
     .trim();
 
+  if(configuredLocation===GA_PARKING_OPTION){
+    return /\b(?:general aviation(?: \(ga\))?|g\s*a)\s+parking\b/.test(n);
+  }
   if(location && n.includes(location)) return true;
 
   /* Common aviation position aliases. */
@@ -6459,7 +6463,7 @@ function clearanceAltitudeLimit(){
 }
 
 function clearanceAltitudeDisplay(){
-  return `${Number(clearanceAltitudeLimit()).toLocaleString("en-US")} ft`;
+  return Number(clearanceAltitudeLimit()).toLocaleString("en-US");
 }
 
 function clearanceAltitudeSpoken(){
@@ -6617,7 +6621,7 @@ function updateDepartureChoices(preserve=true){
   const oldLoc=preserve ? $("location").value : "";
   const runwayChoice=(preserve && ap.runways.includes(oldRunway)) ? oldRunway : (ap.preferredRunway || ap.runways[0]);
   setOptions("runway",ap.runways,runwayChoice);
-  setOptions("location",ap.locations,oldLoc);
+  setOptions("location",[...ap.locations,GA_PARKING_OPTION],oldLoc);
   updateRouteHeading();
 }
 
@@ -6755,6 +6759,16 @@ function radioPrefixForType(type){
 function updateOtherAircraftTypeVisibility(){
   const isOther=$("aircraftType")?.value==="Other";
   $("otherAircraftTypeLabel")?.classList.toggle("hidden",!isOther);
+}
+
+function normalizeSetupCallsign(value){
+  const text=String(value||"").trim();
+  const registration=aviationCompact(text).toUpperCase();
+  // Accept a US registration entered with ICAO phonetics, such as November 724 Sierra Papa.
+  if(/^N[1-9][0-9]{0,4}[A-HJ-NP-Z]{0,2}$/.test(registration) && registration.length<=6){
+    return registration;
+  }
+  return text.replace(/\s+/g,"").toUpperCase() || "724SP";
 }
 
 function buildAircraftCallsign(type,callsign){
@@ -7140,6 +7154,7 @@ function saveLastSetup(){
       otherAircraftType:$("otherAircraftType")?.value,
       callsign:$("callsign")?.value,
       location:$("location")?.value,
+      arrivalParking:$("arrivalParking")?.value,
       runway:$("runway")?.value,
       destRunway:$("destRunway")?.value,
       direction:$("direction")?.value,
@@ -7190,6 +7205,7 @@ function loadLastSetup(){
     }else if(saved.aircraft && $("callsign")){
       $("callsign").value=String(saved.aircraft).trim().replace(/^[A-Za-z]+\s+/,"") || "724SP";
     }
+    $("arrivalParking").value=saved.arrivalParking==="ga"?"ga":"";
     if(saved.location && [...$("location").options].some(o=>o.value===saved.location)){
       $("location").value=saved.location;
     }
@@ -7238,9 +7254,10 @@ function readSetup(generateCodes=true){
     departureAirport:depCode,
     destinationAirport:destCode,
     aircraftType:selectedAircraftType(),
-    callsign:($("callsign").value.trim()||"724SP").replace(/\s+/g,"").toUpperCase(),
+    callsign:normalizeSetupCallsign($("callsign").value),
     aircraft:"",
     location:$("location").value,
+    arrivalParking:$("arrivalParking").value,
     atis:app.config.atis || randomAtisCode(),
     arrivalAtis:app.config.arrivalAtis || randomAtisCode(),
     runway:$("runway").value,
@@ -7286,7 +7303,7 @@ function instructionFor(stage){
     destTower:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
       ? `After monitoring ${dest.radioName||dest.name} ATIS, call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`
       : `Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
-    destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to parking.`
+    destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to ${c.arrivalParking==="ga"?"general aviation parking":"parking"}.`
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
@@ -8072,6 +8089,7 @@ function fkNormalizeRecognition(text){
   /* Airport / facility names commonly distorted by browser ASR. */
   const placeRepairs=[
     [/\bbracket\s+field\b/gi,"Brackett Field"],
+    [/\b(?:to|two)\s+bracket\b/gi,"to Brackett"],
     [/\bbracketfield\b/gi,"Brackett Field"],
     [/\blong\s+beach\s+flying\s+(?:club|clap|cloud)\b/gi,"Long Beach Flying Club"],
     [/\bmac\s*clellan\s+palomar\b/gi,"McClellan Palomar"],
@@ -8290,6 +8308,7 @@ function destinationArrivalTaxiRoute(){
 }
 
 function destinationParkingName(){
+  if(app.config.arrivalParking==="ga") return "general aviation parking";
   const route=destinationArrivalTaxiRoute();
   return route?.parking || destAirport().defaultArrivalParking || "parking";
 }
@@ -9107,7 +9126,9 @@ function evaluateTransmission(text){
       checks={
         facility:n.includes("ground")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
-        location:n.includes(app.config.location.toLowerCase()),
+        location:app.config.location===GA_PARKING_OPTION
+          ? containsStartingLocation(text)
+          : n.includes(app.config.location.toLowerCase()),
         atis:n.includes(app.config.atis.toLowerCase()),
         request:n.includes("taxi")||n.includes("departure")
       };
@@ -9188,7 +9209,7 @@ function evaluateTransmission(text){
         replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Runway mismatch: you reported Runway ${wrongRunway}, but the active assigned runway is ${app.config.runway}. Verify the runway and make the tower call again.`;
-      }else if(checks.facility&&checks.callsign&&checks.atis&&checks.destination&&checks.request){
+      }else if(checks.facility&&checks.callsign&&checks.runway&&checks.ready){
         const changed=unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
         replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
@@ -9798,9 +9819,8 @@ function completeStage(){
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
 
-  /* On completion, return the pilot to the top of the page, flash NEXT twice,
-     and only then make the button available. */
-  window.scrollTo({top:0,left:0,behavior:"smooth"});
+  scrollToCompletedStageRadio("");
+  /* Flash NEXT twice before making the button available. */
   requestAnimationFrame(()=>{
     requestAnimationFrame(()=>nextButton.classList.add("next-complete-blink"));
   });
@@ -10162,7 +10182,7 @@ function isInstallSecureContext(){
 
 function installEnvironmentMessage(){
   if(location.protocol==="file:"){
-    return "Install App requires FK ATC COM to be opened from HTTPS or localhost. Directly opening index.html as a file cannot install a PWA. For local use, run START_FK_ATC.bat, then use Install App again.";
+    return "Install App requires FK ATC COM to be opened from HTTPS or localhost. Directly opening index.html as a file cannot install a PWA.";
   }
   if(!isInstallSecureContext()){
     return "This page is not running in a secure PWA context. Open FK ATC COM from HTTPS or localhost, then try Install App again.";
@@ -10223,7 +10243,7 @@ updateInstallAppButton();
 
 if(location.protocol==="file:"){
   const btn=document.getElementById("installAppButton");
-  if(btn) btn.title="Install requires HTTPS or localhost. Run START_FK_ATC.bat for local installation.";
+  if(btn) btn.title="Install requires HTTPS or localhost.";
 }
 
 if("serviceWorker" in navigator){
@@ -10249,6 +10269,28 @@ function positionStageFeedback(prefix, completed){
   feedback.classList.toggle("stage-complete-alert",completed);
   const slot=document.getElementById(prefix+(completed ? "nextActionSlot" : "feedbackSlot"));
   if(feedback.parentElement!==slot) slot.appendChild(feedback);
+}
+
+function scrollToCompletedStageRadio(prefix){
+  const panel=$(prefix+"frequency").closest(".com-radio-panel");
+  const page=panel.closest(".app-page");
+  if(!page.classList.contains("active")) return;
+
+  const stickyNav=$("sideNav");
+  const headerHeight=getComputedStyle(stickyNav).position==="sticky"
+    ? stickyNav.getBoundingClientRect().height : 0;
+  const inset=headerHeight+12;
+  const radioBounds=panel.getBoundingClientRect();
+  const actionTop=$(prefix+"nextActionSlot").getBoundingClientRect().top;
+  // Keep Next Action and the radio together when they fit on screen.
+  const targetTop=radioBounds.bottom-actionTop<=window.innerHeight-inset
+    ? actionTop : radioBounds.top;
+  if(targetTop>=inset && radioBounds.bottom<=window.innerHeight) return;
+
+  window.scrollTo({
+    top:Math.max(0,window.scrollY+targetTop-inset),
+    behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
+  });
 }
 
 function syncSetupToggleLabels(details, topId, bottomId, applyTopId){
@@ -10539,7 +10581,7 @@ function ifrUpdateDepartureChoices(preserve=true){
   const oldRunway=preserve?ifr$("runway").value:"";
   const oldLoc=preserve?ifr$("location").value:"";
   ifrSetOptions("runway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
-  ifrSetOptions("location",ap.locations,oldLoc);
+  ifrSetOptions("location",[...ap.locations,GA_PARKING_OPTION],oldLoc);
   ifrUpdateRouteHeading();
 }
 
@@ -10606,6 +10648,7 @@ function ifrSaveLastSetup(){
       destinationAirport:ifr$("destinationAirport")?.value,
       runway:ifr$("runway")?.value,
       location:ifr$("location")?.value,
+      arrivalParking:ifr$("arrivalParking")?.value,
       route:ifr$("direction")?.value,
       userRoute:ifr$("userRoute")?.value,
       altitude:ifr$("altitude")?.value,
@@ -10652,6 +10695,7 @@ function ifrLoadLastSetup(){
     if(saved.runway && [...ifr$("runway").options].some(o=>o.value===saved.runway)){
       ifr$("runway").value=saved.runway;
     }
+    ifr$("arrivalParking").value=saved.arrivalParking==="ga"?"ga":"";
     if(saved.location && [...ifr$("location").options].some(o=>o.value===saved.location)){
       ifr$("location").value=saved.location;
     }
@@ -10682,8 +10726,9 @@ function ifrReadSetup(generateCodes=true){
     departureAirport:ifr$("departureAirport").value||"KLGB",
     destinationAirport:ifr$("destinationAirport").value||"KCRQ",
     aircraftType:ifrSelectedAircraftType(),
-    callsign:(ifr$("callsign").value.trim()||"724SP").replace(/\s+/g,"").toUpperCase(),
+    callsign:normalizeSetupCallsign(ifr$("callsign").value),
     location:ifr$("location").value,
+    arrivalParking:ifr$("arrivalParking").value,
     runway:ifr$("runway").value,
     destRunway:ifr$("destRunway").value,
     route:ifr$("direction").value||"As Filed",
@@ -10717,7 +10762,7 @@ function ifrInstructionFor(stage){
     arrivalAtis:`Monitor ${dest.name} ATIS before the approach. Record the information code and landing runway.`,
     approach:`Contact ${ifrFacility(c.destinationAirport,"approach")} with callsign, altitude, information ${c.arrivalAtis}, and request the ${ifrApproachName()}.`,
     destTower:`After approach handoff, contact ${ifrFacility(c.destinationAirport,"tower")} and report established on the ${c.approachType} approach Runway ${c.destRunway}.`,
-    destGround:`After clearing the runway, contact ${ifrFacility(c.destinationAirport,"ground")} and request taxi to parking.`
+    destGround:`After clearing the runway, contact ${ifrFacility(c.destinationAirport,"ground")} and request taxi to ${c.arrivalParking==="ga"?"general aviation parking":"parking"}.`
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
@@ -11238,6 +11283,7 @@ function ifrCompleteStage(score=100){
   }
 
   ifrUpdateTuneUI();
+  scrollToCompletedStageRadio("ifr-");
 }
 
 function ifrMonitorAtis(){
@@ -11554,7 +11600,8 @@ function ifrEvaluateTransmission(text){
       if(ifrMeetsLevel(checks,["callsign","request","parking"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
         IFR_APP.destTaxiway=taxi;
-        ifrATC(`${ifrCallsignVisual()}, taxi to parking via ${taxi}.`);
+        const parking=IFR_APP.config.arrivalParking==="ga"?"general aviation parking":"parking";
+        ifrATC(`${ifrCallsignVisual()}, taxi to ${parking} via ${taxi}.`);
         IFR_APP.phase="destGroundReadback";
         ifr$("feedback").textContent="Read back taxiway and parking destination.";
       }else ifrATC(`${ifrCallsignVisual()}, say parking request.`);
@@ -13419,7 +13466,7 @@ async function xpConnect(){
   const b=document.getElementById("xpConnectBtn"),d=document.getElementById("xpDisconnectBtn");
   if(location.protocol==="file:"){
     const h=document.getElementById("xpHelp");
-    if(h) h.textContent="For remembered microphone permission, launch FK ATC with START_FK_ATC.bat / localhost instead of opening index.html directly as a file.";
+    if(h) h.textContent="For remembered microphone permission, open FK ATC from HTTPS or localhost.";
   }
   if(b)b.disabled=true;
   xpSetStatus("","CONNECTING DIRECT...");
@@ -13590,8 +13637,7 @@ function v492Refresh(){
   if(v492("v492Connect"))v492("v492Connect").disabled=!!XP_STATE?.connected;if(v492("v492Disconnect"))v492("v492Disconnect").disabled=!XP_STATE?.connected;
 }
 document.addEventListener("DOMContentLoaded",()=>{
-  $("v492OpenStandalone").addEventListener("click",()=>showAppPage("trainer"));
-  showAppPage("home",{noScroll:true});
+  showAppPage("trainer",{noScroll:true});
 });
 
 
