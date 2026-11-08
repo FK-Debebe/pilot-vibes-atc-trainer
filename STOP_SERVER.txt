@@ -1,1 +1,0 @@
-To stop the local FK ATC server, close the PowerShell/Command window opened by START_FK_ATC.bat or press Ctrl+C in that window.
