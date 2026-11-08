@@ -4696,7 +4696,7 @@ footer a:hover{text-decoration:underline;}
 .install-help-card p{margin:0 0 16px;line-height:1.5}
 
 
-/* V4.75 Keep FK COM 1 on one line at all radio-panel widths */
+/* V5.05 Keep FK COM 1 on one line at all radio-panel widths */
 #comPanel .com-label,
 #ifr-comPanel .com-label,
 #commPanel .com-label,
@@ -4718,6 +4718,162 @@ footer a:hover{text-decoration:underline;}
   font-size:clamp(10px,2.2vw,16px);
   line-height:1.1;
 }
+
+
+.xp-panel{margin:12px 0;border:1px solid #c9d3df;border-radius:10px;background:#f8fbff;padding:12px}
+.xp-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.xp-title{font-weight:800;color:#0b3a67}.xp-status{display:inline-flex;align-items:center;gap:7px;font-weight:700;white-space:nowrap}
+.xp-dot{width:10px;height:10px;border-radius:50%;background:#9aa4af;display:inline-block}.xp-status.connected .xp-dot{background:#14833b}.xp-status.error .xp-dot{background:#b42318}
+.xp-grid{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));gap:8px 14px;margin-top:10px;font-size:.93rem}
+.xp-label{display:block;color:#5d6875;font-size:.76rem;font-weight:700}.xp-value{display:block;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xp-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.xp-help{margin-top:8px;font-size:.82rem;color:#5d6875}
+@media(max-width:700px){.xp-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* V4.78 X-Plane authoritative COM1 mode */
+.com-radio-panel.xp-authority{
+  outline:2px solid rgba(20,131,59,.35);
+  outline-offset:2px;
+}
+.com-radio-panel.xp-authority .digit-btn{
+  opacity:.38;
+  cursor:not-allowed;
+}
+.xp-radio-badge{
+  display:none;
+  margin-left:8px;
+  padding:2px 7px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.04em;
+  background:#e7f6ec;
+  color:#126b32;
+  border:1px solid #9fd4af;
+  white-space:nowrap;
+}
+.xp-authority .xp-radio-badge{display:inline-block}
+.xp-radio-note{
+  display:none;
+  text-align:center;
+  font-size:11px;
+  font-weight:700;
+  margin-top:5px;
+  color:#126b32;
+}
+.xp-authority + .tune-msg .xp-radio-note{display:block}
+
+
+/* =========================================================
+   V4.92 SAFE DUAL-MODE UI
+   ========================================================= */
+#page-home,#page-xplane{max-width:1180px;margin:0 auto}
+.v492-hero{padding:32px 28px;border-radius:18px;background:linear-gradient(135deg,#092f4e,#0f6095);color:#fff;box-shadow:0 12px 32px rgba(17,52,78,.15)}
+.v492-hero h2{margin:6px 0 8px;color:#fff;font-size:29px}.v492-hero p{margin:0;color:#dbeaf4;font-size:12px;line-height:1.6}
+.v492-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.v492-choice{padding:22px;border:1px solid #d8e4ec;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgba(30,63,87,.06)}
+.v492-choice.primary{background:linear-gradient(180deg,#fbfdff,#eef8ff);border-color:#a8cfe9}.v492-choice h3{margin:8px 0;color:#173e5c;font-size:21px}.v492-choice p{color:#667e90;font-size:11px;line-height:1.55}
+.v492-list{display:grid;gap:7px;margin:16px 0}.v492-list div{font-size:10px;font-weight:750;color:#35566e}.v492-list div:before{content:"✓";color:#16814d;margin-right:8px;font-weight:1000}.v492-choice .btn{width:100%;padding:13px}
+.v492-xp-head{padding:19px 21px;border-radius:15px;background:linear-gradient(135deg,#0a304e,#0d5b8f);color:#fff;display:flex;justify-content:space-between;gap:14px;align-items:center}.v492-xp-head h2{margin:3px 0;color:#fff;font-size:23px}.v492-xp-head p{margin:0;color:#d9e9f3;font-size:11px}.v492-mode-switch{display:flex;gap:7px}.v492-mode-switch button{border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;padding:9px 14px;border-radius:8px;font-weight:900;cursor:pointer}.v492-mode-switch button.active{background:#fff;color:#0d4e78}
+.v492-grid{display:grid;grid-template-columns:.82fr 1.38fr;gap:13px;margin-top:13px}.v492-card{background:#fff;border:1px solid #d9e4ec;border-radius:13px;padding:17px;box-shadow:0 3px 12px rgba(30,65,90,.05)}.v492-card h3{margin:4px 0 13px;color:#173e5c}.v492-wide{grid-column:1/-1}
+.v492-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v492-form label{font-size:9px;font-weight:900;color:#617789}.v492-form input,.v492-form select{width:100%;margin-top:5px;padding:9px;border:1px solid #cad8e2;border-radius:8px;background:#fff;color:#173e5c}.v492-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.v492-actions .btn{flex:1;min-width:125px}
+.v492-full{margin-top:12px;border-top:1px solid #e3ebf0;padding-top:10px}.v492-full summary{cursor:pointer;font-size:10px;font-weight:900;color:#0e5f95}.v492-full-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.v492-hidden{display:none!important}
+.v492-live{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.v492-tile{padding:11px;border-radius:9px;background:#f5f9fc;border:1px solid #e1eaf0}.v492-tile span{display:block;font-size:7px;font-weight:900;color:#8293a1;letter-spacing:.1em}.v492-tile strong{display:block;margin-top:5px;color:#173e5c;font-size:13px}.v492-stage{font-size:19px!important}.v492-feedback{margin-top:10px;padding:11px;border-radius:9px;background:#f7fafc;border:1px solid #e1e9ef;color:#405f76;font-size:11px;font-weight:700;line-height:1.45}.v492-transcript{max-height:290px;overflow:auto}
+body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #page-xplane #xpPanel{display:block!important}
+#page-trainer #xpPanel,#page-ifr-trainer #xpPanel{display:none!important}
+@media(max-width:820px){.v492-choice-grid,.v492-grid{grid-template-columns:1fr}.v492-xp-head{flex-direction:column;align-items:flex-start}}@media(max-width:560px){.v492-form,.v492-full-grid,.v492-live{grid-template-columns:1fr 1fr}.v492-hero{padding:23px 18px}}
+
+
+/* V4.94 X-Plane LIVE ATC radio panel */
+.v494-radio-panel{
+  margin:10px 0 12px;padding:12px;border:1px solid #1d3344;border-radius:11px;
+  background:linear-gradient(180deg,#182732,#101b23);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 3px 10px rgba(0,0,0,.10)
+}
+.v494-radio-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;color:#9fb4c3;font-size:8px;font-weight:900;letter-spacing:.12em}
+.v494-radio-title strong{color:#dbe8ef;font-size:9px}
+.v494-radio-display{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.v494-radio-box{padding:10px 12px;border-radius:7px;border:1px solid #334a59;background:#071015;text-align:center}
+.v494-radio-label{display:block;margin-bottom:4px;color:#758c9c;font-size:7px;font-weight:900;letter-spacing:.11em}
+.v494-radio-freq{display:block;color:#8cf3a7;font-family:"Courier New",monospace;font-size:22px;font-weight:900;letter-spacing:.04em;text-shadow:0 0 7px rgba(140,243,167,.22)}
+.v494-radio-box.stby .v494-radio-freq{color:#f2d783;text-shadow:0 0 7px rgba(242,215,131,.18)}
+.v494-radio-source{margin-top:7px;text-align:center;color:#6f8595;font-size:7px;font-weight:800;letter-spacing:.08em}
+@media(max-width:520px){.v494-radio-freq{font-size:18px}}
+
+
+/* V4.95 LIVE ATC status intelligence */
+.v495-radio-status-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:0 0 9px}
+.v495-status-pill{display:inline-flex;align-items:center;justify-content:center;min-width:68px;padding:5px 8px;border-radius:999px;font-size:8px;font-weight:1000;letter-spacing:.09em;border:1px solid transparent}
+.v495-status-pill.ready{background:#103e28;border-color:#276947;color:#9af0b6}
+.v495-status-pill.wrong{background:#4c3512;border-color:#806029;color:#ffd879}
+.v495-status-pill.offline{background:#293640;border-color:#435563;color:#9db0bd}
+.v495-status-pill.tx{display:none;min-width:42px;background:#671b22;border-color:#a13a44;color:#ffb7bd;box-shadow:0 0 12px rgba(255,62,77,.18)}
+.v495-status-pill.tx.active{display:inline-flex;animation:v495TxPulse .8s ease-in-out infinite alternate}
+.v495-handoff-note{margin-left:auto;color:#8095a4;font-size:7px;font-weight:900;letter-spacing:.07em}
+@keyframes v495TxPulse{from{opacity:.7}to{opacity:1}}
+
+
+/* =========================================================
+   V5.00 X-PLANE ADVANCED TRAINING LAYER
+   ========================================================= */
+.v500-wide{grid-column:1/-1}
+.v500-intel-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.v500-intel-tile{padding:11px;border:1px solid #dbe6ee;border-radius:9px;background:#f7fafc}
+.v500-intel-tile span{display:block;color:#8092a0;font-size:7px;font-weight:900;letter-spacing:.1em}
+.v500-intel-tile strong{display:block;margin-top:5px;color:#173e5c;font-size:12px}
+.v500-options{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}
+.v500-toggle{display:flex;align-items:center;gap:7px;padding:9px;border:1px solid #dce6ed;border-radius:8px;background:#fff;color:#405f76;font-size:9px;font-weight:850}
+.v500-toggle input{width:auto;margin:0}
+.v500-score-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin-top:10px}
+.v500-score{padding:8px;border:1px solid #e0e8ee;border-radius:8px;background:#fff;text-align:center}
+.v500-score b{display:block;color:#173e5c;font-size:13px}.v500-score span{font-size:7px;color:#8091a0;font-weight:900;letter-spacing:.08em}
+.v500-replay{max-height:180px;overflow:auto;margin-top:9px;border-top:1px solid #e1e8ed}
+.v500-replay-row{display:grid;grid-template-columns:72px 90px 1fr;gap:8px;padding:7px 2px;border-bottom:1px solid #edf1f4;font-size:9px;color:#536d80}
+.v500-replay-row b{color:#173e5c}
+.v500-dx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.v500-dx-item{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:11px;border:1px solid #dce5eb;border-radius:9px;background:#f8fafc}
+.v500-dx-item span:first-child{font-size:10px;font-weight:850;color:#3b5d74}
+.v500-dx-state{font-size:9px;font-weight:1000;padding:4px 8px;border-radius:999px;background:#e8eef2;color:#6b7d89}
+.v500-dx-state.pass{background:#ddf4e6;color:#17663d}
+.v500-dx-state.fail{background:#fbe5e7;color:#8c2530}
+.v500-dx-state.warn{background:#fff2d6;color:#8a6416}
+.v500-dx-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.v500-note{font-size:9px;line-height:1.5;color:#748795;margin-top:8px}
+.v500-busy{color:#ffcb78!important}
+@media(max-width:900px){
+  .v500-intel-grid{grid-template-columns:1fr 1fr}
+  .v500-options{grid-template-columns:1fr 1fr}
+  .v500-score-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:560px){
+  .v500-dx-grid{grid-template-columns:1fr}
+  .v500-options{grid-template-columns:1fr}
+}
+
+
+/* V5.03 XP voice recognition feedback */
+.v503-heard{margin-top:9px;padding-top:8px;border-top:1px solid #263b49;display:grid;grid-template-columns:auto 1fr;gap:9px;align-items:start}
+.v503-heard span{color:#718898;font-size:7px;font-weight:1000;letter-spacing:.1em}
+.v503-heard strong{color:#d8e7ef;font-size:9px;font-weight:800;line-height:1.35;text-align:right;word-break:break-word}
+
+
+/* V5.05 PTT TEST */
+.v505-ptt-test{margin-top:12px;padding:13px;border:1px solid #d6e1e9;border-radius:11px;background:#fbfdff}
+.v505-ptt-test h4{margin:0 0 8px;color:#173e5c;font-size:13px}
+.v505-ptt-test p{margin:0 0 10px;color:#6a8090;font-size:9px;line-height:1.45}
+.v505-ptt-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.v505-ptt-step{padding:9px 7px;border:1px solid #dce5eb;border-radius:8px;background:#f5f8fa;text-align:center}
+.v505-ptt-step span{display:block;color:#80919d;font-size:7px;font-weight:900;letter-spacing:.08em}
+.v505-ptt-step strong{display:block;margin-top:5px;color:#6d7f8c;font-size:10px}
+.v505-ptt-step.pass{background:#edf9f1;border-color:#abd6b9}
+.v505-ptt-step.pass strong{color:#1d7a43}
+.v505-ptt-step.active{background:#fff7e5;border-color:#dfc27d}
+.v505-ptt-step.active strong{color:#9a6a12}
+.v505-ptt-step.fail{background:#fff0f0;border-color:#e0aaaa}
+.v505-ptt-step.fail strong{color:#a33a3a}
+.v505-ptt-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.v505-ptt-actions .btn{flex:1;min-width:120px}
+.v505-ptt-heard{margin-top:8px;padding:8px;border-radius:7px;background:#f4f7f9;color:#49667a;font-size:9px}
+@media(max-width:650px){.v505-ptt-steps{grid-template-columns:1fr 1fr}}
 
 </style>
   <meta name="theme-color" content="#0d47a1">
@@ -4746,7 +4902,10 @@ footer a:hover{text-decoration:underline;}
       <div id="sideNavTrainingMode" class="side-nav-subtitle">VFR RADIO COMMUNICATION TRAINER</div>
     </div>
     <nav class="side-nav-menu">
-      <button class="side-nav-item active" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
+      <button class="side-nav-item" data-page="home" type="button"><span class="side-nav-number">00</span><span>Home</span></button>
+      <button class="side-nav-item" data-page="xplane" type="button"><span class="side-nav-number">XP</span><span>X-Plane Mode</span></button>
+      <button class="side-nav-item" data-page="xp-diagnostics" type="button"><span class="side-nav-number">DX</span><span>XP Diagnostics</span></button>
+      <button class="side-nav-item" data-page="trainer" type="button"><span class="side-nav-number">01</span><span>VFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="ifr-trainer" type="button"><span class="side-nav-number">02</span><span>IFR Radio Trainer</span></button>
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
       <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Reports</span></button>
@@ -4763,7 +4922,172 @@ footer a:hover{text-decoration:underline;}
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
-    <section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
+
+    <section id="page-home" class="app-page" data-title="HOME">
+      <div class="v492-hero"><div class="eyebrow">FK ATC COM TRAINER</div><h2>Choose your training experience</h2><p>Use X-Plane as the cockpit interface, or use the complete standalone trainer without a simulator.</p></div>
+      <section class="v492-card" style="margin-top:16px">
+        <div class="eyebrow">ABOUT FK ATC</div>
+        <h3 style="margin:5px 0 8px;color:#173e5c">Practice realistic ATC communication before and during your flights</h3>
+        <p style="margin:0;color:#647d8f;font-size:11px;line-height:1.65">FK ATC COM Trainer is an interactive VFR and IFR radio communication trainer designed to help pilots and student pilots build confidence with real-world ATC phraseology, frequency changes, readbacks, position reports, and common flight scenarios. Use it as a standalone trainer, or connect it to X-Plane for a more immersive cockpit-based experience using your simulator radios and aircraft PTT.</p>
+      </section>
+      <div class="v492-choice-grid">
+        <article class="v492-choice primary"><div class="eyebrow">SIMULATOR MODE</div><h3>FK ATC + X-Plane</h3><p>X-Plane controls COM tuning and aircraft PTT while FK ATC handles the ATC communication exercise.</p><div class="v492-list"><div>Live COM1 and transponder integration</div><div>Aircraft PTT transmission</div><div>Automatic ATIS on the correct frequency</div><div>Position and flight-state awareness</div></div><button id="v492OpenXP" class="btn primary" type="button">OPEN X-PLANE MODE →</button></article>
+        <article class="v492-choice"><div class="eyebrow">STANDALONE MODE</div><h3>FK ATC without X-Plane</h3><p>Use the original VFR/IFR trainer with FK COM, Monitor ATIS and Tap To Talk.</p><div class="v492-list"><div>No simulator required</div><div>Full VFR and IFR setup</div><div>Built-in FK COM radio</div><div>Training Log and Flight Reports</div></div><button id="v492OpenStandalone" class="btn" type="button">OPEN STANDALONE TRAINER →</button></article>
+      </div>
+    </section>
+
+    <section id="page-xplane" class="app-page" data-title="X-PLANE MODE">
+      <div class="v492-xp-head"><div><div class="eyebrow">CONNECTED SIMULATOR TRAINING</div><h2>FK ATC + X-Plane</h2><p>Use the aircraft radio and PTT; FK ATC handles ATC communication and feedback.</p></div><div class="v492-mode-switch"><button id="v492ModeVFR" class="active" type="button">VFR</button><button id="v492ModeIFR" type="button">IFR</button></div></div>
+      <div id="v492XpPanelMount"></div>
+      <section class="v505-ptt-test" aria-label="PTT Test">
+        <h4>PTT TEST</h4>
+        <p>Use this before the flight to verify the aircraft PTT and browser microphone path.</p>
+        <div class="v505-ptt-steps">
+          <div id="v505PttButton" class="v505-ptt-step"><span>1</span><strong>BUTTON NOT DETECTED</strong></div>
+          <div id="v505PttMic" class="v505-ptt-step"><span>2</span><strong>MIC NOT READY</strong></div>
+          <div id="v505PttVoice" class="v505-ptt-step"><span>3</span><strong>VOICE NOT DETECTED</strong></div>
+          <div id="v505PttSent" class="v505-ptt-step"><span>4</span><strong>NOT SENT</strong></div>
+        </div>
+        <div id="v505PttHeard" class="v505-ptt-heard">Heard: —</div>
+        <div class="v505-ptt-actions">
+          <button id="v505StartTest" class="btn" type="button">START PTT TEST</button>
+          <button id="v505ResetTest" class="btn" type="button">RESET TEST</button>
+        </div>
+      </section>
+      <div class="v492-grid">
+        <section class="v492-card"><div class="eyebrow">ESSENTIAL SETUP</div><h3 id="v492SetupTitle">VFR Flight</h3>
+          <div class="v492-form">
+            <label>Departure<select id="v492Departure">
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
+<option value="KCRQ">KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KRAL">KRAL — Riverside</option>
+<option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
+        </select></label>
+            <label>Destination<select id="v492Destination">
+<option value="KBUR">KBUR — Hollywood Burbank</option>
+<option value="KCMA">KCMA — Camarillo</option>
+<option value="KCNO">KCNO — Chino</option>
+<option value="KCRQ">KCRQ — McClellan-Palomar</option>
+<option value="KEMT">KEMT — El Monte</option>
+<option value="KFUL">KFUL — Fullerton</option>
+<option value="KHHR">KHHR — Hawthorne</option>
+<option value="KLAX">KLAX — Los Angeles Int’l</option>
+<option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KONT">KONT — Ontario</option>
+<option value="KOXR">KOXR — Oxnard</option>
+<option value="KPOC">KPOC — Brackett Field</option>
+<option value="KPSP">KPSP — Palm Springs</option>
+<option value="KRAL">KRAL — Riverside</option>
+<option value="KRNM">KRNM — Ramona</option>
+<option value="KSBA">KSBA — Santa Barbara</option>
+<option value="KSBD">KSBD — San Bernardino Int’l</option>
+<option value="KSMO">KSMO — Santa Monica</option>
+<option value="KSNA">KSNA — John Wayne</option>
+<option value="KTOA">KTOA — Torrance</option>
+<option value="KVNY">KVNY — Van Nuys</option>
+<option value="KWHP">KWHP — Whiteman</option>
+        </select></label>
+            <label>Callsign<input id="v492Callsign" value="724SP"></label>
+            <label>Altitude<input id="v492Altitude" type="number" min="1500" max="18000" step="500" value="3500"></label>
+            <label>Training Level<select id="v492Level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label>
+          </div>
+          <div class="v492-actions"><button id="v492Apply" class="btn primary" type="button">APPLY FLIGHT</button><button id="v492Connect" class="btn" type="button">CONNECT X-PLANE</button><button id="v492Disconnect" class="btn" type="button">DISCONNECT</button></div>
+          <details id="v492FullSetup" class="v492-full"><summary>OPEN FULL SETUP</summary><div class="v492-full-grid">
+             <label id="v492LocationWrap">Start Location<select id="v492Location"></select></label>
+             <label>Departure Runway<select id="v492Runway"></select></label>
+             <label>Destination Runway<select id="v492DestRunway"></select></label>
+             <label id="v492RouteWrap" class="v492-hidden">IFR Route<input id="v492Route" placeholder="User / TEC Route"></label>
+             <label id="v492ApproachWrap" class="v492-hidden">Approach<select id="v492Approach"><option>RNAV (GPS)</option><option>ILS</option><option>Visual</option></select></label>
+          </div></details>
+        </section>
+        <section class="v492-card"><div class="eyebrow">LIVE ATC</div><h3 id="v492ModeTitle">VFR Training</h3>
+        <div class="v494-radio-panel" aria-label="X-Plane COM1 radio">
+          <div class="v494-radio-title"><span>COM1 RADIO</span><strong>X-PLANE LIVE</strong></div>
+          <div class="v495-radio-status-row">
+            <span id="v495FreqStatus" class="v495-status-pill offline">OFFLINE</span>
+            <span id="v495TxStatus" class="v495-status-pill tx">TX</span>
+            <span id="v495StandbyLoad" class="v495-handoff-note">NEXT STBY: —</span>
+          </div>
+          <div class="v494-radio-display">
+            <div class="v494-radio-box"><span class="v494-radio-label">ACTIVE</span><strong id="v494ComActive" class="v494-radio-freq">---.---</strong></div>
+            <div class="v494-radio-box stby"><span class="v494-radio-label">STBY</span><strong id="v494ComStandby" class="v494-radio-freq">---.---</strong></div>
+          </div>
+          <div class="v494-radio-source">Controlled from the X-Plane cockpit</div>
+          <div class="v503-heard"><span>MIC HEARD</span><strong id="v503Heard">—</strong></div>
+        </div>
+        <div class="v492-live">
+          <div class="v492-tile"><span>CURRENT STAGE</span><strong id="v492Stage" class="v492-stage">—</strong></div><div class="v492-tile"><span>TARGET FREQ</span><strong id="v492Target">—</strong></div><div class="v492-tile"><span>COM1 ACTIVE</span><strong id="v492Com1">—</strong></div><div class="v492-tile"><span>SQUAWK</span><strong id="v492Squawk">—</strong></div>
+          <div class="v492-tile"><span>STAGE</span><strong id="v492Counter">—</strong></div><div class="v492-tile"><span>FLIGHT STATE</span><strong id="v492FlightState">—</strong></div><div class="v492-tile"><span>DIST DEST</span><strong id="v492Distance">—</strong></div><div class="v492-tile"><span>PTT</span><strong id="v492PTT">CONNECT</strong></div>
+        </div><div id="v492Feedback" class="v492-feedback">Apply the flight and connect X-Plane.</div></section>
+        
+<section class="v492-card v500-wide">
+  <div class="eyebrow">TRAINING INTELLIGENCE</div>
+  <h3 style="margin:4px 0 12px;color:#173e5c">Live Flight Awareness & Automation</h3>
+  <div class="v500-intel-grid">
+    <div class="v500-intel-tile"><span>EXPECTED FACILITY</span><strong id="v500ExpectedFacility">—</strong></div>
+    <div class="v500-intel-tile"><span>DETECTED PHASE</span><strong id="v500DetectedPhase">—</strong></div>
+    <div class="v500-intel-tile"><span>RUNWAY AWARENESS</span><strong id="v500RunwayAwareness">—</strong></div>
+    <div class="v500-intel-tile"><span>AIRCRAFT PROFILE</span><strong id="v500AircraftProfile">—</strong></div>
+  </div>
+  <div class="v500-options">
+    <label class="v500-toggle"><input id="v500OptAutoSquawk" type="checkbox" checked> Auto squawk</label>
+    <label class="v500-toggle"><input id="v500OptAutoHandoff" type="checkbox" checked> Auto STBY handoff</label>
+    <label class="v500-toggle"><input id="v500OptDelay" type="checkbox" checked> Realistic ATC delay</label>
+    <label class="v500-toggle"><input id="v500OptTraffic" type="checkbox"> Background traffic</label>
+    <label class="v500-toggle"><input id="v500OptCongestion" type="checkbox"> Frequency congestion</label>
+  </div>
+  <div class="v500-score-grid" id="v500ScoreGrid"></div>
+  <div class="v500-replay" id="v500Replay"></div>
+</section>
+
+        <section class="v492-card v492-wide"><div class="eyebrow">RADIO EXCHANGE</div><h3>ATC / Pilot Conversation</h3><div id="v492Transcript" class="v492-transcript"><div class="muted">Radio exchange will appear here.</div></div></section>
+      </div>
+    </section>
+    
+<section id="page-xp-diagnostics" class="app-page" data-title="XP DIAGNOSTICS">
+  <section class="card">
+    <div class="eyebrow">X-PLANE CONNECTION TEST</div>
+    <h2 style="margin:4px 0 7px">Simulator Compatibility Diagnostics</h2>
+    <p class="small">Checks the live X-Plane Web API connection and the capabilities FK ATC needs. X-Plane 12.1.1+ provides DataRef access; command access requires API v2 / X-Plane 12.1.4+.</p>
+    <div id="v500DxGrid" class="v500-dx-grid">
+      <div class="v500-dx-item"><span>Web API</span><b id="dxApi" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>COM1 ACTIVE read</span><b id="dxComActive" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>COM1 STBY write-capable</span><b id="dxComStandby" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Transponder write-capable</span><b id="dxXpdr" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Aircraft PTT command</span><b id="dxPtt" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Position</span><b id="dxPosition" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Ground / flight state</span><b id="dxFlight" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Microphone</span><b id="dxMic" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>Aircraft profile</span><b id="dxProfile" class="v500-dx-state">NOT TESTED</b></div>
+      <div class="v500-dx-item"><span>WebSocket telemetry</span><b id="dxWs" class="v500-dx-state">NOT TESTED</b></div>
+    </div>
+    <div class="v500-dx-actions">
+      <button id="v500RunDiagnostics" class="btn primary" type="button">RUN DIAGNOSTICS</button>
+      <button id="v500OpenXpMode" class="btn" type="button">OPEN X-PLANE MODE</button>
+    </div>
+    <div id="v500DxSummary" class="v500-note">Start X-Plane and load a flight before running diagnostics.</div>
+  </section>
+</section>
+
+<section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="Flight Setup">
   <div class="setup-top-actions persistent-setup-actions vfr-setup-top-actions">
@@ -4964,7 +5288,7 @@ footer a:hover{text-decoration:underline;}
         <div class="com-header">
           <div class="com-brand-block">
             <div class="com-brand-row">
-              <div class="com-brand fk-com-title">FK COM 1</div>
+              <div class="com-brand fk-com-title">FK COM 1</div><span class="xp-radio-badge">SIM RADIO</span>
               <div id="radioReadyState" class="radio-ready-state not-ready">NOT READY</div>
             </div>
             <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
@@ -5316,7 +5640,7 @@ footer a:hover{text-decoration:underline;}
         <div class="com-header">
           <div class="com-brand-block">
             <div class="com-brand-row">
-              <div class="com-brand">FK COM 1</div>
+              <div class="com-brand">FK COM 1</div><span class="xp-radio-badge">SIM RADIO</span>
               <div id="ifr-radioReadyState" class="radio-ready-state not-ready">NOT READY</div>
             </div>
             <div class="com-model">VHF COMMUNICATION TRANSCEIVER</div>
@@ -5499,7 +5823,7 @@ footer a:hover{text-decoration:underline;}
 
           <article class="card howto-card"><div class="howto-step">06</div><h3>Monitor ATIS</h3><p>During an ATIS stage, tune the correct frequency and select <strong>MONITOR ATIS</strong>. Listen for the information code, runway, wind, ceiling, visibility, and altimeter.</p><p>The trainer carries the information code into later radio calls where appropriate.</p></article>
 
-          <article class="card howto-card"><div class="howto-step">07</div><h3>Use Tap To Talk</h3><p>Select <strong>TAP TO TALK</strong> once to start listening. Speak your complete transmission. Select it a second time to <strong>end and send</strong>.</p><p>The trainer evaluates the speech only after you end the transmission.</p></article>
+          <article class="card howto-card"><div class="howto-step">07</div><h3>Use Tap To Talk / X-Plane PTT</h3><p>Select <strong>TAP TO TALK</strong> once to start listening. Speak your complete transmission. Select it a second time to <strong>end and send</strong>.</p><p>The trainer evaluates the speech only after you end the transmission.</p></article>
 
           <article class="card howto-card"><div class="howto-step">08</div><h3>Allow Microphone Access</h3><p>The first time you use Tap To Talk, your browser may request microphone permission. Allow access for the trainer website.</p><p>For reliable microphone operation, use <strong>HTTPS</strong> or <strong>localhost</strong>. Some embedded website frames may restrict microphone access.</p></article>
 
@@ -5543,15 +5867,55 @@ footer a:hover{text-decoration:underline;}
     </section>
 
     <p class="small product-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a> • Training aid only — not for operational ATC use</p>
-  </main>
+  
+<section id="xpPanel" class="xp-panel" aria-label="X-Plane connection">
+<div class="xp-panel-header"><div class="xp-title">X-PLANE INTEGRATION</div><div id="xpStatus" class="xp-status"><span class="xp-dot"></span><span id="xpStatusText">DISCONNECTED</span></div></div>
+<div class="xp-grid">
+<div><span class="xp-label">SIM</span><span id="xpVersion" class="xp-value">—</span></div>
+<div><span class="xp-label">AIRCRAFT</span><span id="xpAircraft" class="xp-value">—</span></div>
+<div><span class="xp-label">DATA LINK</span><span id="xpDataLink" class="xp-value">REST</span></div>
+<div><span class="xp-label">AUTO STAGE</span><span id="xpAutoStageState" class="xp-value">ON</span></div>
+<div><span class="xp-label">COM1 ACTIVE</span><span id="xpCom1" class="xp-value">—</span></div>
+<div><span class="xp-label">COM1 STBY</span><span id="xpCom1Stby" class="xp-value">—</span></div>
+<div><span class="xp-label">XPDR</span><span id="xpXpdr" class="xp-value">—</span></div>
+<div><span class="xp-label">GROUND SPEED</span><span id="xpGroundspeed" class="xp-value">—</span></div>
+<div><span class="xp-label">ALTITUDE</span><span id="xpAltitude" class="xp-value">—</span></div>
+<div><span class="xp-label">HEADING</span><span id="xpHeading" class="xp-value">—</span></div>
+<div><span class="xp-label">DIST DEST</span><span id="xpDistDest" class="xp-value">—</span></div>
+<div><span class="xp-label">POSITION</span><span id="xpPositionCardinal" class="xp-value">—</span></div>
+<div><span class="xp-label">LATITUDE</span><span id="xpLat" class="xp-value">—</span></div>
+<div><span class="xp-label">LONGITUDE</span><span id="xpLon" class="xp-value">—</span></div>
+<div><span class="xp-label">PROFILE</span><span id="xpCapability" class="xp-value">—</span></div>
+<div><span class="xp-label">FLIGHT STATE</span><span id="xpFlightState" class="xp-value">—</span></div>
+</div>
+<div class="xp-actions">
+<button type="button" id="xpConnectBtn">CONNECT X-PLANE</button>
+<button type="button" id="xpDisconnectBtn" disabled>DISCONNECT</button>
+<button type="button" id="xpLoadStandbyBtn">LOAD TARGET TO COM1 STBY</button>
+<button type="button" id="xpSetSquawkBtn">SET ASSIGNED XPDR</button>
+<button type="button" id="xpLoadTargetSquawkBtn">LOAD TARGET SQUAWK</button>
+<button type="button" id="xpSwapComBtn">SWAP COM1</button>
+<button type="button" id="xpAutoStageBtn">AUTO STAGE: ON</button>
+</div>
+<div id="xpMicStatus" class="xp-help"><b>MIC:</b> Browser permission required once; FK ATC will keep it ready while X-Plane is connected.</div>
+<div id="xpHelp" class="xp-help">Start X-Plane 12.1.1+ on this computer. FK ATC connects directly to X-Plane at localhost:8086—no Python or bridge required.</div>
+</section>
+</main>
 </div>
 
 <script>
+/* V4.92 UI state is declared before any trainer initialization. */
+var FK_UI_MODE="home";
+var FK_XP_MODE="vfr";
+
 "use strict";
 
 const $ = id => document.getElementById(id);
 
 const APP_PAGE_TITLES={
+  "home":"HOME",
+  "xplane":"X-PLANE MODE",
+  "xp-diagnostics":"XP DIAGNOSTICS",
   "trainer":"VFR RADIO TRAINER",
   "ifr-trainer":"IFR RADIO TRAINER",
   "training-log":"TRAINING LOG",
@@ -5583,6 +5947,7 @@ function showAppPage(page,options={}){
   document.body.classList.remove("nav-open");
   updateApplicationStatus();
   if(page==="report" && typeof renderFlightReportHistory==="function") renderFlightReportHistory();
+  if(page==="xp-diagnostics" && typeof xpRenderDiagnostics==="function") xpRenderDiagnostics();
   if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -5982,7 +6347,7 @@ function airportFacility(ap,key){
 }
 
 function facilityMentioned(text,ap,key){
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const full=norm(airportFacility(ap,key));
   if(full && n.includes(full)) return true;
 
@@ -6061,7 +6426,7 @@ function containsAltitudeValue(text,value){
   const digits=textDigits(text);
   if(digits.includes(target)) return true;
 
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const fullWords=altitudeSpoken(formatAltitude(feet)).toLowerCase();
   if(fullWords && n.includes(fullWords)) return true;
 
@@ -6260,7 +6625,7 @@ function updateRouteHeading(){
 const AIRPORT_ALIASES=Object.fromEntries(Object.entries(AIRPORTS).map(([code,ap])=>[code,ap.aliases||[]]));
 
 function airportMentioned(text,code){
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const ap=airportData(code);
   const code3=code.replace(/^K/,"").toLowerCase();
   const name=ap.name.toLowerCase();
@@ -6278,7 +6643,7 @@ function airportMentioned(text,code){
 
 function wrongArrivalAirportMention(text,targetCode){
   if(airportMentioned(text,targetCode)) return "";
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
 
   for(const [code,ap] of Object.entries(AIRPORTS)){
     if(code===targetCode) continue;
@@ -6665,14 +7030,22 @@ function currentVoiceRole(){
   return "tower";
 }
 
+
+/* V5.02 TTS-only pronunciation normalization.
+   Keep ATIS visible on-screen, but speak it as "Weather information". */
+function fkPrepareTextForSpeech(text){
+  return String(text||"").replace(/\bATIS\b/gi,"Weather information");
+}
+
 function speak(text,role=currentVoiceRole()){
+  text=fkPrepareTextForSpeech(text);
   if(!("speechSynthesis" in window)) return;
 
   speechSynthesis.cancel();
   loadATCVoices();
 
   const profile=ATC_VOICE_PROFILES[role]||ATC_VOICE_PROFILES.tower;
-  const u=new SpeechSynthesisUtterance(text);
+  const u=new SpeechSynthesisUtterance(fkPrepareTextForSpeech(text));
 
   if(atcEnglishVoices.length){
     /* Spread facility roles across the available voice list.
@@ -6687,7 +7060,7 @@ function speak(text,role=currentVoiceRole()){
   u.pitch=profile.pitch;
   u.volume=1;
 
-  speechSynthesis.speak(u);
+  fkSpeakUtterance(u);
 }
 
 
@@ -6932,6 +7305,7 @@ function renderProgressMarkers(currentComplete=false){
 }
 
 function renderStage(resetFrequency=true){
+  if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
   const phaseMap={
     clearance:"clearanceInitial",
@@ -6986,7 +7360,7 @@ function renderStage(resetFrequency=true){
   /* Keep the full Radio Exchange history across stage changes. */
   append("system","TRAINER",`${stage.title} stage loaded.`);
 
-  if(resetFrequency) $("frequency").value="121.500";
+  if(resetFrequency && !(window.XP_STATE && window.XP_STATE.connected)) $("frequency").value="121.500";
   renderRadioDigits();
 
   renderNav();
@@ -7043,6 +7417,18 @@ function updatePilotInputState(){
   }else{
     if(ptt) ptt.removeAttribute("aria-disabled");
     if(pilotText) pilotText.removeAttribute("aria-disabled");
+  }
+
+  if(window.XP_STATE?.connected && window.XP_STATE?.radioAuthority){
+    if(monitorAtisBtn){
+      monitorAtisBtn.textContent="ATIS AUTO — X-PLANE";
+      monitorAtisBtn.disabled=true;
+    }
+    if(ptt){
+      ptt.disabled=true;
+      const lbl=$("pttLabel");
+      if(lbl) lbl.textContent="USE AIRCRAFT PTT";
+    }
   }
 
   updateRepeatButtons();
@@ -7131,6 +7517,37 @@ function joinRecognitionText(base,addition){
   return [...a,...b.slice(overlap)].join(" ");
 }
 
+function fkXpRecognitionActive(){
+  return !!(window.XP_STATE?.connected && document.getElementById("page-xplane")?.classList.contains("active"));
+}
+
+function fkRecognitionAlternativeScore(text,confidence=0){
+  const n=fkNormalizeRecognition(String(text||""));
+  const lower=n.toLowerCase();
+  const aviationTerms=[
+    "cessna","skyhawk","piper","cirrus","clearance","ground","tower","departure","approach",
+    "runway","taxi","hold short","flight following","squawk","altimeter","information","with you",
+    "long beach","brackett field","socal","traffic","visual","rnav","ils","climb","descend","maintain"
+  ];
+  let score=(Number(confidence)||0)*8 + Math.min(n.length,160)/160;
+  for(const term of aviationTerms) if(lower.includes(term)) score+=0.35;
+  if(/\d/.test(n)) score+=0.25;
+  if(/\b(?:alpha|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliet|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\b/i.test(n)) score+=0.4;
+  return score;
+}
+
+function fkBestRecognitionAlternative(result){
+  if(!result || !result.length) return "";
+  let best=(result[0]?.transcript||"").trim();
+  let bestScore=fkRecognitionAlternativeScore(best,result[0]?.confidence);
+  for(let i=1;i<result.length;i++){
+    const text=(result[i]?.transcript||"").trim();
+    const score=fkRecognitionAlternativeScore(text,result[i]?.confidence);
+    if(score>bestScore){best=text;bestScore=score;}
+  }
+  return fkNormalizeRecognition(best);
+}
+
 function startRecognitionSegment(){
   if(!app.pttActive || app.pttStopping) return;
 
@@ -7144,12 +7561,13 @@ function startRecognitionSegment(){
 
   const r=new SR();
   r.lang="en-US";
-  r.continuous=false;
+  r.continuous=fkXpRecognitionActive();
   r.interimResults=true;
-  r.maxAlternatives=1;
+  r.maxAlternatives=3;
 
   app.recognizer=r;
   app.recognitionSegment="";
+  app.recognitionInterim="";
 
   r.onstart=()=>{
     $("ptt").classList.add("listening");
@@ -7171,7 +7589,7 @@ function startRecognitionSegment(){
     let interimPart="";
 
     for(let i=event.resultIndex;i<event.results.length;i++){
-      const piece=(event.results[i][0].transcript||"").trim();
+      const piece=fkBestRecognitionAlternative(event.results[i]);
       if(!piece) continue;
 
       if(event.results[i].isFinal) finalPart += piece + " ";
@@ -7181,6 +7599,7 @@ function startRecognitionSegment(){
     if(finalPart.trim()){
       app.recognitionSegment=joinRecognitionText(app.recognitionSegment,finalPart.trim());
     }
+    app.recognitionInterim=interimPart.trim();
 
     const display=joinRecognitionText(
       app.recognitionCommitted,
@@ -7192,8 +7611,8 @@ function startRecognitionSegment(){
   };
 
   r.onerror=event=>{
-    if(app.pttActive && !app.pttStopping &&
-       (event.error==="no-speech" || event.error==="aborted")){
+    if((event.error==="no-speech" || event.error==="aborted") &&
+       ((app.pttActive && !app.pttStopping) || app.pttStopping)){
       return;
     }
 
@@ -7207,16 +7626,19 @@ function startRecognitionSegment(){
   };
 
   r.onend=()=>{
-    /* Commit only the completed segment once. */
-    if(app.recognitionSegment){
-      app.recognitionCommitted=joinRecognitionText(
-        app.recognitionCommitted,
-        app.recognitionSegment
-      );
+    /* Preserve the final interim phrase too. Chrome frequently leaves the last
+       one or two aviation words as interim when aircraft PTT is released. */
+    let closingSegment=app.recognitionSegment||"";
+    if(app.recognitionInterim){
+      closingSegment=joinRecognitionText(closingSegment,app.recognitionInterim);
+    }
+    if(closingSegment){
+      app.recognitionCommitted=joinRecognitionText(app.recognitionCommitted,closingSegment);
       app.recognitionText=app.recognitionCommitted;
       $("pilotText").value=app.recognitionCommitted;
-      app.recognitionSegment="";
     }
+    app.recognitionSegment="";
+    app.recognitionInterim="";
 
     app.recognizer=null;
 
@@ -7277,6 +7699,7 @@ async function startPTT(e){
   app.recognitionText="";
   app.recognitionCommitted="";
   app.recognitionSegment="";
+  app.recognitionInterim="";
   $("pilotText").value="";
   app.pttStopping=false;
   app.pttActive=true;
@@ -7351,7 +7774,7 @@ function containsTaxiway(text,taxiway){
   const expected=String(taxiway||"").trim();
   if(!expected) return false;
 
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const expectedWord=(TAXIWAY_PHONETIC[expected]||expected).toLowerCase();
   if(n.includes(expectedWord)) return true;
 
@@ -7432,10 +7855,12 @@ function containsRunway(text,r=app.config.runway){
   const numericSide=side
     ? `(?:\\s*(?:${side}|${sideWord}))`
     : "";
-  const numericPattern=new RegExp(
-    `(?:^|[^a-z0-9])${escapedDigits}${numericSide}(?=$|[^a-z0-9])`,
-    "i"
-  );
+  const numericPattern=(digits.length===1 && !side)
+    ? new RegExp(`(?:runway|hold short|holding short)\\s+${escapedDigits}(?=$|[^a-z0-9])`,"i")
+    : new RegExp(
+        `(?:^|[^a-z0-9])${escapedDigits}${numericSide}(?=$|[^a-z0-9])`,
+        "i"
+      );
   if(numericPattern.test(n)) return true;
 
   /* Numeric digits separated by speech recognition spaces, e.g.
@@ -7457,7 +7882,10 @@ function containsRunway(text,r=app.config.runway){
 
   if(spokenForms.some(v=>{
     const escaped=v.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`,"i").test(n);
+    const pattern=(digits.length===1 && !side)
+      ? new RegExp(`(?:runway|hold short|holding short)\\s+${escaped}(?=$|[^a-z0-9])`,"i")
+      : new RegExp(`(?:^|[^a-z0-9])${escaped}(?=$|[^a-z0-9])`,"i");
+    return pattern.test(n);
   })) return true;
 
   /* Common no-space ASR/UI forms when preceded by an explicit runway label,
@@ -7546,7 +7974,7 @@ function containsAltitude(text){
   const digits=textDigits(text);
   if(digits.includes(target)) return true;
 
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const fullWords=altitudeSpoken().toLowerCase();
   if(fullWords && n.includes(fullWords)) return true;
 
@@ -7597,14 +8025,114 @@ function containsDirection(text){
   });
 }
 
+
+function fkNormalizeRecognition(text){
+  let s=String(text||"").trim();
+  if(window.XP_STATE?.pttTestActive && s) xpPttTestCaptureText?.(s);
+  if(!s) return s;
+
+  /* =====================================================
+     V4.95 CENTRAL AVIATION ASR NORMALIZATION
+     Applied before both VFR and IFR evaluation.
+     Keep corrections context-aware so normal aviation wording
+     such as "taxi to runway..." is not globally damaged.
+     ===================================================== */
+
+  const phraseRepairs=[
+    [/\bquest\s+flight\s+following\b/gi,"request flight following"],
+    [/\brequest\s+flight\s+follow(?:ing)?\b/gi,"request flight following"],
+    [/\bflight\s+follow\s+me\b/gi,"flight following"],
+    [/\bas\s+file\b/gi,"as filed"],
+    [/\b(?:are\s*nav|r\s*nav|are\s*now)\b/gi,"rnav"],
+    [/\btake\s+off\b/gi,"takeoff"],
+    [/\bclear\s+and\s+delivery\b/gi,"clearance delivery"],
+    [/\bclearance\s+deliver(?:y|ies)\b/gi,"clearance delivery"],
+    [/\bground\s+point\b/gi,"ground"],
+    [/\bhold\s+shorts\b/gi,"hold short"],
+    [/\bline\s+up\s+in\s+wait\b/gi,"line up and wait"],
+    [/\bwith\s+you\b/gi,"with you"],
+    [/\btraffic\s+in\s+sight\b/gi,"traffic in sight"]
+  ];
+  for(const [rx,repl] of phraseRepairs) s=s.replace(rx,repl);
+
+  /* Airport / facility names commonly distorted by browser ASR. */
+  const placeRepairs=[
+    [/\bbracket\s+field\b/gi,"Brackett Field"],
+    [/\bbracketfield\b/gi,"Brackett Field"],
+    [/\blong\s+beach\s+flying\s+(?:club|clap|cloud)\b/gi,"Long Beach Flying Club"],
+    [/\bmac\s*clellan\s+palomar\b/gi,"McClellan Palomar"],
+    [/\bjohn\s+wayne\b/gi,"John Wayne"],
+    [/\bvan\s+nice\b/gi,"Van Nuys"],
+    [/\bpoint\s+mugu\b/gi,"Point Mugu"],
+    [/\bsocal\b/gi,"SoCal"]
+  ];
+  for(const [rx,repl] of placeRepairs) s=s.replace(rx,repl);
+
+  /* Callsign repairs. Browser ASR often hears spoken "four" as "for". */
+  s=s.replace(/\b(Cessna|Skyhawk|Cherokee|Warrior|Piper|Cirrus)\s+(\d{1,3})\s+(?:for|four)\s+([a-z]{1,3})\b/gi,
+    (m,type,digits,suffix)=>`${type} ${digits}4 ${suffix.toUpperCase()}`);
+  s=s.replace(/\b(\d{1,3})\s+(?:for|four)\s+([a-z]{1,3})\b/gi,
+    (m,digits,suffix)=>`${digits}4 ${suffix.toUpperCase()}`);
+  s=s.replace(/\bfor\s+sp\b/gi,"four SP");
+
+  /* Altitude/place ambiguity. Do not delete Brackett Field unless followed
+     by a numeric altitude in the known ASR failure form. */
+  s=s.replace(/\bbracket\s+(?:field\s+)?(\d{3,5})\b/gi,"$1");
+  s=s.replace(/\bbracketfield\s+(\d{3,5})\b/gi,"$1");
+
+  /* Runway side-designator cleanup. */
+  s=s.replace(/\brunway\s+(\d{1,2})\s+left\b/gi,"runway $1L");
+  s=s.replace(/\brunway\s+(\d{1,2})\s+right\b/gi,"runway $1R");
+  s=s.replace(/\brunway\s+(\d{1,2})\s+center\b/gi,"runway $1C");
+
+  /* Phonetic alphabet variants that ASR frequently renders as ordinary words.
+     Limit this to tokens following digits/callsign-like contexts where possible. */
+  s=s.replace(/\b(?:sierra|Sierra)\s+(?:papa|Papa)\b/g,"Sierra Papa");
+  s=s.replace(/\bfoxtrot\s+kilo\b/gi,"Foxtrot Kilo");
+
+  s=s.replace(/\btwo\s+Brackett Field\b/gi,"to Brackett Field");
+  return s.replace(/\s+/g," ").trim();
+}
+function frequencyRecognitionRepair(text){
+  let s=fkNormalizeRecognition(text);
+
+  /* Browser ASR frequently hears the spoken digit "two" as the ordinary
+     word "to" or "too" inside COM frequencies:
+       "one two seven point two" -> "1 to 7.2"
+       "one two five point three" -> "1 to 5.3"
+     Repair this ONLY inside frequency recognition, never in global text
+     normalization where "to" has normal aviation meaning. */
+  s=s.replace(
+    /\b1\s+(?:to|too)\s+([0-9])\s*(?:\.|\bpoint\b)\s*([0-9])\b/gi,
+    (m,d3,decimal)=>`12${d3}.${decimal}`
+  );
+
+  s=s.replace(
+    /\bone\s+(?:to|too)\s+(seven|six|five|four|three|eight|nine)\s+(?:point|\.)\s*(zero|one|two|three|four|five|six|seven|eight|nine)\b/gi,
+    (m,d3,decimal)=>`one two ${d3} point ${decimal}`
+  );
+
+  /* Also repair a numeric second digit when ASR separates the decimal:
+       "1 to 7 2" -> "127.2"
+     This pattern is limited to the normal civil COM band beginning with 1xx. */
+  s=s.replace(
+    /\b1\s+(?:to|too)\s+([0-9])\s+([0-9])\b/gi,
+    (m,d3,decimal)=>`12${d3}.${decimal}`
+  );
+
+  return s;
+}
+
 function containsFrequency(text,freq){
   const target=String(freq);
   const targetDigits=target.replace(/\D/g,"");
-  const n=norm(text);
+  const repaired=frequencyRecognitionRepair(text);
+  const n=norm(repaired);
 
   /* Accept common speech-to-text variants such as:
-     127.2, 1272, one two seven point two, and frequency 127.2. */
-  const digits=textDigits(text);
+     127.2, 1272, one two seven point two, "1 to 7.2",
+     and "departure frequency 1 to 7.2". */
+  const digits=textDigits(repaired);
   if(digits.includes(targetDigits)) return true;
 
   const compactText=n.replace(/\s+/g,"");
@@ -7684,7 +8212,7 @@ function containsSpecificAltitude(text,altitude){
   const digits=textDigits(text);
   if(digits.includes(target)) return true;
 
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const variants={
     "2500":["two thousand five hundred","twenty five hundred","twenty-five hundred"],
     "3500":["three thousand five hundred","thirty five hundred","thirty-five hundred"],
@@ -7811,7 +8339,7 @@ function departureHoldShortRunway(){
 
 function holdShortRecognized(text,runway){
   if(!runway) return true;
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   return (n.includes("hold short") || n.includes("holding short")) && containsRunway(text,runway);
 }
 
@@ -7820,7 +8348,7 @@ function trafficAdvisoryEnabled(){
 }
 
 function trafficInSight(text){
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   return n.includes("traffic in sight") ||
     n.includes("traffic insight") ||
     n.includes("have the traffic") ||
@@ -7829,7 +8357,7 @@ function trafficInSight(text){
 }
 
 function negativeTrafficContact(text){
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   return n.includes("negative contact") ||
     n.includes("negative traffic") ||
     n.includes("looking for traffic") ||
@@ -8029,6 +8557,7 @@ function containsDirectionValue(text,direction){
 }
 
 function grade(checks){
+  xpRecordCategoryChecks?.(checks);
   const vals=Object.values(checks);
   return Math.round(vals.filter(Boolean).length/vals.length*100);
 }
@@ -8186,7 +8715,10 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     overall:Number(overall)||0,
     summaryHtml:$("reportSummary")?.innerHTML||"",
     stagesHtml:$("reportStages")?.innerHTML||"",
-    recommendationsHtml:$("reportRecommendations")?.innerHTML||""
+    recommendationsHtml:$("reportRecommendations")?.innerHTML||"",
+    xpReplay:(window.XP_STATE?.replayLog||[]).slice(-50),
+    xpCategoryScores:window.XP_STATE?.categoryScores||{},
+    xpProfile:window.XP_STATE?.aircraftProfile?.profileName||""
   };
 
   const history=loadFlightReportHistory();
@@ -8439,6 +8971,7 @@ function renderFinalReport(){
     </div>
   `;
 
+  xpAppendAdvancedReport?.();
   storeCurrentFlightReport({
     mode:"vfr",
     route:`${app.config.departureAirport} → ${app.config.destinationAirport}`,
@@ -8451,6 +8984,7 @@ function renderFinalReport(){
 
 function evaluateTransmission(text){
   if(!text) return;
+  xpEvaluateLiveTransmission?.(text);
   if(!tuned()){
     app.session.tuningErrors++;
     $("feedback").textContent=`Radio is not tuned to the active facility. Target ${STAGES[app.stageIndex].freq} MHz.`;
@@ -8460,7 +8994,7 @@ function evaluateTransmission(text){
   const stage=STAGES[app.stageIndex];
   const phaseAtStart=app.phase;
   append("pilot","PILOT",text);
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   let checks={}, replyVisual="", replySpoken="", complete=false;
 
   if(stage.id==="clearance"){
@@ -8855,7 +9389,7 @@ function evaluateTransmission(text){
         facility:n.includes("tower")||airportMentioned(text,app.config.destinationAirport),
         callsign:hasCallsign(text),
         atis:n.includes(app.config.arrivalAtis.toLowerCase()),
-        position:containsArrivalPosition(text),
+        position:containsArrivalPosition(text) && xpPositionReportAcceptable(text,app.config.destinationAirport),
         inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
         runway:containsDestRunway(text)
       };
@@ -8885,6 +9419,12 @@ function evaluateTransmission(text){
           app.phase="destTowerPatternReadback";
         }
       }else{
+        const posCheck=XP_STATE.lastPositionCheck;
+        if(posCheck?.available && !posCheck.ok){
+          replyVisual=`${app.config.aircraft}, verify position.`;
+          replySpoken=`${callsignSpoken()}, verify position.`;
+          $("feedback").textContent=`Position report does not match X-Plane. Actual position is about ${posCheck.actualDistance.toFixed(1)} NM ${posCheck.actualDirection} of ${destAirport().name}.`;
+        }
         const missing=[];
         if(!checks.facility) missing.push("facility");
         if(!checks.callsign) missing.push("callsign");
@@ -8892,11 +9432,13 @@ function evaluateTransmission(text){
         if(!checks.position) missing.push("position");
         if(!checks.inbound) missing.push("landing request");
 
-        replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
-        replySpoken=`${callsignSpoken()}, say again ${missing.join(", ")}.`;
-        $("feedback").textContent=veryShort
+        if(!(posCheck?.available && !posCheck.ok)){
+          replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
+          replySpoken=`${callsignSpoken()}, say again ${missing.join(", ")}.`;
+          $("feedback").textContent=veryShort
           ? `Initial ${airportFacility(destAirport(),"tower")} call incomplete. Missing or not recognized: ${missing.join(", ")}.`
-          : `Initial ${airportFacility(destAirport(),"tower")} call incomplete. Missing or not recognized: ${missing.join(", ")}. ATIS and position may be stated in either order.`;
+          : `Initial ${airportFacility(destAirport(),"tower")} call incomplete. Missing or not recognized: ${missing.join(", ")}. ATIS and position may be stated in either order.`;}
+
       }
     }else if(app.phase==="destTowerTrafficResponse"){
       checks={
@@ -9596,6 +10138,24 @@ function updateInstallAppButton(){
   btn.hidden=isStandaloneApp();
 }
 
+
+function isInstallSecureContext(){
+  return window.isSecureContext &&
+    (location.protocol==="https:" ||
+     location.hostname==="localhost" ||
+     location.hostname==="127.0.0.1");
+}
+
+function installEnvironmentMessage(){
+  if(location.protocol==="file:"){
+    return "Install App requires FK ATC COM to be opened from HTTPS or localhost. Directly opening index.html as a file cannot install a PWA. For local use, run START_FK_ATC.bat, then use Install App again.";
+  }
+  if(!isInstallSecureContext()){
+    return "This page is not running in a secure PWA context. Open FK ATC COM from HTTPS or localhost, then try Install App again.";
+  }
+  return "The browser has not offered installation yet. In Chrome or Edge, open the browser menu and choose Install FK ATC COM Trainer or Apps > Install this site as an app.";
+}
+
 function showInstallHelp(message){
   const modal=document.getElementById("installHelp");
   const text=document.getElementById("installHelpText");
@@ -9632,7 +10192,7 @@ document.getElementById("installAppButton")?.addEventListener("click",async()=>{
   if(isIOSDevice()){
     showInstallHelp("On iPhone or iPad in Safari, tap Share, then choose Add to Home Screen.");
   }else{
-    showInstallHelp("Open your browser menu and choose Install app, Install FK ATC COM Trainer, or Add to Home Screen.");
+    showInstallHelp(installEnvironmentMessage());
   }
 });
 
@@ -9646,6 +10206,11 @@ document.getElementById("installHelp")?.addEventListener("click",event=>{
 });
 
 updateInstallAppButton();
+
+if(location.protocol==="file:"){
+  const btn=document.getElementById("installAppButton");
+  if(btn) btn.title="Install requires HTTPS or localhost. Run START_FK_ATC.bat for local installation.";
+}
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
@@ -9888,7 +10453,7 @@ function ifrRouteClearance(){
 
 function ifrRouteReadbackOK(text){
   text=ifrNormalizeAviationTranscript(text);
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   const route=IFR_APP.config.route;
   if(route==="As Filed") return n.includes("as filed");
   if(route==="Direct") return n.includes("direct") && ifrContainsAirport(text,IFR_APP.config.destinationAirport);
@@ -10241,10 +10806,15 @@ function ifrUpdateTuneUI(){
   }
 
   ifrUpdatePTTState();
+  if(window.XP_STATE?.connected && window.XP_STATE?.radioAuthority){
+    const mon=ifr$("monitorAtis");
+    if(mon){mon.textContent="ATIS AUTO — X-PLANE";mon.disabled=true;}
+  }
   ifrUpdateRepeatButton();
 }
 
 function ifrRenderStage(resetFrequency=true){
+  if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
   IFR_APP.phase=ifrStagePhase(stage);
@@ -10271,7 +10841,7 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("commPanel").classList.toggle("hidden",stage.type==="atis");
   if(stage.id==="atis") ifr$("atisText").textContent="";
   if(stage.id==="arrivalAtis") ifr$("atisText").textContent="";
-  if(resetFrequency) ifrSetRadioFrequency(121,500); else ifrUpdateTuneUI();
+  if(resetFrequency && !(window.XP_STATE && window.XP_STATE.connected)) ifrSetRadioFrequency(121,500); else ifrUpdateTuneUI();
   ifrUpdatePTTState();
   ifrRenderProgress();
 }
@@ -10290,11 +10860,12 @@ function ifrAppend(type,speaker,text){
   ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
 }
 function ifrSpeak(text){
+  text=fkPrepareTextForSpeech(text);
   if(!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(text);
+  const u=new SpeechSynthesisUtterance(fkPrepareTextForSpeech(text));
   u.lang="en-US"; u.rate=.94; u.pitch=.92;
-  speechSynthesis.speak(u);
+  fkSpeakUtterance(u);
 }
 function ifrATC(visual,spoken=null){
   ifrAppend("atc","ATC",visual);
@@ -10453,20 +11024,17 @@ function ifrContainsAltitude(text,value){
   return reportedAltitudeFeet(text)===target;
 }
 function ifrContainsFrequency(text,freq){
+  /* Shared parser handles COM-frequency ASR variants such as
+     "1 to 7.2" -> 127.2 without changing ordinary uses of "to". */
   if(containsFrequency(text,freq)) return true;
-
-  /* Repair common ASR "to/too" substitutions whether or not the pilot
-     explicitly says the word "frequency". */
-  const repaired=ifrNormalizeClearanceReadback(text)
-    .replace(/\bto\b/g,"two")
-    .replace(/\btoo\b/g,"two");
-  return containsFrequency(repaired,freq);
+  return containsFrequency(ifrNormalizeClearanceReadback(text),freq);
 }
 function ifrContainsSquawk(text){
   const target=String(IFR_APP.squawk||"").replace(/\D/g,"");
   return target && textDigits(text).includes(target);
 }
 function ifrGrade(checks){
+  xpRecordCategoryChecks?.(checks);
   const vals=Object.values(checks);
   if(!vals.length) return 0;
   return Math.round(100*vals.filter(Boolean).length/vals.length);
@@ -10620,6 +11188,7 @@ function ifrRenderFinalReport(){
     </div>
   `;
 
+  xpAppendAdvancedReport?.();
   storeCurrentFlightReport({
     mode:"ifr",
     route:`${IFR_APP.config.departureAirport} → ${IFR_APP.config.destinationAirport}`,
@@ -10699,6 +11268,7 @@ function ifrNormalizeClearanceTranscript(text){
 function ifrEvaluateTransmission(text){
   text=String(text||"").trim();
   if(!text) return;
+  xpEvaluateLiveTransmission?.(text);
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage||stage.type==="atis") return;
 
@@ -10715,7 +11285,7 @@ function ifrEvaluateTransmission(text){
 
   IFR_APP.session.attempts++;
   ifrAppend("pilot","PILOT",text);
-  const n=norm(text);
+  const n=norm(fkNormalizeRecognition(text));
   let checks={},score=0;
 
   if(stage.id==="clearance"){
@@ -11121,8 +11691,13 @@ function ifrUpdatePTTState(){
   }
 
   const ok=ifrTuned();
-  ptt.disabled=!ok;
-  ifr$("pttLabel").textContent=ok?"TAP TO TALK":"TUNE RADIO FIRST";
+  if(window.XP_STATE?.connected && window.XP_STATE?.radioAuthority){
+    ptt.disabled=true;
+    ifr$("pttLabel").textContent="USE AIRCRAFT PTT";
+  }else{
+    ptt.disabled=!ok;
+    ifr$("pttLabel").textContent=ok?"TAP TO TALK":"TUNE RADIO FIRST";
+  }
   ifrUpdateRepeatButton();
 }
 function ifrJoinRecognitionText(base,addition){
@@ -11145,9 +11720,9 @@ function ifrStartRecognitionSegment(){
 
   const r=new SR();
   r.lang="en-US";
-  r.continuous=false;
+  r.continuous=fkXpRecognitionActive();
   r.interimResults=true;
-  r.maxAlternatives=1;
+  r.maxAlternatives=3;
   IFR_APP.recognizer=r;
   IFR_APP.recognitionSegment="";
   IFR_APP.recognitionInterim="";
@@ -11160,7 +11735,7 @@ function ifrStartRecognitionSegment(){
   r.onresult=event=>{
     let finalPart="",interimPart="";
     for(let i=event.resultIndex;i<event.results.length;i++){
-      const t=event.results[i][0].transcript;
+      const t=fkBestRecognitionAlternative(event.results[i]);
       if(event.results[i].isFinal) finalPart+=" "+t;
       else interimPart+=" "+t;
     }
@@ -11392,6 +11967,1648 @@ function applyResponsiveSetupDefaultState(){
 
 /* Apply after all trainer initialization has completed. */
 requestAnimationFrame(()=>applyResponsiveSetupDefaultState());
+
+
+
+const XP_DIRECT_BASE="http://127.0.0.1:8086";
+const XP_POLL_MS=500;
+
+const XP_DATAREF_CANDIDATES={
+  latitude:["sim/flightmodel/position/latitude"],
+  longitude:["sim/flightmodel/position/longitude"],
+  altitude_ft:[
+    "sim/cockpit2/gauges/indicators/altitude_ft_pilot",
+    "sim/flightmodel/misc/h_ind"
+  ],
+  heading_deg:[
+    "sim/flightmodel/position/mag_psi",
+    "sim/cockpit2/gauges/indicators/heading_vacuum_deg_mag_pilot"
+  ],
+  com1_active:[
+    "sim/cockpit2/radios/actuators/com1_frequency_hz_833",
+    "sim/cockpit2/radios/actuators/com1_frequency_hz",
+    "sim/cockpit/radios/com1_freq_hz"
+  ],
+  com1_standby:[
+    "sim/cockpit2/radios/actuators/com1_standby_frequency_hz_833",
+    "sim/cockpit2/radios/actuators/com1_standby_frequency_hz",
+    "sim/cockpit/radios/com1_stdby_freq_hz"
+  ],
+  transponder_code:[
+    "sim/cockpit2/radios/actuators/transponder_code",
+    "sim/cockpit/radios/transponder_code"
+  ],
+  groundspeed_mps:["sim/flightmodel/position/groundspeed"],
+  on_ground:["sim/flightmodel/failures/onground_any"],
+  atis_enabled:["sim/atc/atis_enabled"],
+  aircraft_icao:["sim/aircraft/view/acf_ICAO"],
+  aircraft_description:["sim/aircraft/view/acf_descrip"],
+  tail_number:["sim/aircraft/view/acf_tailnum"]
+};
+
+
+window.XP_TRAINING_OPTIONS=window.XP_TRAINING_OPTIONS||{
+  autoSquawk:true,
+  autoHandoff:true,
+  realisticDelay:true,
+  backgroundTraffic:false,
+  congestion:false
+};
+const XP_TRAINING_OPTIONS=window.XP_TRAINING_OPTIONS;
+
+window.XP_STATE=window.XP_STATE||{
+  connected:false,
+  timer:null,
+  data:null,
+  radioAuthority:false,
+  lastCom1:null,
+  apiVersion:null,
+  xplaneVersion:null,
+  refs:{},
+  commands:{},
+  lastDiscovery:0,
+  pttSocket:null,
+  pttCommandId:null,
+  lastAutoAtisKey:null,
+  xplaneAtisMuted:false,
+  micStream:null,
+  micPermissionReady:false,
+  micPermissionState:"unknown",
+  micPermissionRequested:false,
+  micPermissionPromise:null,
+  micApprovedPreviously:false,
+  pttTestActive:false,
+  pttTestButtonDetected:false,
+  pttTestVoiceDetected:false,
+  pttTestTransmissionSent:false,
+  pttTestLastHeard:"",
+  telemetrySocket:null,
+  telemetryMode:"REST",
+  autoStageEnabled:true,
+  lastAutoAdvanceAt:0,
+  lastTelemetryAt:0,
+  lastPositionCheck:null,
+  aircraftProfile:null,
+  reconnectTimer:null,
+  txActive:false,
+  lastStandbyHandoffKey:null,
+  lastStandbyHandoffFreq:null,
+  standbyHandoffStatus:"IDLE",
+  lastSquawkLoadKey:null,
+  pttPressedAt:0,
+  pttReleaseTimer:null,
+  pttBlocked:false,
+  frequencyBusyUntil:0,
+  trafficTimer:null,
+  replayLog:[],
+  lastReplaySampleAt:0,
+  categoryScores:{},
+  blockedTransmissions:0,
+  shortPttPresses:0,
+  speechDelayTimer:null,
+  lastPhase:null,
+  lastRunwayAwareness:null,
+  lastFacility:null
+};
+const XP_STATE=window.XP_STATE;
+
+
+/* V4.85 Simulator Adapter + live flight-state helpers */
+class FKSimulatorAdapter{
+  constructor(kind){this.kind=kind;this.connected=false;}
+  async connect(){await xpConnect();this.connected=XP_STATE.connected;return this.connected;}
+  async disconnect(){await xpDisconnect();this.connected=false;}
+  async setComStandby(mhz){return xpWriteRadio("com1_standby",mhz);}
+  async setSquawk(code){return xpWriteDatarefValue("transponder_code",Number(code));}
+  async activateCommand(name,duration=0){return xpActivateCommand(name,duration);}
+  state(){return XP_STATE.data||{};}
+}
+window.FK_SIMULATOR=window.FK_SIMULATOR||new FKSimulatorAdapter("xplane");
+
+function xpHaversineNm(lat1,lon1,lat2,lon2){
+  const R=3440.065, rad=Math.PI/180;
+  const a=Math.sin((lat2-lat1)*rad/2)**2+
+    Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin((lon2-lon1)*rad/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function xpBearingDeg(lat1,lon1,lat2,lon2){
+  const r=Math.PI/180;
+  const y=Math.sin((lon2-lon1)*r)*Math.cos(lat2*r);
+  const x=Math.cos(lat1*r)*Math.sin(lat2*r)-Math.sin(lat1*r)*Math.cos(lat2*r)*Math.cos((lon2-lon1)*r);
+  return (Math.atan2(y,x)/r+360)%360;
+}
+function xpCardinalFromBearing(b){
+  const dirs=["N","NE","E","SE","S","SW","W","NW"];
+  return dirs[Math.round(((Number(b)||0)%360)/45)%8];
+}
+function xpCurrentRouteAirports(){
+  const mode=xpCurrentTrainerMode();
+  if(mode==="ifr"){
+    return {dep:ifrAirport(IFR_APP.config.departureAirport),dest:ifrAirport(IFR_APP.config.destinationAirport),
+            depCode:IFR_APP.config.departureAirport,destCode:IFR_APP.config.destinationAirport};
+  }
+  if(mode==="vfr"){
+    return {dep:depAirport(),dest:destAirport(),depCode:app.config.departureAirport,destCode:app.config.destinationAirport};
+  }
+  return {dep:null,dest:null,depCode:null,destCode:null};
+}
+function xpDerivedFlightState(data=XP_STATE.data||{}){
+  const routes=xpCurrentRouteAirports();
+  const lat=Number(data.latitude),lon=Number(data.longitude);
+  let depNm=null,destNm=null,destBearing=null,destCardinal=null;
+  if(Number.isFinite(lat)&&Number.isFinite(lon)&&routes.dep?.coords){
+    depNm=xpHaversineNm(routes.dep.coords.lat,routes.dep.coords.lon,lat,lon);
+  }
+  if(Number.isFinite(lat)&&Number.isFinite(lon)&&routes.dest?.coords){
+    destNm=xpHaversineNm(routes.dest.coords.lat,routes.dest.coords.lon,lat,lon);
+    destBearing=xpBearingDeg(routes.dest.coords.lat,routes.dest.coords.lon,lat,lon);
+    destCardinal=xpCardinalFromBearing(destBearing);
+  }
+  const gs=Number(data.groundspeed_kt);
+  const onGround=data.on_ground===true;
+  let phase="UNKNOWN";
+
+  if(onGround){
+    if(Number.isFinite(destNm) && destNm<=2.0 && Number.isFinite(depNm) && depNm>8){
+      if(Number.isFinite(gs) && gs<2) phase="ARRIVAL STOPPED";
+      else if(Number.isFinite(gs) && gs<28) phase="ARRIVAL TAXI";
+      else phase="LANDING ROLLOUT";
+    }else{
+      if(Number.isFinite(gs) && gs<2) phase="PARKED";
+      else if(Number.isFinite(gs) && gs<28) phase="TAXI";
+      else phase="TAKEOFF ROLL";
+    }
+  }else{
+    if(Number.isFinite(destNm) && destNm<=3) phase="FINAL";
+    else if(Number.isFinite(destNm) && destNm<=8) phase="PATTERN / APPROACH";
+    else if(Number.isFinite(destNm) && destNm<=35) phase="ARRIVAL";
+    else if(Number.isFinite(depNm) && depNm<=6) phase="DEPARTURE";
+    else phase="ENROUTE";
+  }
+  return {depNm,destNm,destBearing,destCardinal,phase,onGround,gs};
+}
+function xpDecodeDataValue(v){
+  if(typeof v!=="string") return v;
+  try{
+    const decoded=atob(v).replace(/\0+$/,"").trim();
+    return decoded||v;
+  }catch(_){return v;}
+}
+function xpBuildAircraftProfile(){
+  const refs=XP_STATE.refs||{};
+  const d=XP_STATE.data||{};
+  const rawAircraft=(xpDecodeDataValue(d.aircraft_icao)||xpDecodeDataValue(d.aircraft_description)||"Unknown").trim();
+  const key=rawAircraft.toUpperCase();
+  let profileName="STANDARD X-PLANE";
+  let family="generic";
+  if(/ZIBO|B738|737-800|B737/.test(key)){profileName="ZIBO / 737 PROFILE";family="b738";}
+  else if(/C172|CESSNA 172/.test(key)){profileName=/G1000/.test(key)?"C172 G1000":"C172 STANDARD";family="c172";}
+  else if(/SR22|CIRRUS/.test(key)){profileName="CIRRUS PROFILE";family="cirrus";}
+  else if(/PA28|CHEROKEE|WARRIOR/.test(key)){profileName="PIPER PA-28 PROFILE";family="pa28";}
+  else if(/DA40|DIAMOND/.test(key)){profileName="DIAMOND PROFILE";family="diamond";}
+
+  const capabilities={
+    com1:!!refs.com1_active,
+    com1Write:!!refs.com1_standby,
+    xpdr:!!refs.transponder_code,
+    position:!!refs.latitude&&!!refs.longitude,
+    flightState:!!refs.on_ground&&!!refs.groundspeed_mps,
+    ptt:!!XP_STATE.pttCommandId,
+    apiV2:Number(String(XP_STATE.apiVersion||"v1").replace(/\D/g,""))>=2
+  };
+  const total=Object.values(capabilities).filter(Boolean).length;
+  XP_STATE.aircraftProfile={aircraft:rawAircraft,profileName,family,capabilities,total,max:Object.keys(capabilities).length,
+    strategy:"standard-datarefs-with-aircraft-fallback"};
+  return XP_STATE.aircraftProfile;
+}
+function xpNormalizeDirectionWord(s){
+  const n=String(s||"").toLowerCase().replace(/[^a-z]/g,"");
+  const m={north:"N",n:"N",northeast:"NE",ne:"NE",east:"E",e:"E",southeast:"SE",se:"SE",
+           south:"S",s:"S",southwest:"SW",sw:"SW",west:"W",w:"W",northwest:"NW",nw:"NW"};
+  return m[n]||null;
+}
+function xpExtractPositionReport(text){
+  const n=String(text||"").toLowerCase()
+    .replace(/\bnorth\s+west\b/g,"northwest").replace(/\bnorth\s+east\b/g,"northeast")
+    .replace(/\bsouth\s+west\b/g,"southwest").replace(/\bsouth\s+east\b/g,"southeast");
+  const m=n.match(/\b(\d{1,2}(?:\.\d+)?)\s*(?:nautical\s*miles?|nm|miles?)?\s*(northwest|northeast|southwest|southeast|north|south|east|west|nw|ne|sw|se|n|s|e|w)\b/i);
+  if(!m) return null;
+  return {distance:Number(m[1]),direction:xpNormalizeDirectionWord(m[2])};
+}
+function xpValidatePositionReport(text,airportCode){
+  if(!XP_STATE.connected||!XP_STATE.data) return {available:false,ok:true};
+  const report=xpExtractPositionReport(text);
+  if(!report) return {available:false,ok:true};
+  const ap=airportData(airportCode);
+  const lat=Number(XP_STATE.data.latitude),lon=Number(XP_STATE.data.longitude);
+  if(!ap?.coords||!Number.isFinite(lat)||!Number.isFinite(lon)) return {available:false,ok:true};
+  const actualDistance=xpHaversineNm(ap.coords.lat,ap.coords.lon,lat,lon);
+  const actualBearing=xpBearingDeg(ap.coords.lat,ap.coords.lon,lat,lon);
+  const actualDirection=xpCardinalFromBearing(actualBearing);
+  const tolerance=Math.max(2.5,actualDistance*0.35);
+  const dirs=["N","NE","E","SE","S","SW","W","NW"];
+  const ai=dirs.indexOf(actualDirection),ri=dirs.indexOf(report.direction);
+  const directionDelta=Math.min((ai-ri+8)%8,(ri-ai+8)%8);
+  const ok=Math.abs(report.distance-actualDistance)<=tolerance && directionDelta<=1;
+  const result={available:true,ok,reported:report,actualDistance,actualDirection,tolerance};
+  XP_STATE.lastPositionCheck=result;
+  return result;
+}
+function xpPositionReportAcceptable(text,airportCode){
+  const r=xpValidatePositionReport(text,airportCode);
+  return !r.available||r.ok;
+}
+async function xpWriteDatarefValue(key,value){
+  await xpDiscoverDatarefs(false);
+  const ref=XP_STATE.refs[key];
+  if(!ref) throw new Error(`${key} DataRef not found`);
+  return xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs/${ref.id}/value`,{
+    method:"PATCH",body:JSON.stringify({data:value})
+  });
+}
+async function xpActivateCommand(name,duration=0){
+  const cmd=XP_STATE.commands[name]||await xpDiscoverCommand(name);
+  if(!cmd) throw new Error(`X-Plane command not found: ${name}`);
+  return xpDirectFetch(`/api/${XP_STATE.apiVersion}/command/${cmd.id}/activate`,{
+    method:"POST",body:JSON.stringify({duration:Number(duration)||0})
+  });
+}
+function xpAssignedSquawk(){
+  const mode=xpCurrentTrainerMode();
+  return mode==="ifr"?IFR_APP?.squawk:mode==="vfr"?app?.squawk:null;
+}
+async function xpSetAssignedSquawk(){
+  const code=xpAssignedSquawk();
+  if(!code) return;
+  try{
+    await xpWriteDatarefValue("transponder_code",Number(code));
+    const h=document.getElementById("xpHelp"); if(h)h.textContent=`Assigned squawk ${code} loaded into X-Plane.`;
+  }catch(e){
+    const h=document.getElementById("xpHelp"); if(h)h.textContent=`Could not set transponder: ${e.message}`;
+  }
+}
+
+async function xpLoadTargetSquawk(){
+  if(!XP_STATE.connected){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent="Connect X-Plane before loading a squawk code.";
+    return;
+  }
+
+  const code=String(xpAssignedSquawk()||"").replace(/\D/g,"");
+  if(!/^[0-7]{4}$/.test(code)){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent="No valid four-digit target squawk is assigned for the current FK ATC stage.";
+    return;
+  }
+
+  try{
+    await xpWriteDatarefValue("transponder_code",Number(code));
+    await new Promise(resolve=>setTimeout(resolve,120));
+    const state=await xpReadState();
+    XP_STATE.data=state;
+    xpRender(state);
+
+    const actual=String(state.transponder_code??"").padStart(4,"0");
+    if(actual!==code){
+      throw new Error(`X-Plane reports ${actual} after write`);
+    }
+
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`Target squawk ${code} loaded into X-Plane.`;
+  }catch(e){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`Could not load target squawk: ${e.message}`;
+  }
+}
+async function xpSwapCom1(){
+  if(!XP_STATE.connected){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent="Connect X-Plane before swapping COM1.";
+    return;
+  }
+
+  try{
+    await xpDiscoverDatarefs(false);
+
+    const before=await xpReadState();
+    const activeBefore=Number(before.com1_active_mhz);
+    const standbyBefore=Number(before.com1_standby_mhz);
+
+    if(!Number.isFinite(activeBefore) || !Number.isFinite(standbyBefore)){
+      throw new Error("COM1 active/standby frequencies are unavailable");
+    }
+
+    let commandWorked=false;
+
+    try{
+      await xpActivateCommand("sim/radios/com1_standy_flip",0);
+      await new Promise(resolve=>setTimeout(resolve,180));
+      const afterCommand=await xpReadState();
+      const a=Number(afterCommand.com1_active_mhz);
+      const s=Number(afterCommand.com1_standby_mhz);
+
+      commandWorked=
+        Number.isFinite(a) && Number.isFinite(s) &&
+        Math.abs(a-standbyBefore)<0.0015 &&
+        Math.abs(s-activeBefore)<0.0015;
+
+      if(commandWorked){
+        XP_STATE.data=afterCommand;
+        xpRender(afterCommand);
+      }
+    }catch(_){}
+
+    if(!commandWorked){
+      await xpWriteRadio("com1_active",standbyBefore);
+      await xpWriteRadio("com1_standby",activeBefore);
+      await new Promise(resolve=>setTimeout(resolve,120));
+
+      const afterDirect=await xpReadState();
+      const a=Number(afterDirect.com1_active_mhz);
+      const s=Number(afterDirect.com1_standby_mhz);
+
+      const directWorked=
+        Number.isFinite(a) && Number.isFinite(s) &&
+        Math.abs(a-standbyBefore)<0.0015 &&
+        Math.abs(s-activeBefore)<0.0015;
+
+      if(!directWorked){
+        throw new Error("loaded aircraft did not accept the COM1 swap");
+      }
+
+      XP_STATE.data=afterDirect;
+      xpRender(afterDirect);
+    }
+
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`COM1 swapped: ${standbyBefore.toFixed(3)} ACTIVE / ${activeBefore.toFixed(3)} STBY.`;
+  }catch(e){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`Could not swap COM1: ${e.message}`;
+  }
+}
+function xpToggleAutoStage(){
+  XP_STATE.autoStageEnabled=!XP_STATE.autoStageEnabled;
+  const b=document.getElementById("xpAutoStageBtn");
+  const s=document.getElementById("xpAutoStageState");
+  if(b)b.textContent=`AUTO STAGE: ${XP_STATE.autoStageEnabled?"ON":"OFF"}`;
+  if(s)s.textContent=XP_STATE.autoStageEnabled?"ON":"OFF";
+}
+function xpCanAutoAdvance(){
+  return XP_STATE.connected && XP_STATE.autoStageEnabled && Date.now()-XP_STATE.lastAutoAdvanceAt>1800;
+}
+function xpPerformAutoAdvance(mode,reason){
+  if(!xpCanAutoAdvance()) return;
+  XP_STATE.lastAutoAdvanceAt=Date.now();
+  const h=document.getElementById("xpHelp");
+  if(h)h.textContent=`AUTO STAGE: ${reason}`;
+  if(mode==="vfr") nextStage();
+  else if(mode==="ifr") ifrNextStage();
+}
+function xpAutoStageTick(){
+  if(!xpCanAutoAdvance()) return;
+  const info=xpCurrentStageInfo();
+  if(!info.stage||!info.complete) return;
+  const d=xpDerivedFlightState();
+  const id=info.stage.id;
+  let go=false,reason="";
+  if(["atis","clearance","arrivalAtis"].includes(id)){go=true;reason=`${info.stage.title} complete`; }
+  else if(id==="ground" && (d.phase==="TAXI"||!d.onGround)){go=true;reason="taxi movement detected";}
+  else if(id==="tower" && !d.onGround){go=true;reason="airborne detected";}
+  else if(id==="departure" && Number.isFinite(d.depNm) && d.depNm>=5){go=true;reason=`${d.depNm.toFixed(1)} NM from departure`;}
+  else if(id==="enroute" && Number.isFinite(d.destNm) && d.destNm<=35){go=true;reason=`approaching destination (${d.destNm.toFixed(1)} NM)`;}
+  else if((id==="arrival"||id==="approach") && Number.isFinite(d.destNm) && d.destNm<=10){go=true;reason=`within ${d.destNm.toFixed(1)} NM of destination`;}
+  else if(id==="destTower" && d.onGround && Number.isFinite(d.gs) && d.gs<55){go=true;reason="landing detected";}
+  else if(id==="destGround" && d.onGround && Number.isFinite(d.gs) && d.gs<2){go=true;reason="aircraft stopped at destination";}
+  if(go) xpPerformAutoAdvance(info.mode,reason);
+}
+
+function xpSetStatus(kind,text){
+  const s=document.getElementById("xpStatus"),t=document.getElementById("xpStatusText");
+  if(!s||!t)return;
+  s.classList.remove("connected","error");
+  if(kind)s.classList.add(kind);
+  t.textContent=text;
+}
+function xpFmtFreq(v){const n=Number(v);return Number.isFinite(n)?n.toFixed(3):"—"}
+function xpFmtNum(v,d=0,suffix=""){const n=Number(v);return Number.isFinite(n)?`${n.toFixed(d)}${suffix}`:"—"}
+
+async function xpDirectFetch(path,opts={}){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),2500);
+  try{
+    const headers={"Accept":"application/json",...(opts.headers||{})};
+    if(opts.body) headers["Content-Type"]="application/json";
+    const r=await fetch(`${XP_DIRECT_BASE}${path}`,{
+      ...opts,
+      headers,
+      signal:controller.signal,
+      cache:"no-store"
+    });
+    let body=null;
+    const text=await r.text();
+    if(text){
+      try{body=JSON.parse(text)}catch(_){body=text}
+    }
+    if(!r.ok){
+      const msg=body?.error_message||body?.message||`${r.status} ${r.statusText}`;
+      throw new Error(msg);
+    }
+    return body;
+  }finally{
+    clearTimeout(timeout);
+  }
+}
+
+function xpApiRank(versions){
+  for(const v of ["v3","v2","v1"]) if(versions.includes(v)) return v;
+  return versions[versions.length-1]||"v1";
+}
+
+async function xpDiscoverDatarefs(force=false){
+  const now=Date.now();
+  if(!force && Object.keys(XP_STATE.refs).length && now-XP_STATE.lastDiscovery<30000) return;
+
+  const caps=await xpDirectFetch("/api/capabilities");
+  XP_STATE.xplaneVersion=caps?.["x-plane"]?.version||"X-Plane";
+  XP_STATE.apiVersion=xpApiRank(caps?.api?.versions||["v1"]);
+
+  const refs={};
+  for(const [key,candidates] of Object.entries(XP_DATAREF_CANDIDATES)){
+    for(const name of candidates){
+      const qs=new URLSearchParams({"filter[name]":name});
+      try{
+        const out=await xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs?${qs.toString()}`);
+        const item=(out?.data||[]).find(x=>x.name===name);
+        if(item){refs[key]=item;break}
+      }catch(_){}
+    }
+  }
+  XP_STATE.refs=refs;
+  XP_STATE.lastDiscovery=now;
+}
+
+async function xpReadRef(key){
+  const ref=XP_STATE.refs[key];
+  if(!ref) return null;
+  const out=await xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs/${ref.id}/value`);
+  return out?.data ?? null;
+}
+
+function xpRadioRawToMhz(ref,value){
+  if(value==null||!ref) return null;
+  const n=Number(value);
+  if(!Number.isFinite(n)) return null;
+  const name=ref.name||"";
+  if(name.endsWith("_hz_833")) return n/1000;
+  if(name.endsWith("_frequency_hz")||name.endsWith("_freq_hz")||name.endsWith("_stdby_freq_hz")) return n/100;
+  return n;
+}
+
+function xpMhzToRadioRaw(ref,mhz){
+  const n=Number(mhz);
+  const name=ref?.name||"";
+  if(name.endsWith("_hz_833")) return Math.round(n*1000);
+  if(name.endsWith("_frequency_hz")||name.endsWith("_freq_hz")||name.endsWith("_stdby_freq_hz")) return Math.round(n*100);
+  return n;
+}
+
+async function xpReadState(){
+  await xpDiscoverDatarefs(false);
+
+  const keys=["latitude","longitude","altitude_ft","heading_deg","com1_active","com1_standby","transponder_code","groundspeed_mps","on_ground","aircraft_icao","aircraft_description","tail_number"];
+  const results=await Promise.all(keys.map(async k=>{
+    try{return [k,await xpReadRef(k)]}catch(_){return [k,null]}
+  }));
+  const vals=Object.fromEntries(results);
+
+  const gs=Number(vals.groundspeed_mps);
+  return {
+    xplane_version:XP_STATE.xplaneVersion,
+    api_version:XP_STATE.apiVersion,
+    latitude:vals.latitude,
+    longitude:vals.longitude,
+    altitude_ft:vals.altitude_ft,
+    heading_deg:vals.heading_deg,
+    com1_active_mhz:xpRadioRawToMhz(XP_STATE.refs.com1_active,vals.com1_active),
+    com1_standby_mhz:xpRadioRawToMhz(XP_STATE.refs.com1_standby,vals.com1_standby),
+    transponder_code:vals.transponder_code,
+    groundspeed_kt:Number.isFinite(gs)?gs*1.943844492:null,
+    on_ground:vals.on_ground==null?null:!!vals.on_ground,
+    aircraft_icao:xpDecodeDataValue(vals.aircraft_icao),
+    aircraft_description:xpDecodeDataValue(vals.aircraft_description),
+    tail_number:xpDecodeDataValue(vals.tail_number)
+  };
+}
+
+async function xpWriteRadio(key,mhz){
+  await xpDiscoverDatarefs(false);
+  const ref=XP_STATE.refs[key];
+  if(!ref) throw new Error(`${key} DataRef not found`);
+  const raw=xpMhzToRadioRaw(ref,mhz);
+  await xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs/${ref.id}/value`,{
+    method:"PATCH",
+    body:JSON.stringify({data:raw})
+  });
+}
+
+
+async function xpDiscoverCommand(name){
+  if(!XP_STATE.apiVersion || Number(String(XP_STATE.apiVersion).replace(/\D/g,""))<2) return null;
+  const qs=new URLSearchParams({"filter[name]":name});
+  const out=await xpDirectFetch(`/api/${XP_STATE.apiVersion}/commands?${qs.toString()}`);
+  const item=(out?.data||[]).find(x=>x.name===name)||null;
+  if(item) XP_STATE.commands[name]=item;
+  return item;
+}
+
+async function xpMuteBuiltInAtis(){
+  const ref=XP_STATE.refs.atis_enabled;
+  if(!ref) return;
+  try{
+    await xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs/${ref.id}/value`,{
+      method:"PATCH",
+      body:JSON.stringify({data:0})
+    });
+    XP_STATE.xplaneAtisMuted=true;
+  }catch(_){}
+}
+
+async function xpRestoreBuiltInAtis(){
+  const ref=XP_STATE.refs.atis_enabled;
+  if(!ref || !XP_STATE.xplaneAtisMuted) return;
+  try{
+    await xpDirectFetch(`/api/${XP_STATE.apiVersion}/datarefs/${ref.id}/value`,{
+      method:"PATCH",
+      body:JSON.stringify({data:1})
+    });
+  }catch(_){}
+  XP_STATE.xplaneAtisMuted=false;
+}
+
+function xpCurrentTrainerMode(){
+  if(document.getElementById("page-xplane")?.classList.contains("active")) return FK_XP_MODE;
+  return null;
+}
+
+function xpCurrentStageInfo(){
+  const mode=xpCurrentTrainerMode();
+  if(mode==="vfr"){
+    const stage=(typeof STAGES!=="undefined")?STAGES?.[app?.stageIndex]:null;
+    return {mode,stage,index:app?.stageIndex,complete:!!app?.stageComplete};
+  }
+  if(mode==="ifr"){
+    const stage=(typeof IFR_STAGES!=="undefined")?IFR_STAGES?.[IFR_APP?.stageIndex]:null;
+    return {mode,stage,index:IFR_APP?.stageIndex,complete:!!IFR_APP?.stageComplete};
+  }
+  return {mode:null,stage:null,index:null,complete:false};
+}
+
+
+function xpStageFrequencyValue(stage){
+  if(!stage) return null;
+  const raw=(typeof stage.freq==="function")?stage.freq():stage.freq;
+  const n=Number(raw);
+  return Number.isFinite(n)?n:null;
+}
+
+function xpNextStageInfo(){
+  const info=xpCurrentStageInfo();
+  if(!info.mode || !info.stage) return null;
+  if(info.mode==="vfr"){
+    const next=STAGES?.[Number(info.index)+1]||null;
+    return next?{mode:"vfr",index:Number(info.index)+1,stage:next}:null;
+  }
+  if(info.mode==="ifr"){
+    const next=IFR_STAGES?.[Number(info.index)+1]||null;
+    return next?{mode:"ifr",index:Number(info.index)+1,stage:next}:null;
+  }
+  return null;
+}
+
+async function xpAutoLoadNextFrequency(){
+  if(!XP_TRAINING_OPTIONS.autoHandoff || !XP_STATE.connected || !XP_STATE.radioAuthority) return;
+  const current=xpCurrentStageInfo();
+  if(!current.stage || !current.complete) return;
+
+  const next=xpNextStageInfo();
+  if(!next?.stage) return;
+  const freq=xpStageFrequencyValue(next.stage);
+  if(!Number.isFinite(freq)) return;
+
+  const key=`${next.mode}:${next.index}:${next.stage.id||next.stage.title||"stage"}:${freq.toFixed(3)}`;
+  if(XP_STATE.lastStandbyHandoffKey===key) return;
+
+  const stby=Number(XP_STATE.data?.com1_standby_mhz);
+  if(Number.isFinite(stby) && Math.abs(stby-freq)<0.0015){
+    XP_STATE.lastStandbyHandoffKey=key;
+    XP_STATE.lastStandbyHandoffFreq=freq;
+    XP_STATE.standbyHandoffStatus="LOADED";
+    return;
+  }
+
+  try{
+    XP_STATE.standbyHandoffStatus="LOADING";
+    await xpWriteRadio("com1_standby",freq);
+    XP_STATE.lastStandbyHandoffKey=key;
+    XP_STATE.lastStandbyHandoffFreq=freq;
+    XP_STATE.standbyHandoffStatus="LOADED";
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`Next frequency ${freq.toFixed(3)} loaded to COM1 STBY. Swap it from the X-Plane cockpit when instructed.`;
+  }catch(e){
+    XP_STATE.standbyHandoffStatus="FAILED";
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent=`Could not preload next frequency: ${e.message}`;
+  }
+}
+
+function xpCurrentFrequencyStatus(){
+  const info=xpCurrentStageInfo();
+  const target=xpStageFrequencyValue(info.stage);
+  const active=Number(XP_STATE.data?.com1_active_mhz);
+  if(!XP_STATE.connected) return {state:"OFFLINE",target,active,ready:false};
+  if(!Number.isFinite(target) || !Number.isFinite(active)) return {state:"NO FREQ",target,active,ready:false};
+  const ready=Math.abs(active-target)<0.0015;
+  return {state:ready?"READY":"WRONG FREQ",target,active,ready};
+}
+
+
+function xpRunwayHeading(runway){
+  const m=String(runway||"").toUpperCase().match(/^(\d{1,2})/);
+  if(!m) return null;
+  let h=Number(m[1])*10;
+  if(h===360) h=0;
+  return h;
+}
+function xpHeadingDifference(a,b){
+  const x=Math.abs((Number(a)-Number(b))%360);
+  return Math.min(x,360-x);
+}
+function xpRunwayAwareness(data=XP_STATE.data||{}){
+  const d=xpDerivedFlightState(data);
+  const mode=xpCurrentTrainerMode();
+  const depRunway=mode==="ifr"?IFR_APP?.config?.runway:app?.config?.runway;
+  const destRunway=mode==="ifr"?IFR_APP?.config?.destRunway:app?.config?.destRunway;
+  const arrival=Number.isFinite(d.destNm)&&d.destNm<=8;
+  const runway=arrival?destRunway:depRunway;
+  const rwHdg=xpRunwayHeading(runway);
+  const hdg=Number(data.heading_deg);
+  const error=(Number.isFinite(rwHdg)&&Number.isFinite(hdg))?xpHeadingDifference(hdg,rwHdg):null;
+  let state="NO RUNWAY DATA";
+  if(Number.isFinite(error)){
+    if(!d.onGround && Number.isFinite(d.destNm)&&d.destNm<=3 && error<=20) state=`ALIGNED FINAL RWY ${runway}`;
+    else if(d.onGround && Number.isFinite(d.gs)&&d.gs>=28 && error<=20) state=`ALIGNED ROLL RWY ${runway}`;
+    else if(d.onGround && Number.isFinite(d.gs)&&d.gs<8 && ((arrival?d.destNm:d.depNm)??99)<=2.0) state=`NEAR RWY ${runway} — VERIFY CLEARANCE`;
+    else if(error<=20) state=`HEADING ALIGNED RWY ${runway}`;
+    else state=`NOT ALIGNED RWY ${runway} (${Math.round(error)}°)`;
+  }
+  XP_STATE.lastRunwayAwareness=state;
+  return {state,runway,heading:rwHdg,error};
+}
+function xpExpectedFacility(){
+  const info=xpCurrentStageInfo();
+  if(info?.stage?.facility) return info.stage.facility;
+  const d=xpDerivedFlightState();
+  const routes=xpCurrentRouteAirports();
+  const dep=routes.dep,dest=routes.dest;
+  switch(d.phase){
+    case "PARKED": return dep?.facilities?.clearance||dep?.facilities?.ground||"Clearance / Ground";
+    case "TAXI": return dep?.facilities?.ground||"Ground";
+    case "TAKEOFF ROLL": return dep?.facilities?.tower||"Tower";
+    case "DEPARTURE": return dep?.facilities?.departure||"Departure";
+    case "ENROUTE": return dep?.facilities?.departure||dest?.facilities?.approach||"Departure / Approach";
+    case "ARRIVAL": return dest?.facilities?.approach||"Approach";
+    case "PATTERN / APPROACH":
+    case "FINAL": return dest?.facilities?.tower||"Tower";
+    case "LANDING ROLLOUT":
+    case "ARRIVAL TAXI":
+    case "ARRIVAL STOPPED": return dest?.facilities?.ground||"Ground";
+    default: return "—";
+  }
+}
+function xpLogReplay(type,message,extra={}){
+  const item={time:Date.now(),type:String(type||"EVENT"),message:String(message||""),...extra};
+  XP_STATE.replayLog.push(item);
+  if(XP_STATE.replayLog.length>250) XP_STATE.replayLog.splice(0,XP_STATE.replayLog.length-250);
+}
+function xpSampleReplay(data=XP_STATE.data||{}){
+  const now=Date.now();
+  if(now-XP_STATE.lastReplaySampleAt<5000) return;
+  XP_STATE.lastReplaySampleAt=now;
+  const phase=xpDerivedFlightState(data).phase;
+  if(phase!==XP_STATE.lastPhase){
+    XP_STATE.lastPhase=phase;
+    xpLogReplay("PHASE",phase);
+  }
+}
+const XP_SCORE_CATEGORY_MAP={
+  facility:"FACILITY",callsign:"CALLSIGN",type:"CALLSIGN",location:"POSITION",
+  atis:"ATIS",destination:"REQUEST",request:"REQUEST",ifr:"REQUEST",
+  frequency:"FREQUENCY",squawk:"SQUAWK",runway:"RUNWAY/TAXI",taxiway:"RUNWAY/TAXI",
+  route:"ROUTE",holdshort:"RUNWAY/TAXI",cross:"RUNWAY/TAXI",ready:"REQUEST",
+  takeoff:"RUNWAY/TAXI",direction:"POSITION",position:"POSITION",altitude:"ALTITUDE",
+  expectedAltitude:"ALTITUDE",heading:"POSITION",approach:"REQUEST",landing:"RUNWAY/TAXI",
+  parking:"RUNWAY/TAXI",traffic:"REQUEST",visual:"REQUEST",inbound:"POSITION",
+  downwind:"POSITION",patternSide:"POSITION",pattern:"POSITION",extend:"POSITION",base:"POSITION"
+};
+function xpRecordCategoryChecks(checks={}){
+  if(!document.getElementById("page-xplane")?.classList.contains("active")) return;
+  for(const [key,ok] of Object.entries(checks)){
+    const cat=XP_SCORE_CATEGORY_MAP[key]||"PHRASEOLOGY";
+    const s=XP_STATE.categoryScores[cat]||(XP_STATE.categoryScores[cat]={pass:0,total:0});
+    s.total++; if(ok)s.pass++;
+  }
+}
+function xpCategoryScoreSummary(){
+  const entries=Object.entries(XP_STATE.categoryScores);
+  return entries.map(([name,s])=>({name,score:s.total?Math.round(100*s.pass/s.total):0,total:s.total}))
+    .sort((a,b)=>b.total-a.total||b.score-a.score);
+}
+function xpExtractAnyPositionReport(text){
+  return xpExtractPositionReport(text);
+}
+function xpEvaluateLiveTransmission(text){
+  if(!XP_STATE.connected || !document.getElementById("page-xplane")?.classList.contains("active")) return;
+  const report=xpExtractAnyPositionReport(text);
+  if(report){
+    const routes=xpCurrentRouteAirports();
+    const target=(xpDerivedFlightState().destNm??999)<(xpDerivedFlightState().depNm??999)?routes.destCode:routes.depCode;
+    const result=xpValidatePositionReport(text,target);
+    const s=XP_STATE.categoryScores.POSITION||(XP_STATE.categoryScores.POSITION={pass:0,total:0});
+    s.total++; if(result?.ok)s.pass++;
+    xpLogReplay("POSITION",result?.ok?"Position report matched simulator":(result?.reason||"Position mismatch"));
+  }
+  const rw=xpRunwayAwareness();
+  xpLogReplay("TX",fkNormalizeRecognition(text),{runwayAwareness:rw.state});
+}
+async function xpAutoLoadAssignedSquawk(){
+  if(!XP_TRAINING_OPTIONS.autoSquawk || !XP_STATE.connected || !XP_STATE.radioAuthority) return;
+  const info=xpCurrentStageInfo();
+  if(!info?.stage || info.stage.id!=="clearance") return;
+  const phase=info.mode==="ifr"?IFR_APP?.phase:app?.phase;
+  if(phase!=="clearanceReadback" && !info.complete) return;
+  const code=String(xpAssignedSquawk?.()||"").replace(/\D/g,"");
+  if(!/^[0-7]{4}$/.test(code)) return;
+  const key=`${info.mode}:${code}`;
+  if(XP_STATE.lastSquawkLoadKey===key) return;
+  try{
+    await xpWriteDatarefValue("transponder_code",Number(code));
+    XP_STATE.lastSquawkLoadKey=key;
+    xpLogReplay("XPDR",`Auto-loaded squawk ${code}`);
+  }catch(e){
+    xpLogReplay("XPDR",`Auto-squawk failed: ${e.message}`);
+  }
+}
+function xpAtcDelayMs(){
+  if(!XP_TRAINING_OPTIONS.realisticDelay || !document.getElementById("page-xplane")?.classList.contains("active")) return 0;
+  return 450+Math.floor(Math.random()*950);
+}
+function fkSpeakUtterance(utterance){
+  if(!("speechSynthesis" in window)) return;
+  const delay=xpAtcDelayMs();
+  if(!delay){speechSynthesis.speak(utterance);return;}
+  clearTimeout(XP_STATE.speechDelayTimer);
+  XP_STATE.speechDelayTimer=setTimeout(()=>speechSynthesis.speak(utterance),delay);
+}
+function xpTrafficMessages(){
+  const facility=xpExpectedFacility();
+  return [
+    `Skyhawk 38 Alpha, ${facility}, traffic twelve o'clock, two miles.`,
+    `Cherokee 6 Juliet, ${facility}, maintain VFR and report the field in sight.`,
+    `Cessna 5 Mike, ${facility}, extend downwind, I'll call your base.`,
+    `Bonanza 2 Romeo, ${facility}, contact departure on one two seven point two.`
+  ];
+}
+function xpAppendTraffic(text){
+  const mode=xpCurrentTrainerMode();
+  if(mode==="ifr") ifrAppend("atc","TRAFFIC",text);
+  else if(mode==="vfr") append("atc","TRAFFIC",text);
+  xpLogReplay("TRAFFIC",text);
+}
+function xpScheduleTraffic(){
+  if(XP_STATE.trafficTimer)clearTimeout(XP_STATE.trafficTimer);
+  if(!XP_TRAINING_OPTIONS.backgroundTraffic || !XP_STATE.connected) return;
+  const delay=28000+Math.floor(Math.random()*26000);
+  XP_STATE.trafficTimer=setTimeout(()=>{
+    if(XP_STATE.connected && XP_TRAINING_OPTIONS.backgroundTraffic && !XP_STATE.txActive && !(("speechSynthesis" in window)&&window.speechSynthesis.speaking)){
+      const msgs=xpTrafficMessages();
+      const text=msgs[Math.floor(Math.random()*msgs.length)];
+      xpAppendTraffic(text);
+      if(XP_TRAINING_OPTIONS.congestion) XP_STATE.frequencyBusyUntil=Date.now()+3500;
+      try{
+        const u=new SpeechSynthesisUtterance(fkPrepareTextForSpeech(text));u.lang="en-US";u.rate=.96;u.pitch=.9;u.volume=.75;
+        speechSynthesis.speak(u);
+      }catch(_){}
+    }
+    xpScheduleTraffic();
+  },delay);
+}
+function xpFrequencyBusy(){
+  if(("speechSynthesis" in window)&&window.speechSynthesis.speaking) return true;
+  return XP_TRAINING_OPTIONS.congestion && Date.now()<XP_STATE.frequencyBusyUntil;
+}
+function xpCancelShortTransmission(mode){
+  XP_STATE.shortPttPresses++;
+  XP_STATE.txActive=false;
+  if(mode==="vfr"){
+    app.pttActive=false;app.pttStopping=true;
+    app.recognitionCommitted="";app.recognitionSegment="";app.recognitionText="";
+    if($("pilotText"))$("pilotText").value="";
+    clearTimeout(app.recognitionRestartTimer);
+    try{app.recognizer?.abort?.()}catch(_){}
+    $("feedback").textContent="PTT press was too short. Hold PTT while speaking.";
+  }else if(mode==="ifr"){
+    IFR_APP.pttActive=false;IFR_APP.pttStopping=true;
+    IFR_APP.recognitionCommitted="";IFR_APP.recognitionSegment="";IFR_APP.recognitionInterim="";
+    if(ifr$("pilotText"))ifr$("pilotText").value="";
+    clearTimeout(IFR_APP.recognitionRestartTimer);
+    try{IFR_APP.recognizer?.abort?.()}catch(_){}
+    ifr$("feedback").textContent="PTT press was too short. Hold PTT while speaking.";
+  }
+  xpLogReplay("PTT","Short/accidental PTT press ignored");
+}
+function xpRunDiagnosticsState(){
+  const r=XP_STATE.refs||{},d=XP_STATE.data||{},profile=xpBuildAircraftProfile();
+  return {
+    api:!!XP_STATE.apiVersion,
+    comActive:!!r.com1_active,
+    comStandby:!!r.com1_standby && r.com1_standby.writable!==false,
+    xpdr:!!r.transponder_code && r.transponder_code.writable!==false,
+    ptt:!!XP_STATE.pttCommandId || Number(String(XP_STATE.apiVersion||"v1").replace(/\D/g,""))>=2,
+    position:!!r.latitude&&!!r.longitude&&Number.isFinite(Number(d.latitude))&&Number.isFinite(Number(d.longitude)),
+    flight:!!r.on_ground&&!!r.groundspeed_mps,
+    mic:!!XP_STATE.micPermissionReady,
+    profile:!!profile?.profileName,
+    ws:XP_STATE.telemetryMode==="WEBSOCKET"
+  };
+}
+function xpSetDx(id,state,warning=false){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=state===true?"PASS":state===false?"FAIL":String(state||"WARN");
+  el.className="v500-dx-state "+(state===true?"pass":state===false?"fail":"warn");
+}
+function xpRenderDiagnostics(){
+  const s=xpRunDiagnosticsState();
+  xpSetDx("dxApi",s.api);xpSetDx("dxComActive",s.comActive);xpSetDx("dxComStandby",s.comStandby);
+  xpSetDx("dxXpdr",s.xpdr);xpSetDx("dxPtt",s.ptt);xpSetDx("dxPosition",s.position);
+  xpSetDx("dxFlight",s.flight);xpSetDx("dxMic",s.mic);xpSetDx("dxProfile",s.profile);xpSetDx("dxWs",s.ws?s.ws:"REST OK");
+  const profile=XP_STATE.aircraftProfile;
+  const sum=document.getElementById("v500DxSummary");
+  if(sum)sum.textContent=XP_STATE.connected
+    ?`${profile?.profileName||"Standard profile"} • ${profile?.total||0}/${profile?.max||0} core capabilities • ${XP_STATE.telemetryMode||"REST"}`
+    :"Not connected. Open X-Plane Mode, connect to X-Plane, then return here and run diagnostics.";
+}
+async function xpRunDiagnostics(){
+  try{
+    if(!XP_STATE.connected) await xpConnect();
+    await xpDiscoverDatarefs(true);
+    try{await xpConnectPTTCommand()}catch(_){}
+    xpRenderDiagnostics();
+  }catch(e){
+    const sum=document.getElementById("v500DxSummary");if(sum)sum.textContent=`Diagnostics failed: ${e.message}`;
+    xpRenderDiagnostics();
+  }
+}
+function xpRenderReplay(){
+  const holder=document.getElementById("v500Replay");if(!holder)return;
+  const recent=XP_STATE.replayLog.slice(-8).reverse();
+  holder.innerHTML=recent.length?recent.map(x=>`<div class="v500-replay-row"><span>${new Date(x.time).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"})}</span><b>${x.type}</b><span>${String(x.message).replace(/[<>]/g,"")}</span></div>`).join("")
+    :'<div class="v500-note">Session replay events will appear here.</div>';
+}
+function xpRenderCategoryScores(){
+  const holder=document.getElementById("v500ScoreGrid");if(!holder)return;
+  const rows=xpCategoryScoreSummary().slice(0,5);
+  holder.innerHTML=rows.length?rows.map(r=>`<div class="v500-score"><b>${r.score}%</b><span>${r.name}</span></div>`).join("")
+    :'<div class="v500-note">Category scoring begins with your first radio call.</div>';
+}
+function xpAppendAdvancedReport(){
+  const holder=document.getElementById("reportRecommendations");if(!holder||!XP_STATE.replayLog.length)return;
+  const cats=xpCategoryScoreSummary();
+  const catHtml=cats.length?`<h3>Communication Categories</h3><ul>${cats.map(c=>`<li>${c.name}: ${c.score}% (${c.total} checks)</li>`).join("")}</ul>`:"";
+  const replay=XP_STATE.replayLog.slice(-12);
+  const replayHtml=`<h3>X-Plane Session Replay</h3><ul>${replay.map(e=>`<li>${new Date(e.time).toLocaleTimeString()} — ${e.type}: ${String(e.message).replace(/[<>]/g,"")}</li>`).join("")}</ul>`;
+  holder.insertAdjacentHTML("beforeend",catHtml+replayHtml+
+    `<div class="report-scenario"><b>X-Plane training:</b> blocked transmissions ${XP_STATE.blockedTransmissions||0} • short PTT ${XP_STATE.shortPttPresses||0} • profile ${XP_STATE.aircraftProfile?.profileName||"Standard"}</div>`);
+}
+
+function xpHandleAutoAtis(){
+  if(!XP_STATE.connected || !XP_STATE.radioAuthority) return;
+  const info=xpCurrentStageInfo();
+  const stage=info.stage;
+  if(!stage || stage.type!=="atis" || info.complete) return;
+
+  const tunedNow = info.mode==="vfr"
+    ? (typeof tuned==="function" && tuned())
+    : (typeof ifrTuned==="function" && ifrTuned());
+
+  if(!tunedNow) return;
+
+  const key=`${info.mode}:${info.index}:${stage.id}:${stage.freq}`;
+  if(XP_STATE.lastAutoAtisKey===key) return;
+  XP_STATE.lastAutoAtisKey=key;
+
+  if(info.mode==="vfr" && typeof monitorAtis==="function"){
+    monitorAtis();
+  }else if(info.mode==="ifr" && typeof ifrMonitorAtis==="function"){
+    ifrMonitorAtis();
+  }
+}
+
+function xpResetAutoAtisLatch(){
+  XP_STATE.lastAutoAtisKey=null;
+  XP_STATE.lastStandbyHandoffKey=null;
+  XP_STATE.lastStandbyHandoffFreq=null;
+  XP_STATE.standbyHandoffStatus="IDLE";
+}
+
+
+async function xpGetMicrophonePermissionState(){
+  try{
+    if(navigator.permissions?.query){
+      const status=await navigator.permissions.query({name:"microphone"});
+      XP_STATE.micPermissionState=status?.state||"unknown";
+      if(status){
+        status.onchange=()=>{
+          XP_STATE.micPermissionState=status.state||"unknown";
+          if(status.state==="denied"){
+            XP_STATE.micPermissionReady=false;
+          }
+          v492Refresh?.();
+        };
+      }
+      return XP_STATE.micPermissionState;
+    }
+  }catch(_){}
+  return XP_STATE.micPermissionState||"unknown";
+}
+
+async function xpPrepareMicrophone(interactive=true){
+  /* Reuse one live stream for the complete X-Plane session. */
+  if(XP_STATE.micStream && XP_STATE.micStream.getAudioTracks().some(t=>t.readyState==="live")){
+    XP_STATE.micPermissionReady=true;
+    XP_STATE.micPermissionState="granted";
+    const ms=document.getElementById("xpMicStatus");
+    if(ms) ms.innerHTML="<b>MIC:</b> READY — permission retained for this X-Plane session.";
+    return true;
+  }
+
+  if(!navigator.mediaDevices?.getUserMedia){
+    XP_STATE.micPermissionReady=false;
+    XP_STATE.micPermissionState="unsupported";
+    return false;
+  }
+
+  const permission=await xpGetMicrophonePermissionState();
+
+  /* PTT is never allowed to create a permission popup. Only an explicit
+     Connect X-Plane action may request permission if the browser still says prompt. */
+  if(!interactive && permission!=="granted"){
+    XP_STATE.micPermissionReady=false;
+    const ms=document.getElementById("xpMicStatus");
+    if(ms) ms.innerHTML="<b>MIC:</b> NOT READY — click Connect X-Plane and allow microphone once.";
+    return false;
+  }
+
+  if(permission==="denied"){
+    XP_STATE.micPermissionReady=false;
+    const ms=document.getElementById("xpMicStatus");
+    if(ms) ms.innerHTML="<b>MIC:</b> BLOCKED — microphone permission is denied in browser settings.";
+    return false;
+  }
+
+  if(XP_STATE.micPermissionPromise) return XP_STATE.micPermissionPromise;
+
+  XP_STATE.micPermissionRequested=true;
+  XP_STATE.micPermissionPromise=(async()=>{
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      XP_STATE.micStream=stream;
+      XP_STATE.micPermissionReady=true;
+      XP_STATE.micPermissionState="granted";
+      XP_STATE.micApprovedPreviously=true;
+      try{localStorage.setItem("fk-atc-microphone-approved-v1","1")}catch(_){}
+
+      /* If the browser or OS revokes the live track, mark it unavailable,
+         but do not trigger a new prompt from PTT. */
+      stream.getAudioTracks().forEach(track=>{
+        track.addEventListener("ended",()=>{
+          XP_STATE.micPermissionReady=false;
+          XP_STATE.micStream=null;
+          const ms=document.getElementById("xpMicStatus");
+          if(ms) ms.innerHTML="<b>MIC:</b> NOT READY — reconnect X-Plane to restore microphone.";
+          v492Refresh?.();
+        });
+      });
+
+      const ms=document.getElementById("xpMicStatus");
+      if(ms) ms.innerHTML="<b>MIC:</b> READY — permission retained for this X-Plane session.";
+      const h=document.getElementById("xpHelp");
+      if(h) h.textContent="Microphone ready. PTT will reuse this microphone without asking again.";
+      return true;
+    }catch(e){
+      XP_STATE.micPermissionReady=false;
+      XP_STATE.micPermissionState=(e?.name==="NotAllowedError"||e?.name==="PermissionDeniedError")?"denied":"unknown";
+      const ms=document.getElementById("xpMicStatus");
+      if(ms) ms.innerHTML="<b>MIC:</b> BLOCKED — allow microphone access from the browser site permissions.";
+      const h=document.getElementById("xpHelp");
+      if(h) h.textContent="Microphone permission was not granted. Use the browser site-permission control, allow Microphone, then click Connect X-Plane again.";
+      return false;
+    }finally{
+      XP_STATE.micPermissionPromise=null;
+    }
+  })();
+
+  return XP_STATE.micPermissionPromise;
+}
+
+function xpReleaseMicrophone(){
+  if(XP_STATE.micStream){
+    try{XP_STATE.micStream.getTracks().forEach(t=>t.stop())}catch(_){}
+  }
+  XP_STATE.micStream=null;
+  XP_STATE.micPermissionReady=false;
+  const ms=document.getElementById("xpMicStatus");
+  if(ms) ms.innerHTML="<b>MIC:</b> Standby — click Connect X-Plane to prepare microphone.";
+}
+
+
+function xpPttTestSet(id,state,text){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove("pass","active","fail");
+  if(state) el.classList.add(state);
+  const strong=el.querySelector("strong");
+  if(strong) strong.textContent=text;
+}
+
+function xpPttTestRefresh(){
+  const active=!!XP_STATE.pttTestActive;
+  xpPttTestSet("v505PttButton",
+    XP_STATE.pttTestButtonDetected?"pass":(active?"active":""),
+    XP_STATE.pttTestButtonDetected?"BUTTON DETECTED":(active?"WAITING FOR PTT":"BUTTON NOT DETECTED"));
+
+  const micReady=!!XP_STATE.micPermissionReady;
+  xpPttTestSet("v505PttMic",
+    micReady?"pass":(active?"fail":""),
+    micReady?"MIC ACTIVE":"MIC NOT READY");
+
+  xpPttTestSet("v505PttVoice",
+    XP_STATE.pttTestVoiceDetected?"pass":(active&&XP_STATE.txActive?"active":""),
+    XP_STATE.pttTestVoiceDetected?"VOICE DETECTED":(active&&XP_STATE.txActive?"LISTENING":"VOICE NOT DETECTED"));
+
+  xpPttTestSet("v505PttSent",
+    XP_STATE.pttTestTransmissionSent?"pass":"",
+    XP_STATE.pttTestTransmissionSent?"TRANSMISSION SENT":"NOT SENT");
+
+  const heard=document.getElementById("v505PttHeard");
+  if(heard) heard.textContent=`Heard: ${XP_STATE.pttTestLastHeard||"—"}`;
+
+  const start=document.getElementById("v505StartTest");
+  if(start) start.textContent=active?"PTT TEST ACTIVE":"START PTT TEST";
+}
+
+function xpStartPttTest(){
+  XP_STATE.pttTestActive=true;
+  XP_STATE.pttTestButtonDetected=false;
+  XP_STATE.pttTestVoiceDetected=false;
+  XP_STATE.pttTestTransmissionSent=false;
+  XP_STATE.pttTestLastHeard="";
+  xpPttTestRefresh();
+  const h=document.getElementById("xpHelp");
+  if(h) h.textContent=XP_STATE.micPermissionReady
+    ?"PTT Test active. Press and hold your aircraft PTT, speak a short phrase, then release."
+    :"PTT Test active, but microphone is not ready. Connect X-Plane and allow microphone once.";
+}
+
+function xpResetPttTest(){
+  XP_STATE.pttTestActive=false;
+  XP_STATE.pttTestButtonDetected=false;
+  XP_STATE.pttTestVoiceDetected=false;
+  XP_STATE.pttTestTransmissionSent=false;
+  XP_STATE.pttTestLastHeard="";
+  xpPttTestRefresh();
+}
+
+function xpPttTestCaptureText(text){
+  if(!XP_STATE.pttTestActive) return;
+  const cleaned=String(text||"").trim();
+  if(cleaned){
+    XP_STATE.pttTestVoiceDetected=true;
+    XP_STATE.pttTestLastHeard=cleaned;
+    xpPttTestRefresh();
+  }
+}
+
+async function xpStartPilotTransmissionFromPTT(){
+  XP_STATE.pttPressedAt=Date.now();
+  if(XP_STATE.pttTestActive){
+    XP_STATE.pttTestButtonDetected=true;
+    xpPttTestRefresh();
+  }
+  const mode=xpCurrentTrainerMode();
+  if(xpFrequencyBusy()){
+    XP_STATE.pttBlocked=true;
+    XP_STATE.blockedTransmissions++;
+    XP_STATE.txActive=false;
+    xpLogReplay("BLOCKED","Transmission blocked — frequency busy");
+    const fb=mode==="ifr"?ifr$("feedback"):$("feedback");
+    if(fb)fb.textContent="BLOCKED — frequency busy. Wait for the transmission to end, then try again.";
+    v492Refresh?.();
+    return;
+  }
+  XP_STATE.pttBlocked=false;
+  XP_STATE.txActive=true;
+  xpLogReplay("PTT","Transmit started");
+  v492Refresh?.();
+  if(!XP_STATE.micPermissionReady){
+    XP_STATE.txActive=false;
+    xpLogReplay("MIC","PTT ignored — microphone not prepared");
+    const fb=mode==="ifr"?ifr$("feedback"):$("feedback");
+    if(fb) fb.textContent="MIC NOT READY — click Connect X-Plane and allow microphone once. PTT will not open a permission popup.";
+    const ms=document.getElementById("xpMicStatus");
+    if(ms) ms.innerHTML="<b>MIC:</b> NOT READY — reconnect X-Plane to prepare microphone.";
+    v492Refresh?.();
+    return;
+  }
+  if(mode==="vfr"){
+    if(typeof startPTT==="function" && !app.pttActive){
+      await startPTT();
+    }
+  }else if(mode==="ifr"){
+    if(!IFR_APP.pttActive && typeof ifrTogglePTT==="function"){
+      await ifrTogglePTT();
+    }
+  }
+}
+
+function xpStopPilotTransmissionFromPTT(){
+  const mode=xpCurrentTrainerMode();
+  const held=Date.now()-(XP_STATE.pttPressedAt||0);
+  if(XP_STATE.pttBlocked){
+    XP_STATE.pttBlocked=false;
+    XP_STATE.txActive=false;
+    v492Refresh?.();
+    return;
+  }
+  if(held>0 && held<250){
+    xpCancelShortTransmission(mode);
+    v492Refresh?.();
+    return;
+  }
+  XP_STATE.txActive=false;
+  if(XP_STATE.pttTestActive && XP_STATE.pttTestButtonDetected){
+    XP_STATE.pttTestTransmissionSent=true;
+    xpPttTestRefresh();
+  }
+  xpLogReplay("PTT","Transmit ended");
+  v492Refresh?.();
+  clearTimeout(XP_STATE.pttReleaseTimer);
+  XP_STATE.pttReleaseTimer=setTimeout(()=>{
+    if(mode==="vfr"){
+      if(typeof stopPTT==="function" && app.pttActive) stopPTT();
+    }else if(mode==="ifr"){
+      if(IFR_APP.pttActive && typeof ifrTogglePTT==="function") ifrTogglePTT();
+    }
+    XP_STATE.pttReleaseTimer=null;
+  },220);
+}
+
+async function xpConnectPTTCommand(){
+  if(!XP_STATE.connected || !XP_STATE.apiVersion) return;
+  const apiNum=Number(String(XP_STATE.apiVersion).replace(/\D/g,""));
+  let cmd=null;
+  if(apiNum>=2){
+    try{cmd=await xpDiscoverCommand("sim/operation/contact_atc_ptt");}catch(_){}
+    if(cmd) XP_STATE.pttCommandId=cmd.id;
+    try{await xpDiscoverCommand("sim/radios/com1_standy_flip");}catch(_){}
+  }
+
+  if(XP_STATE.telemetrySocket){try{XP_STATE.telemetrySocket.close()}catch(_){}}
+  const ws=new WebSocket(`ws://127.0.0.1:8086/api/${XP_STATE.apiVersion}`);
+  XP_STATE.telemetrySocket=ws;
+  XP_STATE.pttSocket=ws;
+
+  ws.onopen=()=>{
+    const refs=Object.values(XP_STATE.refs).filter(x=>x?.id).map(x=>({id:x.id}));
+    if(refs.length){
+      ws.send(JSON.stringify({req_id:85001,type:"dataref_subscribe_values",params:{datarefs:refs}}));
+    }
+    if(cmd){
+      ws.send(JSON.stringify({req_id:85002,type:"command_subscribe_is_active",params:{commands:[{id:cmd.id}]}}));
+    }
+    XP_STATE.telemetryMode="WEBSOCKET";
+    const dl=document.getElementById("xpDataLink"); if(dl)dl.textContent="WEBSOCKET";
+  };
+
+  ws.onmessage=async ev=>{
+    let msg; try{msg=JSON.parse(ev.data)}catch(_){return}
+    if(msg?.type==="dataref_update_values"){
+      const byId=new Map(Object.entries(XP_STATE.refs).map(([k,v])=>[String(v.id),[k,v]]));
+      const raw=msg.data||{};
+      XP_STATE.data=XP_STATE.data||{};
+      for(const [id,val] of Object.entries(raw)){
+        const pair=byId.get(String(id)); if(!pair)continue;
+        const [key,ref]=pair;
+        if(key==="com1_active") XP_STATE.data.com1_active_mhz=xpRadioRawToMhz(ref,val);
+        else if(key==="com1_standby") XP_STATE.data.com1_standby_mhz=xpRadioRawToMhz(ref,val);
+        else if(key==="groundspeed_mps") XP_STATE.data.groundspeed_kt=Number(val)*1.943844492;
+        else if(key==="on_ground") XP_STATE.data.on_ground=!!val;
+        else if(["aircraft_icao","aircraft_description","tail_number"].includes(key)) XP_STATE.data[key]=xpDecodeDataValue(val);
+        else XP_STATE.data[key]=val;
+      }
+      XP_STATE.lastTelemetryAt=Date.now();
+      xpRender(XP_STATE.data);
+      xpHandleAutoAtis();
+    }else if(msg?.type==="command_update_is_active" && cmd){
+      const active=msg?.data?.[String(cmd.id)];
+      if(active===true) await xpStartPilotTransmissionFromPTT();
+      else if(active===false) xpStopPilotTransmissionFromPTT();
+    }
+  };
+
+  ws.onerror=()=>{
+    XP_STATE.telemetryMode="REST FALLBACK";
+    const dl=document.getElementById("xpDataLink"); if(dl)dl.textContent="REST FALLBACK";
+  };
+  ws.onclose=()=>{
+    if(XP_STATE.connected){
+      XP_STATE.telemetryMode="REST FALLBACK";
+      const dl=document.getElementById("xpDataLink"); if(dl)dl.textContent="REST FALLBACK";
+    }
+  };
+}
+
+function xpDisconnectPTTCommand(){
+  if(XP_STATE.telemetrySocket){try{XP_STATE.telemetrySocket.close()}catch(_){}}
+  XP_STATE.telemetrySocket=null;
+  XP_STATE.pttSocket=null;
+  XP_STATE.pttCommandId=null;
+  XP_STATE.telemetryMode="REST";
+}
+
+function xpApplyConnectedControlMode(){
+  const vfrMon=document.getElementById("monitorAtis");
+  const ifrMon=document.getElementById("ifr-monitorAtis");
+  const vfrPtt=document.getElementById("ptt");
+  const ifrPtt=document.getElementById("ifr-ptt");
+
+  if(vfrMon){
+    vfrMon.textContent="ATIS AUTO — X-PLANE";
+    vfrMon.disabled=true;
+  }
+  if(ifrMon){
+    ifrMon.textContent="ATIS AUTO — X-PLANE";
+    ifrMon.disabled=true;
+  }
+  if(vfrPtt){
+    vfrPtt.disabled=true;
+    const l=document.getElementById("pttLabel");
+    if(l) l.textContent="USE AIRCRAFT PTT";
+  }
+  if(ifrPtt){
+    ifrPtt.disabled=true;
+    const l=document.getElementById("ifr-pttLabel");
+    if(l) l.textContent="USE AIRCRAFT PTT";
+  }
+}
+
+function xpRestoreStandaloneControlMode(){
+  const vfrMon=document.getElementById("monitorAtis");
+  const ifrMon=document.getElementById("ifr-monitorAtis");
+  if(vfrMon) vfrMon.textContent="MONITOR ATIS";
+  if(ifrMon) ifrMon.textContent="MONITOR ATIS";
+  if(typeof updateTuneUI==="function") updateTuneUI();
+  if(typeof ifrUpdateTuneUI==="function") ifrUpdateTuneUI();
+}
+
+function xpSetRadioControlsDisabled(disabled){
+  document.querySelectorAll("#page-trainer .digit-btn,#page-ifr-trainer .digit-btn").forEach(btn=>{
+    btn.disabled=!!disabled;
+    btn.setAttribute("aria-disabled",disabled?"true":"false");
+    btn.title=disabled?"Tune COM1 in the X-Plane cockpit while SIM RADIO is connected.":"";
+  });
+  document.querySelectorAll("#page-trainer .com-radio-panel,#page-ifr-trainer .com-radio-panel").forEach(panel=>{
+    panel.classList.toggle("xp-authority",!!disabled);
+  });
+}
+
+function xpApplyCom1ToTrainer(mhz){
+  const n=Number(mhz);
+  if(!Number.isFinite(n)||n<118||n>137) return;
+  const value=n.toFixed(3);
+  XP_STATE.lastCom1=value;
+
+  const vf=document.getElementById("frequency");
+  if(vf){
+    vf.value=value;
+    if(typeof renderRadioDigits==="function") renderRadioDigits();
+    if(typeof updateTuneUI==="function") updateTuneUI();
+  }
+
+  const inf=document.getElementById("ifr-frequency");
+  if(inf){
+    inf.value=value;
+    if(typeof ifrRenderRadioDigits==="function") ifrRenderRadioDigits();
+    if(typeof ifrUpdateTuneUI==="function") ifrUpdateTuneUI();
+  }
+}
+
+function xpRender(d={}){
+  XP_STATE.data=d;
+  const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  set("xpVersion",d.xplane_version||"—");
+  const profile=xpBuildAircraftProfile();
+  const derived=xpDerivedFlightState(d);
+  set("xpAircraft",d.aircraft_icao||d.aircraft_description||"Standard X-Plane");
+  set("xpDataLink",XP_STATE.telemetryMode||"REST");
+  set("xpAutoStageState",XP_STATE.autoStageEnabled?"ON":"OFF");
+  set("xpCom1",xpFmtFreq(d.com1_active_mhz));
+  set("xpCom1Stby",xpFmtFreq(d.com1_standby_mhz));
+  set("xpXpdr",d.transponder_code!=null?String(d.transponder_code).padStart(4,"0"):"—");
+  set("xpGroundspeed",xpFmtNum(d.groundspeed_kt,1," kt"));
+  set("xpAltitude",xpFmtNum(d.altitude_ft,0," ft"));
+  set("xpHeading",xpFmtNum(d.heading_deg,0,"°"));
+  set("xpDistDest",Number.isFinite(derived.destNm)?`${derived.destNm.toFixed(1)} NM`:"—");
+  set("xpPositionCardinal",Number.isFinite(derived.destNm)?`${derived.destNm.toFixed(1)} ${derived.destCardinal}`:"—");
+  set("xpFlightState",derived.phase);
+  set("xpCapability",profile?`${profile.total}/${profile.max} capabilities`:"—");
+  set("xpLat",xpFmtNum(d.latitude,5));
+  set("xpLon",xpFmtNum(d.longitude,5));
+  if(XP_STATE.connected && XP_STATE.radioAuthority) xpApplyCom1ToTrainer(d.com1_active_mhz);
+  xpSampleReplay(d);
+  xpAutoLoadAssignedSquawk();
+  xpAutoLoadNextFrequency();
+  xpAutoStageTick();
+  xpRenderDiagnostics?.();
+}
+
+function xpEnableAuthority(){
+  XP_STATE.radioAuthority=true;
+  const connectBtn=document.getElementById("xpConnectBtn");
+  const disconnectBtn=document.getElementById("xpDisconnectBtn");
+  if(connectBtn) connectBtn.disabled=true;
+  if(disconnectBtn) disconnectBtn.disabled=false;
+  xpSetRadioControlsDisabled(true);
+  xpApplyConnectedControlMode();
+  if(XP_STATE.data) xpApplyCom1ToTrainer(XP_STATE.data.com1_active_mhz);
+  xpResetAutoAtisLatch();
+  const h=document.getElementById("xpHelp");
+  if(h)h.textContent="X-Plane controls active: tune COM1 in the cockpit; ATIS starts automatically on the correct ATIS frequency; use the aircraft PTT to transmit.";
+}
+
+function xpDisableAuthority(){
+  XP_STATE.radioAuthority=false;
+  const connectBtn=document.getElementById("xpConnectBtn");
+  const disconnectBtn=document.getElementById("xpDisconnectBtn");
+  if(connectBtn) connectBtn.disabled=false;
+  if(disconnectBtn) disconnectBtn.disabled=true;
+  xpSetRadioControlsDisabled(false);
+  xpDisconnectPTTCommand();
+  xpResetAutoAtisLatch();
+  xpRestoreStandaloneControlMode();
+  const h=document.getElementById("xpHelp");
+  if(h)h.textContent="Standalone FK radio active. Start X-Plane 12.1.1+ on this computer to reconnect.";
+}
+
+async function xpPoll(){
+  try{
+    let d=XP_STATE.data;
+    if(!XP_STATE.telemetrySocket || XP_STATE.telemetrySocket.readyState!==WebSocket.OPEN || Date.now()-XP_STATE.lastTelemetryAt>2500){
+      d=await xpReadState();
+      XP_STATE.telemetryMode="REST FALLBACK";
+    }
+    XP_STATE.connected=true;
+    xpSetStatus("connected","X-PLANE LIVE");
+    xpRender(d||{});
+    await xpMuteBuiltInAtis();
+    xpHandleAutoAtis();
+  }catch(e){
+    XP_STATE.connected=false;
+    xpSetStatus("error","X-PLANE OFFLINE");
+    /* Do not release microphone here. A temporary X-Plane/API dropout must
+       not destroy the user's approved microphone session and cause another
+       permission prompt on the next PTT press. */
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent="X-Plane telemetry temporarily unavailable. Microphone permission is being retained.";
+  }
+}
+
+async function xpConnect(){
+  const b=document.getElementById("xpConnectBtn"),d=document.getElementById("xpDisconnectBtn");
+  if(location.protocol==="file:"){
+    const h=document.getElementById("xpHelp");
+    if(h) h.textContent="For remembered microphone permission, launch FK ATC with START_FK_ATC.bat / localhost instead of opening index.html directly as a file.";
+  }
+  if(b)b.disabled=true;
+  xpSetStatus("","CONNECTING DIRECT...");
+  try{
+    await xpDiscoverDatarefs(true);
+    const state=await xpReadState();
+    if(!XP_STATE.refs.com1_active) throw new Error("COM1 active DataRef not found. Load a flight first.");
+    XP_STATE.connected=true;
+    xpRender(state);
+    xpSetStatus("connected","X-PLANE LIVE");
+    xpEnableAuthority();
+    await xpPrepareMicrophone(true);
+    await xpMuteBuiltInAtis();
+    await xpConnectPTTCommand();
+    xpHandleAutoAtis();
+    xpLogReplay("CONNECT","X-Plane connected");
+    xpScheduleTraffic();
+    if(XP_STATE.timer) clearInterval(XP_STATE.timer);
+    XP_STATE.timer=setInterval(xpPoll,XP_POLL_MS);
+    if(d)d.disabled=false;
+  }catch(e){
+    XP_STATE.connected=false;
+    xpSetStatus("error","DIRECT CONNECTION FAILED");
+    xpDisableAuthority();
+    const h=document.getElementById("xpHelp");
+    if(h)h.textContent=`Direct X-Plane connection failed: ${e.message}. Verify X-Plane 12.1.1+ is running, a flight is loaded, and Settings > Network does not disable incoming traffic.`;
+  }finally{
+    if(b)b.disabled=XP_STATE.connected;
+  }
+}
+
+async function xpDisconnect(){
+  if(XP_STATE.timer)clearInterval(XP_STATE.timer);
+  XP_STATE.timer=null;
+  if(XP_STATE.trafficTimer)clearTimeout(XP_STATE.trafficTimer);
+  XP_STATE.trafficTimer=null;
+  xpLogReplay("CONNECT","X-Plane disconnected");
+  xpDisconnectPTTCommand();
+  xpReleaseMicrophone();
+  await xpRestoreBuiltInAtis();
+  XP_STATE.connected=false;
+  XP_STATE.txActive=false;
+  XP_STATE.data=null;
+  XP_STATE.refs={};
+  xpSetStatus("","DISCONNECTED");
+  xpRender({});
+  xpDisableAuthority();
+  const d=document.getElementById("xpDisconnectBtn");
+  const b=document.getElementById("xpConnectBtn");
+  if(d)d.disabled=true;
+  if(b)b.disabled=false;
+}
+
+async function xpLoadTargetToStandby(){
+  if(!XP_STATE.connected) return;
+  let target=null;
+  const vfrPage=document.getElementById("page-trainer");
+  const ifrPage=document.getElementById("page-ifr-trainer");
+  if(vfrPage?.classList.contains("active") && typeof STAGES!=="undefined"){
+    target=STAGES?.[app?.stageIndex]?.freq;
+  }else if(ifrPage?.classList.contains("active") && typeof IFR_STAGES!=="undefined"){
+    target=IFR_STAGES?.[IFR_APP?.stageIndex]?.freq;
+  }
+  if(!target) return;
+
+  try{
+    await xpWriteRadio("com1_standby",Number(target));
+    await xpPoll();
+    const h=document.getElementById("xpHelp");
+    if(h)h.textContent=`Loaded ${Number(target).toFixed(3)} into X-Plane COM1 standby. Swap it active in the cockpit.`;
+  }catch(e){
+    const h=document.getElementById("xpHelp");
+    if(h)h.textContent=`Could not write COM1 standby: ${e.message}`;
+  }
+}
+
+
+function v492(id){return document.getElementById(id);}
+function v492Dispatch(el){if(el)el.dispatchEvent(new Event("change",{bubbles:true}));}
+function v492CurrentPrefix(){return FK_XP_MODE==="ifr"?"ifr-":"";}
+function v492SetUiMode(mode){
+  FK_UI_MODE=mode;
+  document.body.classList.toggle("v492-xp-active",mode==="xplane");
+  if(mode!=="xplane" && typeof XP_STATE!=="undefined" && XP_STATE.connected){xpDisconnect();}
+}
+function v492Airport(code){return (typeof AIRPORTS!=="undefined"&&AIRPORTS[code])?AIRPORTS[code]:null;}
+function v492FillSelect(id,items,current){
+  const el=v492(id); if(!el)return; el.innerHTML="";
+  (items||[]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;el.appendChild(o);});
+  if(current && [...el.options].some(o=>o.value===current))el.value=current;
+}
+function v492SyncAdvanced(){
+  const dep=v492("v492Departure")?.value||"KLGB", dest=v492("v492Destination")?.value||"KCRQ";
+  const depAp=v492Airport(dep),destAp=v492Airport(dest);
+  const sourceRunway=v492(FK_XP_MODE==="ifr"?"ifr-runway":"runway")?.value;
+  const sourceDestRunway=v492(FK_XP_MODE==="ifr"?"ifr-destRunway":"destRunway")?.value;
+  v492FillSelect("v492Runway",depAp?.runways||[],sourceRunway||depAp?.preferredRunway);
+  v492FillSelect("v492DestRunway",destAp?.runways||[],sourceDestRunway||destAp?.preferredRunway);
+  const loc=v492("v492Location"); if(loc){loc.innerHTML="";(depAp?.locations||["Main Ramp"]).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;loc.appendChild(o);});}
+}
+function v492SyncFromEngine(){
+  const isIfr=FK_XP_MODE==="ifr";
+  const g=id=>v492(isIfr?`ifr-${id}`:id);
+  if(g("departureAirport"))v492("v492Departure").value=g("departureAirport").value;
+  if(g("destinationAirport"))v492("v492Destination").value=g("destinationAirport").value;
+  if(g("callsign"))v492("v492Callsign").value=g("callsign").value;
+  if(g("altitude"))v492("v492Altitude").value=g("altitude").value;
+  if(g("level"))v492("v492Level").value=g("level").value;
+  v492("v492RouteWrap")?.classList.toggle("v492-hidden",!isIfr);
+  v492("v492ApproachWrap")?.classList.toggle("v492-hidden",!isIfr);
+  v492("v492LocationWrap")?.classList.toggle("v492-hidden",isIfr);
+  if(v492("v492SetupTitle"))v492("v492SetupTitle").textContent=isIfr?"IFR Flight":"VFR Flight";
+  if(v492("v492ModeTitle"))v492("v492ModeTitle").textContent=isIfr?"IFR Training":"VFR Training";
+  v492("v492ModeVFR")?.classList.toggle("active",!isIfr);v492("v492ModeIFR")?.classList.toggle("active",isIfr);
+  if(isIfr && v492("ifr-userRoute"))v492("v492Route").value=v492("ifr-userRoute").value;
+  v492SyncAdvanced();
+}
+function v492SetXpMode(mode){FK_XP_MODE=mode==="ifr"?"ifr":"vfr";v492SyncFromEngine();v492Refresh();if(XP_STATE?.connected)xpHandleAutoAtis?.();}
+function v492Apply(){
+  XP_STATE.categoryScores={};
+  XP_STATE.replayLog=[];
+  XP_STATE.lastSquawkLoadKey=null;
+  XP_STATE.blockedTransmissions=0;
+  XP_STATE.shortPttPresses=0;
+  xpLogReplay("SESSION",`Applied ${FK_XP_MODE.toUpperCase()} flight setup`);
+  const isIfr=FK_XP_MODE==="ifr";
+  const prefix=isIfr?"ifr-":"";
+  const set=(id,val,change=false)=>{const el=v492(prefix+id);if(el&&val!=null){el.value=val;if(change)v492Dispatch(el);}};
+  set("departureAirport",v492("v492Departure").value,true);set("destinationAirport",v492("v492Destination").value,true);set("callsign",v492("v492Callsign").value);set("altitude",v492("v492Altitude").value);set("level",v492("v492Level").value,true);
+  set("runway",v492("v492Runway")?.value,true);set("destRunway",v492("v492DestRunway")?.value,true);
+  if(isIfr){if(v492("v492Route")?.value.trim()){set("direction","User Route",true);set("userRoute",v492("v492Route").value.trim());} if(v492("v492Approach")?.value)set("approachType",v492("v492Approach").value,true);v492("ifr-applySetupTop")?.click();}
+  else{set("location",v492("v492Location")?.value,true);v492("applySetupTop")?.click();}
+  setTimeout(()=>{v492SyncFromEngine();v492Refresh();if(XP_STATE?.connected)xpHandleAutoAtis?.();},120);
+}
+function v492Refresh(){
+  if(!v492("page-xplane"))return;
+  xpPttTestRefresh?.();const isIfr=FK_XP_MODE==="ifr";const g=id=>v492(isIfr?`ifr-${id}`:id);
+  const d=(typeof XP_STATE!=="undefined"&&XP_STATE.data)?XP_STATE.data:{};let derived={};try{derived=xpDerivedFlightState(d)||{}}catch(_){ }
+  const put=(id,val)=>{if(v492(id))v492(id).textContent=val??"—"};
+  put("v492Stage",g("stageTitle")?.textContent||"—");put("v492Target",g("stageFrequency")?.textContent||"—");put("v492Counter",g("stageCounter")?.textContent||"—");put("v492Com1",Number.isFinite(Number(d.com1_active_mhz))?Number(d.com1_active_mhz).toFixed(3):"—");put("v494ComActive",Number.isFinite(Number(d.com1_active_mhz))?Number(d.com1_active_mhz).toFixed(3):"---.---");put("v494ComStandby",Number.isFinite(Number(d.com1_standby_mhz))?Number(d.com1_standby_mhz).toFixed(3):"---.---");put("v492Squawk",d.transponder_code!=null?String(d.transponder_code).padStart(4,"0"):(xpAssignedSquawk?.()||"—"));put("v492FlightState",derived.phase||"—");put("v492Distance",Number.isFinite(derived.destNm)?`${derived.destNm.toFixed(1)} NM`:"—");put("v492PTT",XP_STATE?.connected?(XP_STATE.micPermissionReady?"AIRCRAFT PTT READY":"MIC PERMISSION"):"CONNECT");
+  const freqStatus=xpCurrentFrequencyStatus();
+  const fs=v492("v495FreqStatus");
+  if(fs){
+    fs.textContent=freqStatus.state;
+    fs.className="v495-status-pill "+(freqStatus.ready?"ready":(freqStatus.state==="WRONG FREQ"?"wrong":"offline"));
+  }
+  const tx=v492("v495TxStatus");
+  if(tx) tx.classList.toggle("active",!!XP_STATE?.txActive);
+  const handoff=v492("v495StandbyLoad");
+  if(handoff){
+    const hf=Number(XP_STATE?.lastStandbyHandoffFreq);
+    handoff.textContent=Number.isFinite(hf)?`NEXT STBY: ${hf.toFixed(3)}`:"NEXT STBY: —";
+  }
+  const heard=v492("v503Heard");
+  if(heard){
+    const heardText=(g("pilotText")?.value||"").trim();
+    heard.textContent=heardText?heardText.slice(-180):"—";
+  }
+
+  const awareness=xpRunwayAwareness(d);
+  put("v500ExpectedFacility",xpExpectedFacility());
+  put("v500DetectedPhase",derived.phase||"—");
+  put("v500RunwayAwareness",awareness.state||"—");
+  put("v500AircraftProfile",xpBuildAircraftProfile()?.profileName||"—");
+  xpRenderCategoryScores();
+  xpRenderReplay();
+  put("v492Feedback",g("feedback")?.textContent||"Tune the correct frequency in X-Plane.");if(v492("v492Transcript"))v492("v492Transcript").innerHTML=g("transcript")?.innerHTML?.trim()||'<div class="muted">Radio exchange will appear here.</div>';
+  if(v492("v492Connect"))v492("v492Connect").disabled=!!XP_STATE?.connected;if(v492("v492Disconnect"))v492("v492Disconnect").disabled=!XP_STATE?.connected;
+}
+function v492Init(){
+  try{XP_STATE.micApprovedPreviously=localStorage.getItem("fk-atc-microphone-approved-v1")==="1";}catch(_){}
+  xpGetMicrophonePermissionState?.();
+  /* Reparent only after all original V4.87 startup code has completed. */
+  const mount=v492("v492XpPanelMount"),panel=v492("xpPanel");if(mount&&panel)mount.appendChild(panel);
+  v492("v492Departure").value="KLGB";v492("v492Destination").value="KCRQ";v492SetXpMode("vfr");
+  v492("v492OpenXP")?.addEventListener("click",()=>{v492SetUiMode("xplane");showAppPage("xplane");v492SetXpMode("vfr");});
+  v492("v492OpenStandalone")?.addEventListener("click",()=>{v492SetUiMode("standalone");showAppPage("trainer");});
+  v492("v492ModeVFR")?.addEventListener("click",()=>v492SetXpMode("vfr"));v492("v492ModeIFR")?.addEventListener("click",()=>v492SetXpMode("ifr"));v492("v492Apply")?.addEventListener("click",v492Apply);v492("v492Connect")?.addEventListener("click",async()=>{await xpConnect();v492Refresh();});v492("v492Disconnect")?.addEventListener("click",async()=>{await xpDisconnect();v492Refresh();});
+  v492("v492Departure")?.addEventListener("change",v492SyncAdvanced);v492("v492Destination")?.addEventListener("change",v492SyncAdvanced);
+  v492("v505StartTest")?.addEventListener("click",xpStartPttTest);
+  v492("v505ResetTest")?.addEventListener("click",xpResetPttTest);
+  xpPttTestRefresh();
+  const optionBindings=[
+    ["v500OptAutoSquawk","autoSquawk"],["v500OptAutoHandoff","autoHandoff"],
+    ["v500OptDelay","realisticDelay"],["v500OptTraffic","backgroundTraffic"],
+    ["v500OptCongestion","congestion"]
+  ];
+  optionBindings.forEach(([id,key])=>{
+    const el=v492(id);if(!el)return;el.checked=!!XP_TRAINING_OPTIONS[key];
+    el.addEventListener("change",()=>{XP_TRAINING_OPTIONS[key]=el.checked;if(key==="backgroundTraffic")xpScheduleTraffic();});
+  });
+  v492("v500RunDiagnostics")?.addEventListener("click",xpRunDiagnostics);
+  v492("v500OpenXpMode")?.addEventListener("click",()=>showAppPage("xplane"));
+
+  document.querySelectorAll('.side-nav-item').forEach(btn=>btn.addEventListener('click',()=>{const page=btn.dataset.page;if(page==='xplane'||page==='xp-diagnostics')v492SetUiMode('xplane');else if(page==='trainer'||page==='ifr-trainer'||page==='home')v492SetUiMode(page==='home'?'home':'standalone');}));
+  v492SetUiMode("home");showAppPage("home",{noScroll:true});setInterval(()=>{if(v492("page-xplane")?.classList.contains("active"))v492Refresh();},650);
+}
+document.addEventListener("DOMContentLoaded",()=>{
+  v492Init();
+  document.getElementById("xpConnectBtn")?.addEventListener("click",xpConnect);
+  document.getElementById("xpDisconnectBtn")?.addEventListener("click",xpDisconnect);
+
+  document.getElementById("xpLoadStandbyBtn")?.addEventListener("click",xpLoadTargetToStandby);
+  document.getElementById("xpSetSquawkBtn")?.addEventListener("click",xpSetAssignedSquawk);
+  document.getElementById("xpLoadTargetSquawkBtn")?.addEventListener("click",xpLoadTargetSquawk);
+  document.getElementById("xpSwapComBtn")?.addEventListener("click",xpSwapCom1);
+  document.getElementById("xpAutoStageBtn")?.addEventListener("click",xpToggleAutoStage);
+});
+
+
 </script>
 </body>
 </html>
