@@ -183,7 +183,12 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   .runway-pair{
     gap:6px;
   }
-  .runway-pair label{
+  .runway-setup{min-width:0}
+.traffic-pattern{min-width:0;margin:6px 0 0;padding:0;border:0}
+.traffic-pattern legend{font-size:.75rem;margin-bottom:3px}
+.traffic-pattern label{display:flex;align-items:center;gap:5px;font-size:.75rem;margin:3px 0}
+.traffic-pattern input[type="radio"]{width:auto;min-width:0;margin:0;flex:none}
+.runway-pair label{
     font-size:10px;
   }
   .frequency{font-size:21px}
@@ -5203,24 +5208,38 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       </label>
 
       <div class="runway-pair">
-        <label>Takeoff Runway
-          <select id="runway">
-            <option>26L</option>
-            <option>26R</option>
-            <option>30</option>
-            <option>12</option>
-            <option>8L</option>
-            <option>8R</option>
-          </select>
-        </label>
+        <div class="runway-setup">
+          <label>Takeoff Runway
+            <select id="runway">
+              <option>26L</option>
+              <option>26R</option>
+              <option>30</option>
+              <option>12</option>
+              <option>8L</option>
+              <option>8R</option>
+            </select>
+          </label>
+          <fieldset class="traffic-pattern">
+            <legend>Takeoff traffic pattern</legend>
+            <label><input id="departureTraffic-left" type="radio" name="departureTraffic" value="left" checked> Left Traffic</label>
+            <label><input id="departureTraffic-right" type="radio" name="departureTraffic" value="right"> Right Traffic</label>
+          </fieldset>
+        </div>
 
-        <label>Destination Runway
-          <select id="destRunway">
-            <option selected>24</option>
-            <option>6</option>
-            <option>25</option>
-          </select>
-        </label>
+        <div class="runway-setup">
+          <label>Destination Runway
+            <select id="destRunway">
+              <option selected>24</option>
+              <option>6</option>
+              <option>25</option>
+            </select>
+          </label>
+          <fieldset class="traffic-pattern">
+            <legend>Destination traffic pattern</legend>
+            <label><input id="arrivalTraffic-left" type="radio" name="arrivalTraffic" value="left" checked> Left Traffic</label>
+            <label><input id="arrivalTraffic-right" type="radio" name="arrivalTraffic" value="right"> Right Traffic</label>
+          </fieldset>
+        </div>
       </div>
 
       <label>Arrival Parking
@@ -5530,16 +5549,23 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
       <div class="setup-section-label">DEPARTURE</div>
       <div class="ifr-setup-stack">
-        <label>Takeoff Runway
-          <select id="ifr-runway">
-            <option>26L</option>
-            <option>26R</option>
-            <option>30</option>
-            <option>12</option>
-            <option>8L</option>
-            <option>8R</option>
-          </select>
-        </label>
+        <div class="runway-setup">
+          <label>Takeoff Runway
+            <select id="ifr-runway">
+              <option>26L</option>
+              <option>26R</option>
+              <option>30</option>
+              <option>12</option>
+              <option>8L</option>
+              <option>8R</option>
+            </select>
+          </label>
+          <fieldset class="traffic-pattern">
+            <legend>Takeoff traffic pattern</legend>
+            <label><input id="ifr-departureTraffic-left" type="radio" name="ifr-departureTraffic" value="left" checked> Left Traffic</label>
+            <label><input id="ifr-departureTraffic-right" type="radio" name="ifr-departureTraffic" value="right"> Right Traffic</label>
+          </fieldset>
+        </div>
 
         <label>Starting Location
           <select id="ifr-location">
@@ -5587,13 +5613,20 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
       <div class="setup-section-label">ARRIVAL</div>
       <div class="ifr-setup-pair">
-        <label>Destination Runway
-          <select id="ifr-destRunway">
-            <option selected>24</option>
-            <option>6</option>
-            <option>25</option>
-          </select>
-        </label>
+        <div class="runway-setup">
+          <label>Destination Runway
+            <select id="ifr-destRunway">
+              <option selected>24</option>
+              <option>6</option>
+              <option>25</option>
+            </select>
+          </label>
+          <fieldset class="traffic-pattern">
+            <legend>Destination traffic pattern</legend>
+            <label><input id="ifr-arrivalTraffic-left" type="radio" name="ifr-arrivalTraffic" value="left" checked> Left Traffic</label>
+            <label><input id="ifr-arrivalTraffic-right" type="radio" name="ifr-arrivalTraffic" value="right"> Right Traffic</label>
+          </fieldset>
+        </div>
         <label>Approach
           <select id="ifr-approachType">
             <option value="RNAV (GPS)">RNAV (GPS)</option>
@@ -6110,10 +6143,11 @@ const AIRPORTS = {
   },
   KFUL:{
     name:"Fullerton", radioName:"Fullerton",
+    clearanceOnGround:true,
     aliases:["fullerton"],
     coords:{lat:33.872,lon:-117.9798},
     frequencies:{atis:"125.050",clearance:"121.800",ground:"121.800",tower:"119.100",departure:"125.350",approach:"125.350"},
-    facilities:{clearance:"Fullerton Clearance",ground:"Fullerton Ground",tower:"Fullerton Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    facilities:{clearance:"Fullerton Ground",ground:"Fullerton Ground",tower:"Fullerton Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
     vfrClearanceLimit:"2500",
     runways:["24","6"], preferredRunway:"24",
     taxiwaysByRunway:{"24":"Alpha","6":"Alpha"}, parkingTaxiway:"Alpha",
@@ -6301,6 +6335,7 @@ const AIRPORTS = {
   KPOC:{
     name:"Brackett Field", radioName:"Brackett",
     aliases:["brackett","brackett field","poc"],
+    trafficPatternByRunway:{"26L":"left"},
     coords:{lat:34.0916667,lon:-117.7817778},
     frequencies:{atis:"124.400",clearance:"121.875",ground:"125.000",tower:"118.200",departure:"125.500",approach:"125.500"},
     facilities:{clearance:"Brackett Clearance",ground:"Brackett Ground",tower:"Brackett Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
@@ -6406,6 +6441,10 @@ function containsAircraftType(text){
 
 const GA_PARKING_OPTION="General Aviation (GA) Parking";
 
+function containsGAParking(text){
+  return /\b(?:general aviation|g\s*a\s+parking)\b/.test(norm(text).replace(/[-_/]/g," "));
+}
+
 function containsLocationAlias(text,configuredLocation){
   const n=norm(text)
     .replace(/[-_/]/g," ")
@@ -6418,7 +6457,7 @@ function containsLocationAlias(text,configuredLocation){
     .trim();
 
   if(configuredLocation===GA_PARKING_OPTION){
-    return /\b(?:general aviation(?: \(ga\))?|g\s*a)\s+parking\b/.test(n);
+    return containsGAParking(text);
   }
   if(location && n.includes(location)) return true;
 
@@ -6490,7 +6529,7 @@ function routeDistanceNm(depCode,destCode){
    10 NM keeps KBUR → KWHP (~6 NM) in this mode without affecting normal XC routes. */
 function isVeryShortVFRRoute(depCode,destCode){
   const distance=routeDistanceNm(depCode,destCode);
-  return distance>0 && distance<=10;
+  return !airportData(depCode).clearanceOnGround && distance>0 && distance<=10;
 }
 
 function enrouteFacility(dep,dest){
@@ -6571,7 +6610,7 @@ function buildStages(depCode,destCode){
   if(isVeryShortVFRRoute(depCode,destCode)){
     return [
       {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.radioName||dep.name} ATIS`, freq:airportFrequency(dep,"atis"), type:"atis"},
-      {id:"clearance", title:"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
+      {id:"clearance", title:dep.clearanceOnGround?"GROUND CLEARANCE":"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
       {id:"ground", title:"GROUND", facility:airportFacility(dep,"ground"), freq:airportFrequency(dep,"ground"), type:"comm"},
       {id:"tower", title:"TOWER", facility:airportFacility(dep,"tower"), freq:airportFrequency(dep,"tower"), type:"comm"},
       {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
@@ -6582,7 +6621,7 @@ function buildStages(depCode,destCode){
 
   const stages=[
     {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.radioName||dep.name} ATIS`, freq:airportFrequency(dep,"atis"), type:"atis"},
-    {id:"clearance", title:"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
+    {id:"clearance", title:dep.clearanceOnGround?"GROUND CLEARANCE":"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
     {id:"ground", title:"GROUND", facility:airportFacility(dep,"ground"), freq:airportFrequency(dep,"ground"), type:"comm"},
     {id:"tower", title:"TOWER", facility:airportFacility(dep,"tower"), freq:airportFrequency(dep,"tower"), type:"comm"},
     {id:"departure", title:"DEPARTURE", facility:airportFacility(dep,"departure"), freq:airportFrequency(dep,"departure"), type:"comm"}
@@ -6614,6 +6653,17 @@ function setOptions(id,values,preferred){
   el.value=values.includes(preferred) ? preferred : values[0];
 }
 
+function selectedTrafficPattern(name){
+  return $(name+"-right").checked ? "right" : "left";
+}
+
+function setTrafficPattern(name,airport,runway,preferred){
+  const side=preferred==="left"||preferred==="right"
+    ? preferred : airport.trafficPatternByRunway?.[runway] || "left";
+  $(name+"-left").checked=side==="left";
+  $(name+"-right").checked=side==="right";
+}
+
 function updateDepartureChoices(preserve=true){
   const code=$("departureAirport").value;
   const ap=airportData(code);
@@ -6622,6 +6672,7 @@ function updateDepartureChoices(preserve=true){
   const runwayChoice=(preserve && ap.runways.includes(oldRunway)) ? oldRunway : (ap.preferredRunway || ap.runways[0]);
   setOptions("runway",ap.runways,runwayChoice);
   setOptions("location",[...ap.locations,GA_PARKING_OPTION],oldLoc);
+  setTrafficPattern("departureTraffic",ap,$("runway").value,preserve && oldRunway===$("runway").value ? selectedTrafficPattern("departureTraffic") : "");
   updateRouteHeading();
 }
 
@@ -6631,6 +6682,7 @@ function updateDestinationChoices(preserve=true){
   const oldRunway=preserve ? $("destRunway").value : "";
   const runwayChoice=(preserve && ap.runways.includes(oldRunway)) ? oldRunway : (ap.preferredRunway || ap.runways[0]);
   setOptions("destRunway",ap.runways,runwayChoice);
+  setTrafficPattern("arrivalTraffic",ap,$("destRunway").value,preserve && oldRunway===$("destRunway").value ? selectedTrafficPattern("arrivalTraffic") : "");
   updateRouteHeading();
 }
 
@@ -7155,6 +7207,8 @@ function saveLastSetup(){
       callsign:$("callsign")?.value,
       location:$("location")?.value,
       arrivalParking:$("arrivalParking")?.value,
+      arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
+      departureTraffic:selectedTrafficPattern("departureTraffic"),
       runway:$("runway")?.value,
       destRunway:$("destRunway")?.value,
       direction:$("direction")?.value,
@@ -7220,6 +7274,8 @@ function loadLastSetup(){
 
     updateVfrAltitudeGuide();
     updateRouteHeading();
+    setTrafficPattern("departureTraffic", airportData($("departureAirport").value), $("runway").value, saved.departureTraffic);
+    setTrafficPattern("arrivalTraffic", airportData($("destinationAirport").value), $("destRunway").value, saved.arrivalTraffic);
     return true;
   }catch(e){
     return false;
@@ -7258,6 +7314,8 @@ function readSetup(generateCodes=true){
     aircraft:"",
     location:$("location").value,
     arrivalParking:$("arrivalParking").value,
+    arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
+    departureTraffic:selectedTrafficPattern("departureTraffic"),
     atis:app.config.atis || randomAtisCode(),
     arrivalAtis:app.config.arrivalAtis || randomAtisCode(),
     runway:$("runway").value,
@@ -7307,7 +7365,7 @@ function instructionFor(stage){
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
-    clearance:"Contact Clearance Delivery and obtain the VFR departure clearance.",
+    clearance:`Contact ${airportFacility(dep,"clearance")} for the VFR departure clearance.`,
     ground:"Make the initial ground call with all essential elements.",
     tower:"Make the departure call to tower and read back the takeoff clearance.",
     departure:"Check in after handoff and read back the altitude assignment.",
@@ -8268,7 +8326,7 @@ function containsDownwind(text,side=""){
       `${sideNorm} downwind`,
       `${sideNorm} down wind`
     ];
-    if(sideForms.some(v=>n.includes(v))) return true;
+    return sideForms.some(v=>n.includes(v));
   }
 
   return (
@@ -8363,7 +8421,7 @@ function taxiRouteSpoken(route){
 
 function destinationPatternSide(){
   const ap=destAirport();
-  return ap.trafficPatternByRunway?.[app.config.destRunway] || app.scenario?.patternSide || "left";
+  return app.config.arrivalTraffic || ap.trafficPatternByRunway?.[app.config.destRunway] || "left";
 }
 
 function departureHoldShortRunway(){
@@ -8517,6 +8575,8 @@ function triggerRunwayChange(){
   if(newRunway===app.config.runway) return false;
   app.config.runway=newRunway;
   if($("runway")) $("runway").value=newRunway;
+  setTrafficPattern("departureTraffic",depAirport(),newRunway);
+  app.config.departureTraffic=selectedTrafficPattern("departureTraffic");
   markUnexpected("runwayChange");
   return true;
 }
@@ -8544,6 +8604,8 @@ function triggerUnableRunway(){
   if(newRunway===app.config.destRunway) return false;
   app.config.destRunway=newRunway;
   if($("destRunway")) $("destRunway").value=newRunway;
+  setTrafficPattern("arrivalTraffic",destAirport(),newRunway);
+  app.config.arrivalTraffic=selectedTrafficPattern("arrivalTraffic");
   markUnexpected("unable");
   return true;
 }
@@ -8626,8 +8688,7 @@ function newScenario(){
     arrTemp,
     arrDew:arrTemp-randomBetween(6,12),
     depAltimeter:(29.92+Math.random()*.20).toFixed(2),
-    arrAltimeter:(29.90+Math.random()*.22).toFixed(2),
-    patternSide:Math.random()<.5?"left":"right"
+    arrAltimeter:(29.90+Math.random()*.22).toFixed(2)
   };
 }
 
@@ -8823,6 +8884,7 @@ const CHECK_LABELS={
   location:"starting location",
   runway:"runway",
   taxiway:"taxiway",
+  departureInstruction:"assigned turn and heading",
   ready:"ready-for-departure request",
   takeoff:"takeoff clearance",
   direction:"departure direction",
@@ -8997,7 +9059,7 @@ function renderFinalReport(){
     <ul>${recommendations.map(r=>`<li>${r}</li>`).join("")}</ul>
     <div class="report-scenario">
       Scenario: squawk ${app.squawk} • departure wind ${app.scenario.depWindDir}° at ${app.scenario.depWindSpeed} kt •
-      arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • ${destinationPatternSide()} traffic pattern
+      arrival wind ${app.scenario.arrWindDir}° at ${app.scenario.arrWindSpeed} kt • takeoff pattern ${app.config.departureTraffic} • arrival pattern ${destinationPatternSide()}
       ${app.session.unexpected?.length
         ? `<br><b>Unexpected ATC events:</b> ${app.session.unexpected.map(k=>UNEXPECTED_EVENT_LABELS[k]||k).join(" • ")}`
         : "<br><b>Unexpected ATC events:</b> None encountered"}
@@ -9030,10 +9092,13 @@ function evaluateTransmission(text){
   const n=norm(fkNormalizeRecognition(text));
   let checks={}, replyVisual="", replySpoken="", complete=false;
 
+  const clearanceOnGround=depAirport().clearanceOnGround;
   if(stage.id==="clearance"){
+    const groundDepartureClearance=`${stage.facility}, on departure turn left heading 120, departure frequency ${airportFrequency(depAirport(),"departure")}, squawk ${app.squawk}.`;
+    const groundDepartureSpoken=`${stage.facility}, on departure turn left heading one two zero, departure frequency ${frequencySpoken(airportFrequency(depAirport(),"departure"))}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
     if(app.phase==="clearanceInitial"){
       checks={
-        facility:facilityMentioned(text,depAirport(),"clearance"),
+        facility:facilityMentioned(text,depAirport(),clearanceOnGround?"ground":"clearance"),
         callsign:hasCallsign(text),
         type:containsAircraftType(text),
         location:containsStartingLocation(text),
@@ -9061,7 +9126,11 @@ function evaluateTransmission(text){
         checks.altitude;
 
       if(essential){
-        if(veryShort){
+        if(clearanceOnGround){
+          replyVisual=`${app.config.aircraft}, ${groundDepartureClearance}`;
+          replySpoken=`${callsignSpoken()}, ${groundDepartureSpoken}`;
+          $("feedback").textContent="Read back the left turn to heading 120, departure frequency, and squawk.";
+        }else if(veryShort){
           replyVisual=`${app.config.aircraft}, at or below ${clearanceAltitudeDisplay()}, squawk ${app.squawk}.`;
           replySpoken=`${callsignSpoken()}, at or below ${clearanceAltitudeSpoken()}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
           $("feedback").textContent=`Clearance received. Read back at or below ${clearanceAltitudeDisplay()} and squawk ${app.squawk}.`;
@@ -9088,28 +9157,35 @@ function evaluateTransmission(text){
       }
     }else{
       checks={
-        altitude:containsAltitudeValue(text,clearanceAltitudeLimit()),
+        [clearanceOnGround?"departureInstruction":"altitude"]:clearanceOnGround
+          ? /\bleft\b/.test(n) && /\bheading\s+(?:120|1\s+2\s+0|one\s+two\s+(?:zero|oh))\b/.test(n)
+          : containsAltitudeValue(text,clearanceAltitudeLimit()),
         frequency:containsFrequency(text,airportFrequency(depAirport(),"departure")),
         squawk:containsSquawk(text,app.squawk),
         callsign:hasCallsign(text)
       };
 
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
-      const essential=checks.altitude&&checks.squawk&&(veryShort||checks.frequency);
+      const departureInstructionOK=clearanceOnGround?checks.departureInstruction:checks.altitude;
+      const essential=departureInstructionOK&&checks.squawk&&(veryShort||checks.frequency);
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
 
       if(essential){
-        replyVisual=`${app.config.aircraft}, contact Ground when ready to taxi.`;
-        replySpoken=`${callsignSpoken()}, contact Ground when ready to taxi.`;
-        $("feedback").textContent="Clearance Delivery complete.";
+        const taxiPrompt=clearanceOnGround?"remain on this frequency and call when ready to taxi.":"contact Ground when ready to taxi.";
+        replyVisual=`${app.config.aircraft}, readback correct. ${taxiPrompt}`;
+        replySpoken=`${callsignSpoken()}, readback correct. ${taxiPrompt}`;
+        $("feedback").textContent=`${stageDisplayName(stage)} complete.`;
         complete=true;
       }else{
         const missing=[];
-        if(!checks.altitude) missing.push(`at or below ${clearanceAltitudeDisplay()}`);
+        if(!departureInstructionOK) missing.push(clearanceOnGround?"left turn heading 120":`at or below ${clearanceAltitudeDisplay()}`);
         if(!veryShort && !checks.frequency) missing.push(`frequency ${airportFrequency(depAirport(),"departure")}`);
         if(!checks.squawk) missing.push(`squawk ${app.squawk}`);
 
-        if(veryShort){
+        if(clearanceOnGround){
+          replyVisual=`${app.config.aircraft}, verify clearance. ${groundDepartureClearance}`;
+          replySpoken=`${callsignSpoken()}, verify clearance. ${groundDepartureSpoken}`;
+        }else if(veryShort){
           replyVisual=`${app.config.aircraft}, verify at or below ${clearanceAltitudeDisplay()}, squawk ${app.squawk}.`;
           replySpoken=`${callsignSpoken()}, verify at or below ${clearanceAltitudeSpoken()}, squawk ${[...app.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         }else{
@@ -9179,8 +9255,6 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdShort?`, hold short runway ${runwaySpoken(holdShort)}`:""}.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Correct runway is ${app.config.runway}. Read it back again.`;
       }else if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct.`;
-        replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Ground stage complete.";
         complete=true;
       }else{
@@ -9210,12 +9284,12 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Runway mismatch: you reported Runway ${wrongRunway}, but the active assigned runway is ${app.config.runway}. Verify the runway and make the tower call again.`;
       }else if(checks.facility&&checks.callsign&&checks.runway&&checks.ready){
-        const changed=unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
-        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
-        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff. Proceed ${app.config.direction.toLowerCase()}.`;
+        const changed=!clearanceOnGround&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
+        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${clearanceOnGround?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${clearanceOnGround?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
         $("feedback").textContent=changed
           ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
-          : "Read back runway, takeoff clearance, and departure direction.";
+          : clearanceOnGround ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
         app.phase="towerReadback";
       }else{
         replyVisual=`${app.config.aircraft}, say again runway and request.`;
@@ -9226,7 +9300,7 @@ function evaluateTransmission(text){
       checks={
         runway:containsRunway(text),
         takeoff:n.includes("takeoff")||n.includes("take off")||n.includes("cleared"),
-        direction:containsDirection(text),
+        direction:clearanceOnGround||containsDirection(text),
         callsign:hasCallsign(text)
       };
       const essential=checks.runway&&checks.takeoff&&checks.direction;
@@ -9245,8 +9319,6 @@ function evaluateTransmission(text){
           replySpoken=`${callsignSpoken()}, frequency change approved.`;
           $("feedback").textContent=`Tower stage complete. Monitor ${dest.radioName||dest.name} ATIS on ${atisFreq}, then contact ${airportFacility(dest,"tower")}.`;
         }else{
-          replyVisual=`${app.config.aircraft}, readback correct.`;
-          replySpoken=`${callsignSpoken()}, readback correct.`;
           $("feedback").textContent="Tower stage complete.";
         }
         complete=true;
@@ -9295,11 +9367,8 @@ function evaluateTransmission(text){
       }else if(essential){
         const nextStage=STAGES[app.stageIndex+1];
         if(nextStage?.id==="enroute"){
-          replyVisual=`${app.config.aircraft}, readback correct. Contact ${nextStage.facility} ${nextStage.freq}.`;
-          replySpoken=`${callsignSpoken()}, readback correct. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
-        }else{
-          replyVisual=`${app.config.aircraft}, readback correct.`;
-          replySpoken=`${callsignSpoken()}, readback correct.`;
+          replyVisual=`${app.config.aircraft}, contact ${nextStage.facility} ${nextStage.freq}.`;
+          replySpoken=`${callsignSpoken()}, contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
         }
         complete=true;
       }else{
@@ -9406,8 +9475,6 @@ function evaluateTransmission(text){
       const essential=checks.destination&&checks.visual;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct.`;
-        replySpoken=`${callsignSpoken()}, readback correct.`;
         $("feedback").textContent="Approach stage complete. Next: Destination Tower.";
         complete=true;
       }else{
@@ -9548,8 +9615,6 @@ function evaluateTransmission(text){
           $("feedback").textContent="Unexpected go-around. Read back the go-around instruction.";
           app.phase="destTowerGoAroundReadback";
         }else{
-          replyVisual=`${app.config.aircraft}, readback correct.`;
-          replySpoken=`${callsignSpoken()}, readback correct.`;
           $("feedback").textContent="Destination Tower stage complete.";
           complete=true;
         }
@@ -9609,7 +9674,7 @@ function evaluateTransmission(text){
       checks={
         facility:n.includes("ground"),
         callsign:hasCallsign(text),
-        request:n.includes("taxi")||n.includes("parking")||norm(text).includes(norm(parking))
+        request:n.includes("taxi")||n.includes("parking")||norm(text).includes(norm(parking))||(app.config.arrivalParking==="ga"&&containsGAParking(text))
       };
       const s=grade(checks); $("score").textContent=s+"%";
       if(s>=67){
@@ -9680,8 +9745,8 @@ function evaluateTransmission(text){
             : `Read back cross Runway ${nextHold}.`;
           app.phase="destGroundSecondCrossingReadback";
         }else{
-          replyVisual=`${app.config.aircraft}, readback correct. Taxi to ${parking}.`;
-          replySpoken=`${callsignSpoken()}, readback correct. Taxi to ${parking}.`;
+          replyVisual=`${app.config.aircraft}, taxi to ${parking}.`;
+          replySpoken=`${callsignSpoken()}, taxi to ${parking}.`;
           complete=true;
         }
       }else{
@@ -9708,8 +9773,8 @@ function evaluateTransmission(text){
       const essential=checks.cross&&(!afterSecond.length||checks.route);
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct. Continue to ${parking}.`;
-        replySpoken=`${callsignSpoken()}, readback correct. Continue to ${parking}.`;
+        replyVisual=`${app.config.aircraft}, continue to ${parking}.`;
+        replySpoken=`${callsignSpoken()}, continue to ${parking}.`;
         complete=true;
       }else{
         replyVisual=`${app.config.aircraft}, verify cross Runway ${secondRunway}.`;
@@ -9721,14 +9786,12 @@ function evaluateTransmission(text){
     }else{
       checks={
         taxiway:containsTaxiway(text,destinationTaxiway()),
-        parking:n.includes("parking")||n.includes("taxi")||norm(text).includes(norm(parking)),
+        parking:n.includes("parking")||n.includes("taxi")||norm(text).includes(norm(parking))||(app.config.arrivalParking==="ga"&&containsGAParking(text)),
         callsign:hasCallsign(text)
       };
       const essential=checks.taxiway&&checks.parking;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        replyVisual=`${app.config.aircraft}, readback correct.`;
-        replySpoken=`${callsignSpoken()}, readback correct.`;
         complete=true;
       }else{
         replyVisual=`${app.config.aircraft}, verify taxi to ${parking} via ${destinationTaxiway()}.`;
@@ -9785,7 +9848,7 @@ function evaluateTransmission(text){
 function stageDisplayName(stage){
   const map={
     atis:"Departure ATIS",
-    clearance:"Clearance Delivery",
+    clearance:depAirport().clearanceOnGround?"Ground clearance":"Clearance Delivery",
     ground:"Ground",
     tower:"Tower",
     departure:"Departure",
@@ -9796,6 +9859,10 @@ function stageDisplayName(stage){
     destGround:"Destination Ground"
   };
   return map[stage?.id] || stage?.title || "Stage";
+}
+
+function clearanceUsesSameGroundFrequency(airport,stage,nextStage){
+  return airport.clearanceOnGround && stage.id==="clearance" && nextStage.id==="ground";
 }
 
 function completeStage(){
@@ -9814,7 +9881,9 @@ function completeStage(){
   const nextStage=STAGES[app.stageIndex+1];
   positionStageFeedback("",true);
   if(nextStage){
-    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and switch freq to ${nextStage.facility}.`;
+    const tuning=clearanceUsesSameGroundFrequency(depAirport(),stage,nextStage)
+      ? `stay on ${nextStage.facility}.` : `switch freq to ${nextStage.facility}.`;
+    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and ${tuning}`;
   }else{
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
@@ -9892,8 +9961,9 @@ function nextStage(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
 
   if(app.stageIndex<STAGES.length-1){
+    const keepFrequency=clearanceUsesSameGroundFrequency(depAirport(),STAGES[app.stageIndex],STAGES[app.stageIndex+1]);
     app.stageIndex++;
-    renderStage(true);
+    renderStage(!keepFrequency);
     window.scrollTo({top:0,behavior:"smooth"});
   }else{
     positionStageFeedback("",false);
@@ -9966,6 +10036,8 @@ function showSetupSavedFeedback(mode="Flight"){
   },2200);
 }
 
+$("destRunway").addEventListener("change",()=>setTrafficPattern("arrivalTraffic",airportData($("destinationAirport").value),$("destRunway").value));
+$("runway").addEventListener("change",()=>setTrafficPattern("departureTraffic",airportData($("departureAirport").value),$("runway").value));
 $("departureAirport").addEventListener("change",()=>{
   updateDepartureChoices(false);
   updateSetupSummary();
@@ -10557,7 +10629,7 @@ function buildIFRStages(){
   const enrouteInfo=ifrEnrouteFrequencyInfo(c.departureAirport,c.destinationAirport);
   return [
     {id:"atis",title:"DEPARTURE ATIS",facility:`${dep.radioName||dep.name} ATIS`,freq:ifrFreq(c.departureAirport,"atis"),type:"atis"},
-    {id:"clearance",title:"IFR CLEARANCE",facility:ifrFacility(c.departureAirport,"clearance"),freq:ifrFreq(c.departureAirport,"clearance"),type:"comm"},
+    {id:"clearance",title:ifrAirport(c.departureAirport).clearanceOnGround?"IFR CLEARANCE ON GROUND":"IFR CLEARANCE",facility:ifrFacility(c.departureAirport,"clearance"),freq:ifrFreq(c.departureAirport,"clearance"),type:"comm"},
     {id:"ground",title:"GROUND",facility:ifrFacility(c.departureAirport,"ground"),freq:ifrFreq(c.departureAirport,"ground"),type:"comm"},
     {id:"tower",title:"TOWER / IFR RELEASE",facility:ifrFacility(c.departureAirport,"tower"),freq:ifrFreq(c.departureAirport,"tower"),type:"comm"},
     {id:"departure",title:"DEPARTURE",facility:ifrFacility(c.departureAirport,"departure"),freq:ifrFreq(c.departureAirport,"departure"),type:"comm"},
@@ -10582,6 +10654,7 @@ function ifrUpdateDepartureChoices(preserve=true){
   const oldLoc=preserve?ifr$("location").value:"";
   ifrSetOptions("runway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
   ifrSetOptions("location",[...ap.locations,GA_PARKING_OPTION],oldLoc);
+  setTrafficPattern("ifr-departureTraffic",ap,ifr$("runway").value,preserve && oldRunway===ifr$("runway").value ? selectedTrafficPattern("ifr-departureTraffic") : "");
   ifrUpdateRouteHeading();
 }
 
@@ -10623,6 +10696,7 @@ function ifrUpdateDestinationChoices(preserve=true){
   const oldRunway=preserve?ifr$("destRunway").value:"";
   ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
   ifrUpdateApproachChoices(preserve);
+  setTrafficPattern("ifr-arrivalTraffic",ap,ifr$("destRunway").value,preserve && oldRunway===ifr$("destRunway").value ? selectedTrafficPattern("ifr-arrivalTraffic") : "");
   ifrUpdateRouteHeading();
 }
 function ifrUpdateRouteHeading(){
@@ -10649,6 +10723,8 @@ function ifrSaveLastSetup(){
       runway:ifr$("runway")?.value,
       location:ifr$("location")?.value,
       arrivalParking:ifr$("arrivalParking")?.value,
+      arrivalTraffic:selectedTrafficPattern("ifr-arrivalTraffic"),
+      departureTraffic:selectedTrafficPattern("ifr-departureTraffic"),
       route:ifr$("direction")?.value,
       userRoute:ifr$("userRoute")?.value,
       altitude:ifr$("altitude")?.value,
@@ -10713,6 +10789,8 @@ function ifrLoadLastSetup(){
     }
 
     ifrUpdateRouteHeading();
+    setTrafficPattern("ifr-departureTraffic", airportData(ifr$("departureAirport").value), ifr$("runway").value, saved.departureTraffic);
+    setTrafficPattern("ifr-arrivalTraffic", airportData(ifr$("destinationAirport").value), ifr$("destRunway").value, saved.arrivalTraffic);
     return true;
   }catch(e){
     return false;
@@ -10729,6 +10807,8 @@ function ifrReadSetup(generateCodes=true){
     callsign:normalizeSetupCallsign(ifr$("callsign").value),
     location:ifr$("location").value,
     arrivalParking:ifr$("arrivalParking").value,
+    arrivalTraffic:selectedTrafficPattern("ifr-arrivalTraffic"),
+    departureTraffic:selectedTrafficPattern("ifr-departureTraffic"),
     runway:ifr$("runway").value,
     destRunway:ifr$("destRunway").value,
     route:ifr$("direction").value||"As Filed",
@@ -11250,6 +11330,7 @@ function ifrRenderFinalReport(){
       • ${IFR_APP.config.route==="User Route"?(IFR_APP.config.userRoute||"User / TEC Route"):IFR_APP.config.route}
       • ${IFR_APP.config.altitude}
       • ${IFR_APP.config.approachType} Runway ${IFR_APP.config.destRunway}
+      • takeoff pattern ${IFR_APP.config.departureTraffic} • arrival pattern ${IFR_APP.config.arrivalTraffic}
       • squawk ${IFR_APP.squawk}
     </div>
   `;
@@ -11356,6 +11437,7 @@ function ifrEvaluateTransmission(text){
   let checks={},score=0;
 
   if(stage.id==="clearance"){
+    const clearanceOnGround=ifrAirport(IFR_APP.config.departureAirport).clearanceOnGround;
     if(IFR_APP.phase==="clearanceInitial"){
       const hasCurrentAtis=n.includes(IFR_APP.config.atis.toLowerCase());
       if(!hasCurrentAtis){
@@ -11366,7 +11448,7 @@ function ifrEvaluateTransmission(text){
         return;
       }
       checks={
-        facility:n.includes("clearance")||ifrContainsAirport(text,IFR_APP.config.departureAirport),
+        facility:clearanceOnGround?n.includes("ground"):n.includes("clearance")||ifrContainsAirport(text,IFR_APP.config.departureAirport),
         callsign:ifrContainsCallsign(text),
         location:containsLocationAlias(text,IFR_APP.config.location),
         atis:hasCurrentAtis,
@@ -11374,7 +11456,7 @@ function ifrEvaluateTransmission(text){
         ifr:n.includes("ifr")||n.includes("ready to copy")||n.includes("copy")
       };
       score=ifrScoreChecks(stage,checks);
-      if(ifrMeetsLevel(checks,["callsign","location","atis","destination","ifr"],["facility"])){
+      if((!clearanceOnGround||checks.facility)&&ifrMeetsLevel(checks,["callsign","location","atis","destination","ifr"],["facility"])){
         const initial=ifrClearanceInitialAltitude();
         const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
         const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial}, expect ${ifrAltitudeNumber()} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
@@ -11401,7 +11483,10 @@ function ifrEvaluateTransmission(text){
       if(IFR_APP.config.level!=="beginner") clearanceRequired.push("expectedAltitude");
       if(IFR_APP.config.level==="advanced") clearanceRequired.push("callsign");
       if(clearanceRequired.every(k=>checks[k])){
-        ifrATC(`${ifrCallsignVisual()}, contact ${ifrFacility(IFR_APP.config.departureAirport,"ground")} ${ifrFreq(IFR_APP.config.departureAirport,"ground")} when ready to taxi.`);
+        const taxiPrompt=clearanceOnGround
+          ? "remain on this frequency and call when ready to taxi."
+          : `contact ${ifrFacility(IFR_APP.config.departureAirport,"ground")} ${ifrFreq(IFR_APP.config.departureAirport,"ground")} when ready to taxi.`;
+        ifrATC(`${ifrCallsignVisual()}, readback correct. ${taxiPrompt}`);
         ifr$("feedback").textContent="IFR Clearance complete.";
         ifrCompleteStage(score);
       }else{
@@ -11595,7 +11680,7 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="destGround"){
     if(IFR_APP.phase==="destGroundInitial"){
-      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),request:n.includes("taxi"),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")};
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),request:n.includes("taxi"),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")||(IFR_APP.config.arrivalParking==="ga"&&containsGAParking(text))};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","request","parking"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
@@ -11606,7 +11691,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Read back taxiway and parking destination.";
       }else ifrATC(`${ifrCallsignVisual()}, say parking request.`);
     }else{
-      checks={taxiway:ifrContainsTaxiway(text,IFR_APP.destTaxiway),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo"),callsign:ifrContainsCallsign(text)};
+      checks={taxiway:ifrContainsTaxiway(text,IFR_APP.destTaxiway),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")||(IFR_APP.config.arrivalParking==="ga"&&containsGAParking(text)),callsign:ifrContainsCallsign(text)};
       score=ifrScoreChecks(stage,checks);
       const destGroundReadbackRequired=["taxiway"];
       if(IFR_APP.config.level==="advanced") destGroundReadbackRequired.push("parking","callsign");
@@ -11625,8 +11710,9 @@ function ifrNextStage(){
 
   if(IFR_APP.stageIndex<IFR_STAGES.length-1){
     IFR_APP.lastATC=null;
+    const keepFrequency=clearanceUsesSameGroundFrequency(ifrAirport(IFR_APP.config.departureAirport),IFR_STAGES[IFR_APP.stageIndex],IFR_STAGES[IFR_APP.stageIndex+1]);
     IFR_APP.stageIndex++;
-    ifrRenderStage(true);
+    ifrRenderStage(!keepFrequency);
     window.scrollTo({top:0,behavior:"smooth"});
     return;
   }
@@ -11938,6 +12024,8 @@ function ifrInit(){
 
   ifr$("departureAirport").addEventListener("change",()=>ifrUpdateDepartureChoices(false));
   ifr$("destinationAirport").addEventListener("change",()=>ifrUpdateDestinationChoices(false));
+  ifr$("destRunway").addEventListener("change",()=>setTrafficPattern("ifr-arrivalTraffic",airportData(ifr$("destinationAirport").value),ifr$("destRunway").value));
+  ifr$("runway").addEventListener("change",()=>setTrafficPattern("ifr-departureTraffic",airportData(ifr$("departureAirport").value),ifr$("runway").value));
   ifr$("destRunway").addEventListener("change",()=>ifrUpdateApproachChoices(false));
   ifr$("level").addEventListener("change",()=>{
     if(ifr$("trainingLevelDescription")) ifr$("trainingLevelDescription").textContent=IFR_LEVEL_DESCRIPTIONS[ifr$("level").value]||"";
