@@ -185,7 +185,6 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   }
   .runway-setup{min-width:0}
 .traffic-pattern{min-width:0;margin:6px 0 0;padding:0;border:0}
-.traffic-pattern legend{font-size:.75rem;margin-bottom:3px}
 .traffic-pattern label{display:flex;align-items:center;gap:5px;font-size:.75rem;margin:3px 0}
 .traffic-pattern input[type="radio"]{width:auto;min-width:0;margin:0;flex:none}
 .runway-pair label{
@@ -5219,8 +5218,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
               <option>8R</option>
             </select>
           </label>
-          <fieldset class="traffic-pattern">
-            <legend>Takeoff traffic pattern</legend>
+          <fieldset class="traffic-pattern" aria-label="Takeoff traffic pattern">
             <label><input id="departureTraffic-left" type="radio" name="departureTraffic" value="left" checked> Left Traffic</label>
             <label><input id="departureTraffic-right" type="radio" name="departureTraffic" value="right"> Right Traffic</label>
           </fieldset>
@@ -5234,8 +5232,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
               <option>25</option>
             </select>
           </label>
-          <fieldset class="traffic-pattern">
-            <legend>Destination traffic pattern</legend>
+          <fieldset class="traffic-pattern" aria-label="Destination traffic pattern">
             <label><input id="arrivalTraffic-left" type="radio" name="arrivalTraffic" value="left" checked> Left Traffic</label>
             <label><input id="arrivalTraffic-right" type="radio" name="arrivalTraffic" value="right"> Right Traffic</label>
           </fieldset>
@@ -5560,8 +5557,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
               <option>8R</option>
             </select>
           </label>
-          <fieldset class="traffic-pattern">
-            <legend>Takeoff traffic pattern</legend>
+          <fieldset class="traffic-pattern" aria-label="Takeoff traffic pattern">
             <label><input id="ifr-departureTraffic-left" type="radio" name="ifr-departureTraffic" value="left" checked> Left Traffic</label>
             <label><input id="ifr-departureTraffic-right" type="radio" name="ifr-departureTraffic" value="right"> Right Traffic</label>
           </fieldset>
@@ -5621,8 +5617,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
               <option>25</option>
             </select>
           </label>
-          <fieldset class="traffic-pattern">
-            <legend>Destination traffic pattern</legend>
+          <fieldset class="traffic-pattern" aria-label="Destination traffic pattern">
             <label><input id="ifr-arrivalTraffic-left" type="radio" name="ifr-arrivalTraffic" value="left" checked> Left Traffic</label>
             <label><input id="ifr-arrivalTraffic-right" type="radio" name="ifr-arrivalTraffic" value="right"> Right Traffic</label>
           </fieldset>
@@ -9077,6 +9072,10 @@ function renderFinalReport(){
   showAppPage("report");
 }
 
+function fullertonHeadingReadback(text){
+  return /\bleft\s+(?:turn\s+)?(?:to\s+)?(?:heading\s+)?(?:120|(?:1|one)\s+(?:2|two)\s+(?:0|zero|oh))\b/.test(text);
+}
+
 function evaluateTransmission(text){
   if(!text) return;
   xpEvaluateLiveTransmission?.(text);
@@ -9268,6 +9267,9 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="tower"){
+    const departureFacility=airportFacility(depAirport(),"departure");
+    const handoffVisual=`${stage.facility}, on departure, turn left heading 120, contact ${departureFacility}.`;
+    const handoffSpoken=handoffVisual.replace("heading 120","heading one two zero");
     if(app.phase==="towerInitial"){
       checks={
         facility:n.includes("tower")||airportMentioned(text,app.config.departureAirport),
@@ -9296,6 +9298,19 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say again runway and request.`;
         $("feedback").textContent="Tower call incomplete. Try again.";
       }
+    }else if(app.phase==="towerHandoffReadback"){
+      checks={
+        departureInstruction:fullertonHeadingReadback(n),
+        facility:facilityMentioned(text,depAirport(),"departure")
+      };
+      $("score").textContent=grade(checks)+"%";
+      if(checks.departureInstruction&&checks.facility){
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify departure instructions. ${handoffVisual}`;
+        replySpoken=`${callsignSpoken()}, verify departure instructions. ${handoffSpoken}`;
+        $("feedback").textContent=`Read back left heading 120 and ${departureFacility}.`;
+      }
     }else{
       checks={
         runway:containsRunway(text),
@@ -9310,6 +9325,11 @@ function evaluateTransmission(text){
         replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Assigned runway is ${app.config.runway}. Verify the runway before continuing.`;
+      }else if(essential&&clearanceOnGround){
+        replyVisual=`${app.config.aircraft}, ${handoffVisual}`;
+        replySpoken=`${callsignSpoken()}, ${handoffSpoken}`;
+        $("feedback").textContent=`Read back left heading 120 and ${departureFacility}.`;
+        app.phase="towerHandoffReadback";
       }else if(essential){
         const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
         if(veryShort){
