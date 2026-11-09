@@ -183,11 +183,7 @@ header{border-radius:14px;align-items:flex-start}.setup-grid{grid-template-colum
   .runway-pair{
     gap:6px;
   }
-  .runway-setup{min-width:0}
-.traffic-pattern{min-width:0;margin:6px 0 0;padding:0;border:0}
-.traffic-pattern label{display:flex;align-items:center;gap:5px;font-size:.75rem;margin:3px 0}
-.traffic-pattern input[type="radio"]{width:auto;min-width:0;margin:0;flex:none}
-.runway-pair label{
+  .runway-pair label{
     font-size:10px;
   }
   .frequency{font-size:21px}
@@ -4891,6 +4887,32 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 .scorebar:not(:has(> .feedback)){display:none!important}
 .stage-heading + div:not(:empty) > .stage-complete-alert{margin-top:8px}
 .stage-heading + div:not(:empty) + .nav-row{margin-top:6px;padding-top:0;border-top:0}
+/* Keep traffic radios compact across the desktop, tablet and phone layouts. */
+.runway-setup{min-width:0}
+.runway-setup .traffic-pattern{
+  min-width:0;
+  margin:6px 0 0;
+  padding:0;
+  border:0;
+}
+.runway-setup .traffic-pattern label{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:6px;
+  margin:0;
+  min-height:22px;
+}
+.trainer-setup-column .runway-setup .traffic-pattern input[type="radio"]{
+  width:14px;
+  height:14px;
+  min-height:0;
+  flex:0 0 14px;
+  margin:0;
+  padding:0;
+  background:transparent;
+  box-shadow:none;
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7983,6 +8005,13 @@ function containsRunway(text,r=app.config.runway){
 
 const ATIS_CODES=["Alpha","Bravo","Charlie","Delta","Echo","Foxtrot","Golf","Hotel","India","Juliet","Kilo","Lima","Mike","November","Oscar","Papa","Quebec","Romeo","Sierra","Tango","Uniform","Victor","Whiskey","X-ray","Yankee","Zulu"];
 
+function containsAtisCode(normalizedText, code){
+  const expected=code.toLowerCase();
+  const writtenLetter=normalizedText.match(/\binformation\s+([a-z])\b/);
+  if(writtenLetter) return writtenLetter[1]===expected[0];
+  return normalizedText.includes(expected);
+}
+
 function randomAtisCode(exclude=""){
   const choices=ATIS_CODES.filter(x=>x!==exclude);
   return choices[Math.floor(Math.random()*choices.length)];
@@ -9101,7 +9130,7 @@ function evaluateTransmission(text){
         callsign:hasCallsign(text),
         type:containsAircraftType(text),
         location:containsStartingLocation(text),
-        atis:n.includes(app.config.atis.toLowerCase()),
+        atis:containsAtisCode(n,app.config.atis),
         destination:airportMentioned(text,app.config.destinationAirport),
         request:n.includes("flight following")||n.includes("flight-following"),
         altitude:containsAltitude(text)
@@ -9204,7 +9233,7 @@ function evaluateTransmission(text){
         location:app.config.location===GA_PARKING_OPTION
           ? containsStartingLocation(text)
           : n.includes(app.config.location.toLowerCase()),
-        atis:n.includes(app.config.atis.toLowerCase()),
+        atis:containsAtisCode(n,app.config.atis),
         request:n.includes("taxi")||n.includes("departure")
       };
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
@@ -9434,7 +9463,7 @@ function evaluateTransmission(text){
       checks={
         facility:facilityMentioned(text,destAirport(),"approach")||n.includes("arrival"),
         callsign:hasCallsign(text),
-        atis:n.includes(app.config.arrivalAtis.toLowerCase()),
+        atis:containsAtisCode(n,app.config.arrivalAtis),
         destination:airportMentioned(text,app.config.destinationAirport),
         request:n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
       };
@@ -9510,7 +9539,7 @@ function evaluateTransmission(text){
       checks={
         facility:n.includes("tower")||airportMentioned(text,app.config.destinationAirport),
         callsign:hasCallsign(text),
-        atis:n.includes(app.config.arrivalAtis.toLowerCase()),
+        atis:containsAtisCode(n,app.config.arrivalAtis),
         position:containsArrivalPosition(text) && xpPositionReportAcceptable(text,app.config.destinationAirport),
         inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
         runway:containsDestRunway(text)
@@ -11459,7 +11488,7 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="clearance"){
     const clearanceOnGround=ifrAirport(IFR_APP.config.departureAirport).clearanceOnGround;
     if(IFR_APP.phase==="clearanceInitial"){
-      const hasCurrentAtis=n.includes(IFR_APP.config.atis.toLowerCase());
+      const hasCurrentAtis=containsAtisCode(n,IFR_APP.config.atis);
       if(!hasCurrentAtis){
         checks={atis:false,callsign:ifrContainsCallsign(text),destination:ifrContainsAirport(text,IFR_APP.config.destinationAirport)};
         score=ifrScoreChecks(stage,checks);
@@ -11527,7 +11556,7 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="ground"){
     if(IFR_APP.phase==="groundInitial"){
-      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:containsLocationAlias(text,IFR_APP.config.location),atis:n.includes(IFR_APP.config.atis.toLowerCase()),request:n.includes("taxi")};
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:containsLocationAlias(text,IFR_APP.config.location),atis:containsAtisCode(n,IFR_APP.config.atis),request:n.includes("taxi")};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","location","atis","request"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
@@ -11653,7 +11682,7 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="approach"){
     if(IFR_APP.phase==="approachInitial"){
       const reportedApproachAltitude=reportedAltitudeFeet(text);
-      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:n.includes(IFR_APP.config.arrivalAtis.toLowerCase()),approach:ifrApproachPhraseOK(text),altitude:reportedApproachAltitude>0};
+      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:containsAtisCode(n,IFR_APP.config.arrivalAtis),approach:ifrApproachPhraseOK(text),altitude:reportedApproachAltitude>0};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","atis","approach","altitude"],["facility"])){
         IFR_APP.vectorHeading="240";
