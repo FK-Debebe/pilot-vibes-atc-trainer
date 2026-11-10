@@ -6732,6 +6732,8 @@ function wrongArrivalAirportMention(text,targetCode){
   if(airportMentioned(text,targetCode)) return "";
   const n=norm(fkNormalizeRecognition(text));
 
+  const runwayRequestAirport=n.match(/\brequest(?:ing)?\s+(?:runway\s+)?[a-z0-9 ]+?\s+at\s+(.+)/)?.[1];
+
   for(const [code,ap] of Object.entries(AIRPORTS)){
     if(code===targetCode) continue;
     const names=[
@@ -6751,7 +6753,7 @@ function wrongArrivalAirportMention(text,targetCode){
         `landing at ${name}`,
         `request ${name}`
       ];
-      if(contextual.some(x=>n.includes(x))) return code;
+      if(contextual.some(x=>n.includes(x)) || runwayRequestAirport===name || runwayRequestAirport?.startsWith(name+" ")) return code;
     }
   }
   return "";
@@ -7131,7 +7133,9 @@ function currentVoiceRole(){
 /* V5.02 TTS-only pronunciation normalization.
    Keep ATIS visible on-screen, but speak it as "Weather information". */
 function fkPrepareTextForSpeech(text){
-  return String(text||"").replace(/\bATIS\b/gi,"Weather information");
+  return String(text||"")
+    .replace(/\bATIS\b/gi,"Weather information")
+    .replace(/\brun[\s-]?up\b/gi,"ran up");
 }
 
 function speak(text,role=currentVoiceRole()){
@@ -9257,13 +9261,13 @@ function evaluateTransmission(text){
             : `Unexpected runway change. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, and callsign.`;
         }else{
           const requestedRunup=/\brun[ -]?up\b/i.test(text);
-          const runupVisual=requestedRunup?" Runup approved.":"";
-          const runupSpoken=requestedRunup?" Runup approved.":"";
+          const runupVisual=requestedRunup?" Run-up approved.":"";
+          const runupSpoken=requestedRunup?" Run-up approved.":"";
           replyVisual=`${app.config.aircraft}, ${depAirport().name} Ground, runway ${app.config.runway}, taxi via ${departureTaxiway()}${holdVisual}.${runupVisual}`;
           replySpoken=`${callsignSpoken()}, ${depAirport().name} Ground, runway ${runwaySpoken()}, taxi via ${departureTaxiway()}${holdSpoken}.${runupSpoken}`;
           $("feedback").textContent=holdShort
-            ? `Ground responded. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.${requestedRunup?" Runup approved.":""}`
-            : `Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.${requestedRunup?" Runup approved.":""}`;
+            ? `Ground responded. Read back Runway ${app.config.runway}, taxiway ${departureTaxiway()}, hold short Runway ${holdShort}, and callsign.${requestedRunup?" Run-up approved.":""}`
+            : `Ground responded. Read back runway, taxiway ${departureTaxiway()}, and callsign.${requestedRunup?" Run-up approved.":""}`;
         }
         app.phase="groundReadback";
       }
@@ -9297,7 +9301,14 @@ function evaluateTransmission(text){
 
   if(stage.id==="tower"){
     const departureFacility=airportFacility(depAirport(),"departure");
-    const handoffVisual=`${stage.facility}, on departure, turn left heading 120, contact ${departureFacility}.`;
+    const nextStage=STAGES[app.stageIndex+1];
+    const contactDeparture=nextStage?.id==="departure";
+    const handoffVisual=clearanceOnGround
+      ? `${stage.facility}, on departure, turn left heading 120, contact ${departureFacility}.`
+      : contactDeparture ? `frequency change approved, contact ${departureFacility}.` : "frequency change approved.";
+    const handoffPrompt=clearanceOnGround
+      ? `Read back left heading 120 and ${departureFacility}.`
+      : "Read back the frequency change with your callsign.";
     const handoffSpoken=handoffVisual.replace("heading 120","heading one two zero");
     if(app.phase==="towerInitial"){
       checks={
@@ -9328,17 +9339,21 @@ function evaluateTransmission(text){
         $("feedback").textContent="Tower call incomplete. Try again.";
       }
     }else if(app.phase==="towerHandoffReadback"){
-      checks={
+      checks=clearanceOnGround ? {
         departureInstruction:fullertonHeadingReadback(n),
         facility:facilityMentioned(text,depAirport(),"departure")
+      } : {
+        request:/\bfrequency change approved\b/.test(n) ||
+          (contactDeparture && n.includes(norm(departureFacility))),
+        callsign:hasCallsign(text)
       };
       $("score").textContent=grade(checks)+"%";
-      if(checks.departureInstruction&&checks.facility){
+      if(Object.values(checks).every(Boolean)){
         complete=true;
       }else{
         replyVisual=`${app.config.aircraft}, verify departure instructions. ${handoffVisual}`;
         replySpoken=`${callsignSpoken()}, verify departure instructions. ${handoffSpoken}`;
-        $("feedback").textContent=`Read back left heading 120 and ${departureFacility}.`;
+        $("feedback").textContent=handoffPrompt;
       }
     }else{
       checks={
@@ -9354,23 +9369,11 @@ function evaluateTransmission(text){
         replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Incorrect runway readback: you said Runway ${wrongRunway}. Assigned runway is ${app.config.runway}. Verify the runway before continuing.`;
-      }else if(essential&&clearanceOnGround){
+      }else if(essential){
         replyVisual=`${app.config.aircraft}, ${handoffVisual}`;
         replySpoken=`${callsignSpoken()}, ${handoffSpoken}`;
-        $("feedback").textContent=`Read back left heading 120 and ${departureFacility}.`;
+        $("feedback").textContent=handoffPrompt;
         app.phase="towerHandoffReadback";
-      }else if(essential){
-        const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
-        if(veryShort){
-          const dest=destAirport();
-          const atisFreq=airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis");
-          replyVisual=`${app.config.aircraft}, frequency change approved.`;
-          replySpoken=`${callsignSpoken()}, frequency change approved.`;
-          $("feedback").textContent=`Tower stage complete. Monitor ${dest.radioName||dest.name} ATIS on ${atisFreq}, then contact ${airportFacility(dest,"tower")}.`;
-        }else{
-          $("feedback").textContent="Tower stage complete.";
-        }
-        complete=true;
       }else{
         const missing=[];
         if(!checks.runway) missing.push(`runway ${app.config.runway}`);
@@ -9384,6 +9387,7 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="departure"){
+    const nextStage=STAGES[app.stageIndex+1];
     if(app.phase==="departureInitial"){
       checks={
         facility:facilityMentioned(text,depAirport(),"departure"),
@@ -9404,6 +9408,22 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say altitude.`;
         $("feedback").textContent="Departure check-in incomplete. Try again.";
       }
+    }else if(app.phase==="departureHandoffReadback"){
+      const repaired=frequencyRecognitionRepair(text);
+      const decimal=repaired.match(/\b(1[1-3]\d)\s*\.\s*(\d+)\b/);
+      const digit="(?:[0-9]|zero|oh|one|two|three|four|five|six|seven|eight|nine|niner)";
+      const spoken=repaired.match(new RegExp(`\\b(${digit}\\s+${digit}\\s+${digit})\\s+(?:point|decimal)\\s+(${digit}(?:\\s+${digit})*)\\b`,"i"));
+      const reported=decimal||spoken;
+      const frequency=reported ? Number(`${textDigits(reported[1])}.${textDigits(reported[2])}`) : NaN;
+      checks={frequency:frequency===Number(nextStage.freq),callsign:hasCallsign(text)};
+      $("score").textContent=grade(checks)+"%";
+      if(checks.frequency&&checks.callsign){
+        complete=true;
+      }else{
+        replyVisual=`${app.config.aircraft}, verify contact ${nextStage.facility} ${nextStage.freq}.`;
+        replySpoken=`${callsignSpoken()}, verify contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
+        $("feedback").textContent=`Read back ${nextStage.freq} with your callsign.`;
+      }
     }else{
       checks={altitude:containsAltitude(text),callsign:hasCallsign(text)};
       const essential=checks.altitude;
@@ -9414,12 +9434,14 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, climb and maintain ${altitudeSpoken()}.`;
         $("feedback").textContent=`Incorrect altitude readback: you said ${Number(wrongAltitude).toLocaleString()} feet. Assigned altitude is ${app.config.altitude}. Read it back again.`;
       }else if(essential){
-        const nextStage=STAGES[app.stageIndex+1];
         if(nextStage?.id==="enroute"){
           replyVisual=`${app.config.aircraft}, contact ${nextStage.facility} ${nextStage.freq}.`;
           replySpoken=`${callsignSpoken()}, contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
+          $("feedback").textContent=`Read back ${nextStage.freq} with your callsign.`;
+          app.phase="departureHandoffReadback";
+        }else{
+          complete=true;
         }
-        complete=true;
       }else{
         replyVisual=`${app.config.aircraft}, verify climb and maintain ${app.config.altitude}.`;
         replySpoken=`${callsignSpoken()}, verify climb and maintain ${altitudeSpoken()}.`;
@@ -9460,12 +9482,17 @@ function evaluateTransmission(text){
 
   if(stage.id==="arrival"){
     if(app.phase==="arrivalInitial"){
+      const hasArrivalAtis=containsAtisCode(n,app.config.arrivalAtis);
+      const namesDestination=airportMentioned(text,app.config.destinationAirport);
+      const runwayRequest=n.match(/\brequest(?:ing)?\s+(?:runway\s+)?(.+)/);
+      const requestsArrival=n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
+        || !!(runwayRequest && containsDestRunway(`runway ${runwayRequest[1]}`));
       checks={
         facility:facilityMentioned(text,destAirport(),"approach")||n.includes("arrival"),
         callsign:hasCallsign(text),
-        atis:containsAtisCode(n,app.config.arrivalAtis),
-        destination:airportMentioned(text,app.config.destinationAirport),
-        request:n.includes("landing")||n.includes("arrival")||n.includes("full stop")||n.includes("inbound")
+        atis:hasArrivalAtis,
+        destination:namesDestination||hasArrivalAtis,
+        request:requestsArrival
       };
       const s=grade(checks); $("score").textContent=s+"%";
       const wrongAirport=wrongArrivalAirportMention(text,app.config.destinationAirport);
@@ -9474,7 +9501,7 @@ function evaluateTransmission(text){
         replyVisual=`${app.config.aircraft}, negative destination. Confirm ${destAirport().name}.`;
         replySpoken=`${callsignSpoken()}, negative destination. Confirm ${destAirport().name}.`;
         $("feedback").textContent=`Wrong arrival airport recognized: ${wrong.name}. Expected destination is ${destAirport().name}. Make the approach call again.`;
-      }else if(s>=75){
+      }else if(s>=75&&(namesDestination||(hasArrivalAtis&&requestsArrival))){
         if(unexpectedEnabled("standby")&&!unexpectedTriggered("standby")){
           markUnexpected("standby");
           replyVisual=`${app.config.aircraft}, stand by.`;
@@ -11563,11 +11590,11 @@ function ifrEvaluateTransmission(text){
         const requestedRunup=/\brun[ -]?up\b/i.test(text);
         IFR_APP.taxiway=taxi;
         IFR_APP.runupApproved=requestedRunup;
-        const runupText=requestedRunup?" Runup approved.":"";
+        const runupText=requestedRunup?" Run-up approved.":"";
         ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, taxi via ${taxi}.${runupText}`);
         IFR_APP.phase="groundReadback";
         ifr$("feedback").textContent=requestedRunup
-          ? "Ground responded. Read back runway and taxiway. Runup approved."
+          ? "Ground responded. Read back runway and taxiway. Run-up approved."
           : "Ground responded. Read back runway and taxiway.";
       }else{
         ifrATC(`${ifrCallsignVisual()}, say again position, ATIS, and IFR taxi request.`);
