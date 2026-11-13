@@ -7691,7 +7691,7 @@ function fkXpRecognitionActive(){
   return !!(window.XP_STATE?.connected && document.getElementById("page-xplane")?.classList.contains("active"));
 }
 
-function fkRecognitionAlternativeScore(text,confidence=0){
+function fkRecognitionAlternativeScore(text,confidence=0,tail=""){
   const n=fkNormalizeRecognition(String(text||""));
   const lower=n.toLowerCase();
   const aviationTerms=[
@@ -7703,16 +7703,17 @@ function fkRecognitionAlternativeScore(text,confidence=0){
   for(const term of aviationTerms) if(lower.includes(term)) score+=0.35;
   if(/\d/.test(n)) score+=0.25;
   if(/\b(?:alpha|bravo|charlie|delta|echo|foxtrot|golf|hotel|india|juliet|kilo|lima|mike|november|oscar|papa|quebec|romeo|sierra|tango|uniform|victor|whiskey|xray|yankee|zulu)\b/i.test(n)) score+=0.4;
+  if(tail && hasReadbackCallsign(n,tail,false)) score+=2;
   return score;
 }
 
-function fkBestRecognitionAlternative(result){
+function fkBestRecognitionAlternative(result,tail){
   if(!result || !result.length) return "";
   let best=(result[0]?.transcript||"").trim();
-  let bestScore=fkRecognitionAlternativeScore(best,result[0]?.confidence);
+  let bestScore=fkRecognitionAlternativeScore(best,result[0]?.confidence,tail);
   for(let i=1;i<result.length;i++){
     const text=(result[i]?.transcript||"").trim();
-    const score=fkRecognitionAlternativeScore(text,result[i]?.confidence);
+    const score=fkRecognitionAlternativeScore(text,result[i]?.confidence,tail);
     if(score>bestScore){best=text;bestScore=score;}
   }
   return fkNormalizeRecognition(best);
@@ -7759,7 +7760,7 @@ function startRecognitionSegment(){
     let interimPart="";
 
     for(let i=event.resultIndex;i<event.results.length;i++){
-      const piece=fkBestRecognitionAlternative(event.results[i]);
+      const piece=fkBestRecognitionAlternative(event.results[i],aircraftTail());
       if(!piece) continue;
 
       if(event.results[i].isFinal) finalPart += piece + " ";
@@ -7970,10 +7971,11 @@ function containsTaxiway(text,taxiway){
 }
 
 function normalizeCallsignDigitHomophones(text){
-  return text.replace(/((?:\d|\bseven)\s+)to(?=\s+(?:\d|four\b|for\b|fore\b))/gi,"$1two");
+  text=text.replace(/\b(?:see[ -]+air[ -]+uh|see[ -]+era|ciara|sarah|sierra|siera|seirra|sara|sera)[ -]+(?:papa|poppa|pappa|pop[ -]+pa)\b/gi,"sierra papa");
+  return text.replace(/((?:\d|\bseven)\s+)(?:to|too)(?=\s+(?:\d|four\b|for\b|fore\b))/gi,"$1two");
 }
 
-function hasReadbackCallsign(text,tail){
+function hasReadbackCallsign(text,tail,allowShort=true){
   const tokens=norm(normalizeCallsignDigitHomophones(text)).match(/[a-z0-9]+/g)||[];
   const expected=tail.toLowerCase();
   const short=expected.slice(-3);
@@ -7981,7 +7983,7 @@ function hasReadbackCallsign(text,tail){
     let candidate="";
     for(let i=start;i<tokens.length && candidate.length<expected.length;i++){
       candidate+=aviationCompact(tokens[i].replace(/^(?:for|fore)$/,"four"));
-      if(candidate===expected || candidate==="n"+expected || candidate===short) return true;
+      if(candidate===expected || candidate==="n"+expected || (allowShort && candidate===short)) return true;
     }
     return false;
   });
@@ -8192,7 +8194,7 @@ function requestedTowerDeparture(text){
   const normalized=norm(text).replace(/\bwrite\b/g,"right");
   const named=normalized.match(/\b(?:left|right)\s+(?:cross[ -]?wind|down[ -]?wind|at (?:the )?river)\b/);
   if(named) return named[0].replace(/cross[ -]?wind/,"crosswind").replace(/down[ -]?wind/,"downwind").replace(/at river/,"at the river");
-  if(/\b(?:91|nine[ -]+one)[\s/–-]*(?:and\s+)?(?:605|six\s+(?:zero|oh)\s+five)\b/.test(normalized)) return "91/605";
+  if(/\b(?:91|(?:nine|ninety|ninty)[ -]+one)[\s/–-]*(?:and\s+)?(?:605|six\s+(?:zero|oh|o)\s+five)\b/.test(normalized)) return "91/605";
   return normalized.match(/\b(?:request(?:ing)?|ready for)\s+(?:a\s+)?(?:vfr\s+)?((?:(?!\b(?:request(?:ing)?|departure)\b)[a-z0-9 /-]){2,60}?)\s+departure\b/)?.[1]?.trim() || "";
 }
 
@@ -8254,7 +8256,7 @@ function fkNormalizeRecognition(text){
     [/\bclearance\s+deliver(?:y|ies)\b/gi,"clearance delivery"],
     [/\bground\s+point\b/gi,"ground"],
     [/\bhold\s+shorts\b/gi,"hold short"],
-    [/\bwrite[\s-]+down[\s-]*wind\b/gi,"right downwind"],
+    [/\b(?:write|ride)[\s-]+down[\s-]*wind\b/gi,"right downwind"],
     [/\bline\s+up\s+in\s+wait\b/gi,"line up and wait"],
     [/\bwith\s+you\b/gi,"with you"],
     [/\btraffic\s+in\s+sight\b/gi,"traffic in sight"]
@@ -9500,7 +9502,7 @@ function evaluateTransmission(text){
         const changed=!checks.direction&&!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
         const instruction=useGroundDepartureHeading?"":towerDepartureInstruction(app.config.direction.toLowerCase());
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${instruction}`;
-        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${instruction.replace("91/605","nine one six zero five")}`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${instruction.replace("91/605","ninety-one six oh five")}`;
         $("feedback").textContent=changed
           ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
           : useGroundDepartureHeading ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
@@ -9790,7 +9792,8 @@ function evaluateTransmission(text){
         callsign:hasCallsign(text),
         atis:containsAtisCode(n,app.config.arrivalAtis),
         position:containsArrivalPosition(text) && xpPositionReportAcceptable(text,app.config.destinationAirport),
-        inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop"),
+        inbound:n.includes("inbound")||n.includes("landing")||n.includes("full stop")||
+          (/\brunway\b/.test(n)&&containsDestRunway(text)),
         runway:containsDestRunway(text)
       };
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
@@ -12209,7 +12212,7 @@ function ifrStartRecognitionSegment(){
   r.onresult=event=>{
     let finalPart="",interimPart="";
     for(let i=event.resultIndex;i<event.results.length;i++){
-      const t=fkBestRecognitionAlternative(event.results[i]);
+      const t=fkBestRecognitionAlternative(event.results[i],ifrTail());
       if(event.results[i].isFinal) finalPart+=" "+t;
       else interimPart+=" "+t;
     }
