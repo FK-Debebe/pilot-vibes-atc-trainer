@@ -1672,6 +1672,16 @@ details.setup:not([open]) .setup-bottom-toggle{
 .flight-report-history-date{color:var(--muted);font-weight:700;text-align:right}
 .flight-report-history-caret{font-size:14px;text-align:right;transition:transform .15s ease}
 .flight-report-history-item[open] .flight-report-history-caret{transform:rotate(180deg)}
+.vfr-departure-options{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  align-items:end;
+  grid-column:1 / -1;
+}
+.vfr-departure-options label{min-width:0}
+.vfr-departure-options select{width:100%;min-width:0}
+
 .flight-report-history-body{padding:12px}
 .flight-report-history-card .flight-report-delete{margin:8px 0 0;border:1px solid #b42318;background:#fff;color:#912018}
 .flight-report-delete:hover{background:#fff0ee}
@@ -5274,21 +5284,30 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </select>
       </label>
 
-      <label>Departure Direction
-        <select id="direction">
-          <option>Southeast</option>
-          <option>Southwest</option>
-          <option>Northeast</option>
-          <option>Northwest</option>
-        </select>
-      </label>
+      <div class="vfr-departure-options">
+        <label>Departure Direction
+          <select id="direction">
+            <option>Southeast</option>
+            <option>Southwest</option>
+            <option>Northeast</option>
+            <option>Northwest</option>
+            <option>Left at the river</option>
+            <option>91/605</option>
+            <option>Left crosswind</option>
+            <option>Right crosswind</option>
+            <option>Left downwind</option>
+            <option>Right downwind</option>
+            <option>Other</option>
+          </select>
+        </label>
 
-      <label>VFR Flight Following
-        <select id="flightFollowing">
-          <option value="on" selected>On</option>
-          <option value="off">Off</option>
-        </select>
-      </label>
+        <label>VFR Flight Following
+          <select id="flightFollowing">
+            <option value="on" selected>On</option>
+            <option value="off">Off</option>
+          </select>
+        </label>
+      </div>
 
       <label>Requested Altitude
         <div class="altitude-stepper">
@@ -7416,9 +7435,9 @@ function instructionFor(stage){
       ? `Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, information ${c.atis}, request VFR to ${dest.name}, departure direction ${c.direction.toLowerCase()}, and requested altitude ${c.altitude}.`
       : `Call ${airportFacility(dep,"clearance")}. Include call sign ${c.callsign}, aircraft type ${c.aircraftType}, location/position, ATIS ${c.atis}, request flight following to ${dest.name}, and requested altitude ${c.altitude}.`,
     ground:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
-      ? `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`
-      : `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi for a ${c.direction.toLowerCase()} departure.`,
-    tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure.`,
+      ? `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi${c.direction==="Other"?"":` for a ${c.direction.toLowerCase()} departure`}.`
+      : `Call ${airportFacility(dep,"ground")} from ${c.location}. Include callsign, information ${c.atis}, and request taxi${c.direction==="Other"?"":` for a ${c.direction.toLowerCase()} departure`}.`,
+    tower:`At runway ${c.runway}, call ${airportFacility(dep,"tower")} and report ready for departure${c.direction==="Other"?" and state your requested departure direction or route":""}.`,
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
     enroute:`Check in with ${stage.facility}. Include callsign and cruise altitude, for example “${stage.facility}, ${c.aircraft}, ${c.altitude} level.”`,
     arrival:`Contact ${airportFacility(dest,"approach")} for ${dest.name}. Include callsign, altitude/position as applicable, information ${c.arrivalAtis}, destination, and request.`,
@@ -7953,8 +7972,12 @@ function containsTaxiway(text,taxiway){
   return false;
 }
 
+function normalizeCallsignDigitHomophones(text){
+  return text.replace(/((?:\d|\bseven)\s+)to(?=\s+(?:\d|four\b|for\b|fore\b))/gi,"$1two");
+}
+
 function hasReadbackCallsign(text,tail){
-  const tokens=norm(text).match(/[a-z0-9]+/g)||[];
+  const tokens=norm(normalizeCallsignDigitHomophones(text)).match(/[a-z0-9]+/g)||[];
   const expected=tail.toLowerCase();
   const short=expected.slice(-3);
   return tokens.some((_,start)=>{
@@ -7972,7 +7995,7 @@ function hasCallsign(text){
   /* Speech recognition commonly renders aviation digits phonetically:
      "724 Sierra Papa" -> "72 for SP".  Normalize these variants only for
      callsign matching so other phrase recognition is not affected. */
-  const callsignText=norm(text)
+  const callsignText=norm(normalizeCallsignDigitHomophones(text))
     .replace(/\bfor\b/g,"four")
     .replace(/\bfore\b/g,"four");
   const textCompact=aviationCompact(callsignText);
@@ -8168,7 +8191,23 @@ function containsAltitude(text){
   return false;
 }
 
+function requestedTowerDeparture(text){
+  const normalized=norm(text).replace(/\bwrite\b/g,"right");
+  const named=normalized.match(/\b(?:left|right)\s+(?:cross[ -]?wind|down[ -]?wind|at (?:the )?river)\b/);
+  if(named) return named[0].replace(/cross[ -]?wind/,"crosswind").replace(/down[ -]?wind/,"downwind").replace(/at river/,"at the river");
+  if(/\b(?:91|nine[ -]+one)[\s/–-]*(?:and\s+)?(?:605|six\s+(?:zero|oh)\s+five)\b/.test(normalized)) return "91/605";
+  return normalized.match(/\b(?:request(?:ing)?|ready for)\s+(?:a\s+)?(?:vfr\s+)?((?:(?!\b(?:request(?:ing)?|departure)\b)[a-z0-9 /-]){2,60}?)\s+departure\b/)?.[1]?.trim() || "";
+}
+
+function towerDepartureInstruction(direction){
+  if(direction==="91/605" || /^(left|right) (crosswind|downwind)$/.test(direction)) return ` ${direction} departure approved.`;
+  if(/^(left|right) at the river$/.test(direction)) return ` Turn ${direction}.`;
+  return ` Proceed ${direction}.`;
+}
+
 function containsDirection(text){
+  if(app.config.direction==="91/605") return requestedTowerDeparture(text)==="91/605";
+  text=norm(text).replace(/\bwrite\b/g,"right").replace(/\bat river\b/g,"at the river");
   const raw=norm(text)
     .replace(/[-_/]/g," ")
     .replace(/\s+/g," ")
@@ -9439,12 +9478,14 @@ function evaluateTransmission(text){
       : monitorArrivalAtis ? `Read back ${nextStage.freq} and ${arrivalTower.freq} with your callsign.` : "Read back the frequency change with your callsign."; 
     const handoffSpoken=monitorArrivalAtis ? handoffVisual.replace(nextStage.freq,frequencySpoken(nextStage.freq)).replace(arrivalTower.freq,frequencySpoken(arrivalTower.freq)) : handoffVisual.replace("heading 120","heading one two zero");
     if(app.phase==="towerInitial"){
+      const requestedDirection=requestedTowerDeparture(text);
       checks={
         facility:n.includes("tower")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
         runway:containsRunway(text),
         ready:n.includes("ready")||n.includes("departure")
       };
+      if(!useGroundDepartureHeading && app.config.direction==="Other") checks.direction=!!requestedDirection;
       const s=grade(checks); $("score").textContent=s+"%";
       const wrongRunway=wrongRunwayMention(text,app.config.runway,depAirport());
       if(wrongRunway){
@@ -9453,10 +9494,16 @@ function evaluateTransmission(text){
         replyVisual=`${app.config.aircraft}, verify runway ${app.config.runway}.`;
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Runway mismatch: you reported Runway ${wrongRunway}, but the active assigned runway is ${app.config.runway}. Verify the runway and make the tower call again.`;
+      }else if(checks.direction===false){
+        replyVisual=`${app.config.aircraft}, say departure direction or route.`;
+        replySpoken=`${callsignSpoken()}, say departure direction or route.`;
+        $("feedback").textContent="Include your requested departure, for example: request left crosswind departure.";
       }else if(checks.facility&&checks.callsign&&checks.runway&&checks.ready){
-        const changed=!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
-        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${useGroundDepartureHeading?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
-        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${useGroundDepartureHeading?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
+        if(!useGroundDepartureHeading && requestedDirection) app.config.direction=requestedDirection;
+        const changed=!requestedDirection&&!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
+        const instruction=useGroundDepartureHeading?"":towerDepartureInstruction(app.config.direction.toLowerCase());
+        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${instruction}`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${instruction.replace("91/605","nine one six zero five")}`;
         $("feedback").textContent=changed
           ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
           : useGroundDepartureHeading ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
@@ -11356,7 +11403,7 @@ function ifrContainsCallsign(text){
   if(IFR_APP.phase.endsWith("Readback")) return hasReadbackCallsign(text,ifrTail());
   /* Mirror VFR behavior: "for/fore" may represent digit four only while
      matching the callsign, never in the whole radio transmission. */
-  const callsignText=ifrNormalizeAviationTranscript(text)
+  const callsignText=ifrNormalizeAviationTranscript(normalizeCallsignDigitHomophones(text))
     .replace(/\bfor\b/gi,"four")
     .replace(/\bfore\b/gi,"four");
   const textCompact=aviationCompact(callsignText);
