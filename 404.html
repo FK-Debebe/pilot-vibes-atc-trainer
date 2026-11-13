@@ -4913,6 +4913,11 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   background:transparent;
   box-shadow:none;
 }
+.flight-report-history-body .saved-radio-exchange{margin-top:12px}
+.flight-report-history-body .saved-radio-exchange summary{display:list-item;cursor:pointer;font-weight:700}
+.saved-radio-exchange ol{max-height:24rem;overflow:auto;margin:8px 0;padding:0;list-style:none}
+.saved-radio-exchange li{padding:8px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.saved-radio-exchange li div{white-space:pre-wrap}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7042,7 +7047,7 @@ function append(type,speaker,text){
     direction="RX";
   }
 
-  el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker">${displaySpeaker}</span></div><div class="bubble">${text}</div>`;
+  el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker">${escapeReportText(displaySpeaker)}</span></div><div class="bubble">${escapeReportText(text)}</div>`;
   $("transcript").appendChild(el);
   $("transcript").scrollTop=$("transcript").scrollHeight;
 }
@@ -7931,7 +7936,22 @@ function containsTaxiway(text,taxiway){
   return false;
 }
 
+function hasReadbackCallsign(text,tail){
+  const tokens=norm(text).match(/[a-z0-9]+/g)||[];
+  const expected=tail.toLowerCase();
+  const short=expected.slice(-3);
+  return tokens.some((_,start)=>{
+    let candidate="";
+    for(let i=start;i<tokens.length && candidate.length<expected.length;i++){
+      candidate+=aviationCompact(tokens[i].replace(/^(?:for|fore)$/,"four"));
+      if(candidate===expected || candidate==="n"+expected || candidate===short) return true;
+    }
+    return false;
+  });
+}
+
 function hasCallsign(text){
+  if(app.phase.endsWith("Readback")) return hasReadbackCallsign(text,aircraftTail());
   /* Speech recognition commonly renders aviation digits phonetically:
      "724 Sierra Papa" -> "72 for SP".  Normalize these variants only for
      callsign matching so other phrase recognition is not affected. */
@@ -8336,7 +8356,9 @@ function containsArrivalPosition(text){
   const hasPositionWord=positionWords.some(v=>n.includes(v));
   const hasMiles=/\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|twenty)\s+(?:mile|miles)\b/.test(n);
 
-  return hasMiles || (hasDirection && hasPositionWord) ||
+  const hasCompactPosition=/\b[1-9]\d*\s*(?:[ns][ew]?|[ew]|north(?:\s*(?:east|west))?|south(?:\s*(?:east|west))?|east|west)\b/.test(n);
+
+  return hasCompactPosition || hasMiles || (hasDirection && hasPositionWord) ||
     n.includes("over ") || n.includes("abeam ") || n.includes("position ");
 }
 
@@ -8860,6 +8882,13 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     summaryHtml:$("reportSummary")?.innerHTML||"",
     stagesHtml:$("reportStages")?.innerHTML||"",
     recommendationsHtml:$("reportRecommendations")?.innerHTML||"",
+    radioExchange:[...$(mode==="ifr"?"ifr-transcript":"transcript").children]
+      .filter(entry=>entry.classList.contains("msg"))
+      .map(entry=>({
+        direction:entry.querySelector(".log-direction")?.textContent||"",
+        speaker:entry.querySelector(".speaker")?.textContent||"",
+        text:entry.querySelector(".bubble")?.textContent||""
+      })),
     xpReplay:(window.XP_STATE?.replayLog||[]).slice(-50),
     xpCategoryScores:window.XP_STATE?.categoryScores||{},
     xpProfile:window.XP_STATE?.aircraftProfile?.profileName||""
@@ -8869,6 +8898,17 @@ function storeCurrentFlightReport({mode,route,level,overall}){
   history.unshift(item);
   if(saveFlightReportHistory(history)) session.reportStored=true;
   renderFlightReportHistory();
+}
+
+function renderSavedRadioExchange(entries){
+  if(!Array.isArray(entries) || !entries.length) return "";
+  return `<details class="saved-radio-exchange">
+    <summary>Radio Exchange</summary>
+    <ol>${entries.map(entry=>`
+      <li><strong>${escapeReportText(entry.direction)} · ${escapeReportText(entry.speaker)}</strong>
+        <div>${escapeReportText(entry.text)}</div>
+      </li>`).join("")}</ol>
+  </details>`;
 }
 
 function renderFlightReportHistory(){
@@ -8897,6 +8937,7 @@ function renderFlightReportHistory(){
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
+        ${renderSavedRadioExchange(item.radioExchange)}
       </div>
     </details>
   `).join("");
@@ -9132,7 +9173,7 @@ function fullertonHeadingReadback(text){
 }
 
 function evaluateTransmission(text){
-  if(!text) return;
+  if(!text || app.phase==="towerStandby") return;
   xpEvaluateLiveTransmission?.(text);
   if(!tuned()){
     app.session.tuningErrors++;
@@ -9144,6 +9185,13 @@ function evaluateTransmission(text){
   const phaseAtStart=app.phase;
   append("pilot","PILOT",text);
   const n=norm(fkNormalizeRecognition(text));
+  if(phaseAtStart.endsWith("Readback") && !hasCallsign(text)){
+    $("score").textContent="0%";
+    recordAttempt(stage,{callsign:false});
+    $("feedback").textContent="Include your aircraft callsign in the readback.";
+    speak(`${callsignSpoken()}, say again with your callsign.`);
+    return;
+  }
   let checks={}, replyVisual="", replySpoken="", complete=false;
 
   const clearanceOnGround=depAirport().clearanceOnGround;
@@ -9253,6 +9301,15 @@ function evaluateTransmission(text){
 
   if(stage.id==="ground"){
     if(app.phase==="groundInitial"){
+      const digitWord="zero|one|two|three|four|five|six|seven|eight|nine|niner";
+      const runwayPattern=new RegExp(
+        `\\brunway\\s+(\\d{1,2}|(?:${digitWord})(?:\\s+(?:${digitWord}))?)(?:\\s*(left|right|center|[lrc]))?\\b`,
+        "g"
+      );
+      const requestedRunways=[...n.matchAll(runwayPattern)].map(([,number,side])=>
+        String(Number(textDigits(number)))+(side?.[0].toUpperCase()||"")
+      );
+      const wrongRunway=requestedRunways.find(runway=>runway!==app.config.runway);
       checks={
         facility:n.includes("ground")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
@@ -9260,12 +9317,17 @@ function evaluateTransmission(text){
           ? containsStartingLocation(text)
           : n.includes(app.config.location.toLowerCase()),
         atis:containsAtisCode(n,app.config.atis),
-        request:n.includes("taxi")||n.includes("departure")
+        request:n.includes("taxi")||n.includes("departure"),
+        runway:!wrongRunway
       };
       const veryShort=isVeryShortVFRRoute(app.config.departureAirport,app.config.destinationAirport);
-      const essentialGround=checks.facility&&checks.callsign&&checks.location&&checks.request&&checks.atis;
+      const essentialGround=checks.facility&&checks.callsign&&checks.location&&checks.request&&checks.atis&&checks.runway;
       const s=grade(checks); $("score").textContent=(essentialGround?Math.max(s,80):s)+"%";
-      if(!essentialGround){
+      if(wrongRunway){
+        replyVisual=`${app.config.aircraft}, negative, runway ${app.config.runway} in use. Say again taxi request.`;
+        replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken()} in use. Say again taxi request.`;
+        $("feedback").textContent=`Incorrect runway request: Runway ${wrongRunway}. Runway ${app.config.runway} is in use. Try again.`;
+      }else if(!essentialGround){
         replyVisual=`${app.config.aircraft}, say again your position, ATIS, and request.`;
         replySpoken=`${callsignSpoken()}, say again your position, A T I S, and request.`;
         $("feedback").textContent="Several required items were missing. Try the initial call again.";
@@ -9354,7 +9416,23 @@ function evaluateTransmission(text){
         $("feedback").textContent=changed
           ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
           : clearanceOnGround ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
-        app.phase="towerReadback";
+        if(/\bin[\s-]+sequence\b/.test(n)){
+          app.phase="towerStandby";
+          scheduleATCFollowup({
+            stageId:"tower",
+            phase:"towerStandby",
+            visual:abbreviateATCReply(replyVisual,replySpoken).visual,
+            spoken:abbreviateATCReply(replyVisual,replySpoken).spoken,
+            feedback:$("feedback").textContent,
+            nextPhase:"towerReadback",
+            role:"tower"
+          });
+          replyVisual=`${app.config.aircraft}, stand by.`;
+          replySpoken=`${callsignSpoken(false)}, stand by.`;
+          $("feedback").textContent="Traffic ahead. Hold short and wait for Tower.";
+        }else{
+          app.phase="towerReadback";
+        }
       }else{
         replyVisual=`${app.config.aircraft}, say again runway and request.`;
         replySpoken=`${callsignSpoken()}, say again runway and request.`;
@@ -9517,6 +9595,10 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="arrival"){
+    const tower=STAGES.find(item=>item.id==="destTower");
+    const handoff=`contact ${tower.facility} ${tower.freq}.`;
+    const spokenHandoff=`contact ${tower.facility} ${frequencySpoken(tower.freq)}.`;
+    const handoffPrompt=`Read back ${tower.facility} and ${tower.freq} with your callsign.`;
     if(app.phase==="arrivalInitial"){
       const hasArrivalAtis=containsAtisCode(n,app.config.arrivalAtis);
       const namesDestination=airportMentioned(text,app.config.destinationAirport);
@@ -9587,12 +9669,27 @@ function evaluateTransmission(text){
       const essential=checks.destination&&checks.visual;
       $("score").textContent=(essential?(checks.callsign?100:90):grade(checks))+"%";
       if(essential){
-        $("feedback").textContent="Approach stage complete. Next: Destination Tower.";
-        complete=true;
+        replyVisual=`${app.config.aircraft}, ${handoff}`;
+        replySpoken=`${callsignSpoken()}, ${spokenHandoff}`;
+        $("feedback").textContent=handoffPrompt;
+        app.phase="arrivalHandoffReadback";
       }else{
         replyVisual=`${app.config.aircraft}, verify direct ${destAirport().name}, expect visual approach.`;
         replySpoken=`${callsignSpoken()}, verify direct ${destAirport().name}, expect visual approach.`;
         $("feedback").textContent="Approach readback not recognized. Try again.";
+      }
+    }else if(app.phase==="arrivalHandoffReadback"){
+      const frequencies=handoffFrequencies(text);
+      checks={
+        frequency:frequencies.includes(Number(tower.freq)),
+        callsign:hasCallsign(text)
+      };
+      $("score").textContent=grade(checks)+"%";
+      complete=checks.frequency&&checks.callsign;
+      if(!complete){
+        replyVisual=`${app.config.aircraft}, verify ${handoff}`;
+        replySpoken=`${callsignSpoken()}, verify ${spokenHandoff}`;
+        $("feedback").textContent=handoffPrompt;
       }
     }
   }
@@ -10092,6 +10189,7 @@ function nextStage(){
 }
 
 function resetTraining(){
+  $("transcript").innerHTML="";
   if("speechSynthesis" in window) speechSynthesis.cancel();
   newScenario();
   resetSessionStats();
@@ -10104,8 +10202,6 @@ function resetTraining(){
   app.recognitionText="";
   app.config.atis=randomAtisCode();
   app.config.arrivalAtis=randomAtisCode(app.config.atis);
-  $("atis").value=app.config.atis;
-  $("arrivalAtis").value=app.config.arrivalAtis;
   $("next").classList.remove("hidden");
   $("reset").classList.add("hidden");
   renderStage(true);
@@ -11204,6 +11300,7 @@ function ifrApproachPhraseOK(text){
 }
 
 function ifrContainsCallsign(text){
+  if(IFR_APP.phase.endsWith("Readback")) return hasReadbackCallsign(text,ifrTail());
   /* Mirror VFR behavior: "for/fore" may represent digit four only while
      matching the callsign, never in the whole radio transmission. */
   const callsignText=ifrNormalizeAviationTranscript(text)
@@ -11554,6 +11651,12 @@ function ifrEvaluateTransmission(text){
   IFR_APP.session.attempts++;
   ifrAppend("pilot","PILOT",text);
   const n=norm(fkNormalizeRecognition(text));
+  if(IFR_APP.phase.endsWith("Readback") && !ifrContainsCallsign(text)){
+    ifrScoreChecks(stage,{callsign:false});
+    ifr$("feedback").textContent="Include your aircraft callsign in the readback.";
+    ifrSpeak(`${ifrCallsignSpoken()}, say again with your callsign.`);
+    return;
+  }
   let checks={},score=0;
 
   if(stage.id==="clearance"){
