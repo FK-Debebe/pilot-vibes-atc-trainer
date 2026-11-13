@@ -1673,7 +1673,7 @@ details.setup:not([open]) .setup-bottom-toggle{
 .flight-report-history-caret{font-size:14px;text-align:right;transition:transform .15s ease}
 .flight-report-history-item[open] .flight-report-history-caret{transform:rotate(180deg)}
 .flight-report-history-body{padding:12px}
-.flight-report-delete{margin-top:12px;border:1px solid #b42318;background:#fff;color:#912018}
+.flight-report-history-card .flight-report-delete{margin:8px 0 0;border:1px solid #b42318;background:#fff;color:#912018}
 .flight-report-delete:hover{background:#fff0ee}
 .flight-report-history-body .report-summary{margin-top:0}
 .flight-report-history-body .report-action-row{display:none}
@@ -5285,6 +5285,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </select>
       </label>
 
+      <label>VFR Flight Following
+        <select id="flightFollowing">
+          <option value="on" selected>On</option>
+          <option value="off">Off</option>
+        </select>
+      </label>
+
       <label>Requested Altitude
         <div class="altitude-stepper">
           <button id="altitudeDown" class="altitude-step-btn" type="button" aria-label="Decrease requested altitude by 500 feet">−</button>
@@ -6085,13 +6092,12 @@ function updateSetupSummary(){
   const dest=$("destinationAirport")?.value || (typeof app!=="undefined" ? app.config?.destinationAirport : "KCRQ") || "KCRQ";
   let nm=0;
   try{ nm=Math.round(routeDistanceNm(dep,dest)); }catch(e){}
-  let stages=9;
-  try{ stages=buildStages(dep,dest).length; }catch(e){}
+  const stages=buildStages(dep,dest,$("flightFollowing")?.value!=="off");
 
   if($("setupSummaryRoute")) $("setupSummaryRoute").textContent=`${dep} → ${dest}`;
   if($("setupSummaryDistance")) $("setupSummaryDistance").textContent=nm ? `${nm} NM` : "— NM";
-  if($("setupSummaryStages")) $("setupSummaryStages").textContent=String(stages);
-  if($("setupSummaryEnroute")) $("setupSummaryEnroute").textContent=nm>50 ? "Yes" : "No";
+  if($("setupSummaryStages")) $("setupSummaryStages").textContent=String(stages.length);
+  if($("setupSummaryEnroute")) $("setupSummaryEnroute").textContent=stages.some(stage=>stage.id==="enroute") ? "Yes" : "No";
 }
 
 function updateTrainingLevelDescription(){
@@ -6627,13 +6633,13 @@ function enrouteFacilityMentioned(text){
   return n.includes("approach") || n.includes("departure") || n.includes("center");
 }
 
-function buildStages(depCode,destCode){
+function buildStages(depCode,destCode,flightFollowing=true){
   const dep=airportData(depCode);
   const dest=airportData(destCode);
 
   /* Very short VFR hop: keep departure/arrival ATIS, but skip Departure,
      Enroute, and Arrival/Approach controller stages. */
-  if(isVeryShortVFRRoute(depCode,destCode)){
+  if(!flightFollowing || isVeryShortVFRRoute(depCode,destCode)){
     return [
       {id:"atis", title:"DEPARTURE ATIS", facility:`${dep.radioName||dep.name} ATIS`, freq:airportFrequency(dep,"atis"), type:"atis"},
       {id:"clearance", title:dep.clearanceOnGround?"GROUND CLEARANCE":"CLEARANCE DELIVERY", facility:airportFacility(dep,"clearance"), freq:airportFrequency(dep,"clearance"), type:"comm"},
@@ -6642,7 +6648,7 @@ function buildStages(depCode,destCode){
       {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
       {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
       {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
-    ];
+    ].filter(stage=>flightFollowing || stage.id!=="clearance");
   }
 
   const stages=[
@@ -7257,6 +7263,7 @@ function saveLastSetup(){
       callsign:$("callsign")?.value,
       location:$("location")?.value,
       arrivalParking:$("arrivalParking")?.value,
+      flightFollowing:$("flightFollowing").value,
       arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
       departureTraffic:selectedTrafficPattern("departureTraffic"),
       runway:$("runway")?.value,
@@ -7274,6 +7281,7 @@ function loadLastSetup(){
     const raw=localStorage.getItem(LAST_SETUP_KEY);
     if(!raw) return false;
     const saved=JSON.parse(raw)||{};
+    $("flightFollowing").value=saved.flightFollowing==="off" ? "off" : "on";
 
     if(saved.level && $("level")) $("level").value=saved.level;
     if(saved.departureAirport && AIRPORTS[saved.departureAirport]){
@@ -7364,6 +7372,7 @@ function readSetup(generateCodes=true){
     aircraft:"",
     location:$("location").value,
     arrivalParking:$("arrivalParking").value,
+    flightFollowing:$("flightFollowing").value!=="off",
     arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
     departureTraffic:selectedTrafficPattern("departureTraffic"),
     atis:app.config.atis || randomAtisCode(),
@@ -7378,7 +7387,7 @@ function readSetup(generateCodes=true){
   app.config.aircraft=buildAircraftCallsign(app.config.aircraftType,app.config.callsign);
 
   saveLastSetup();
-  STAGES=buildStages(depCode,destCode);
+  STAGES=buildStages(depCode,destCode,app.config.flightFollowing);
   configureUnexpectedEvents();
   app.stageIndex=0;
   $("next").classList.remove("hidden");
@@ -7395,6 +7404,7 @@ function instructionFor(stage){
   const c=app.config;
   const dep=depAirport();
   const dest=destAirport();
+  const arrivalFacility=STAGES.some(step=>step.id==="arrival") ? airportFacility(dest,"approach") : airportFacility(dest,"tower");
   const beginner={
     atis:`Tune ${stage.freq} and monitor ${dep.name} ATIS. Record the ATIS information and runway after you receive the broadcast.`,
     clearance:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
@@ -7407,7 +7417,7 @@ function instructionFor(stage){
     departure:`After tower handoff, check in with ${airportFacility(dep,"departure")}. Include callsign and altitude.`,
     enroute:`Check in with ${stage.facility}. Include callsign and cruise altitude, for example “${stage.facility}, ${c.aircraft}, ${c.altitude} level.”`,
     arrival:`Contact ${airportFacility(dest,"approach")} for ${dest.name}. Include callsign, altitude/position as applicable, information ${c.arrivalAtis}, destination, and request.`,
-    arrivalAtis:`Before calling ${airportFacility(dest,"approach")}, tune ${stage.freq} and monitor ${dest.radioName||dest.name} ATIS. Record the information code and landing runway after you receive the broadcast.`,
+    arrivalAtis:`Before calling ${arrivalFacility}, tune ${stage.freq} and monitor ${dest.radioName||dest.name} ATIS. Record the information code and landing runway after you receive the broadcast.`,
     destTower:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
       ? `After monitoring ${dest.radioName||dest.name} ATIS, call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`
       : `Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
@@ -7421,7 +7431,7 @@ function instructionFor(stage){
     departure:"Check in after handoff and read back the altitude assignment.",
     enroute:"Make the enroute sector check-in with callsign and level altitude.",
     arrival:`Make the arrival/approach call, include information ${c.arrivalAtis}, and read back the approach instruction.`,
-    arrivalAtis:"Monitor the destination ATIS before contacting approach.",
+    arrivalAtis:`Monitor the destination ATIS before contacting ${arrivalFacility}.`,
     destTower:"Make the initial tower call, read back pattern instructions, then read back landing clearance.",
     destGround:"Request taxi to parking and read back the taxi instruction."
   };
@@ -8878,6 +8888,7 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
     completedAt:new Date().toISOString(),
     mode:mode==="ifr"?"IFR":"VFR",
+    flightFollowing:mode==="ifr" ? undefined : app.config.flightFollowing!==false,
     route:String(route||"Completed training"),
     level:String(level||"beginner"),
     overall:Number(overall)||0,
@@ -8903,9 +8914,11 @@ function storeCurrentFlightReport({mode,route,level,overall}){
 }
 
 function renderSavedRadioExchange(entries){
-  if(!Array.isArray(entries) || !entries.length) return "";
-  return `<details class="saved-radio-exchange">
-    <summary>Radio Exchange</summary>
+  if(!Array.isArray(entries) || !entries.length){
+    return '<section class="saved-radio-exchange"><h4>Radio Exchange</h4><p>No transcript was saved with this report.</p></section>';
+  }
+  return `<section class="saved-radio-exchange">
+    <h4>Radio Exchange</h4>
     <ol>${entries.map(entry=>`
       <li><strong>${escapeReportText(entry.direction)} · ${escapeReportText(entry.speaker)}</strong>
         <div>${escapeReportText(entry.text)}</div>
@@ -8942,6 +8955,7 @@ function renderFlightReportHistory(){
   }
 
   holder.innerHTML=history.map(item=>`
+    <article class="flight-report-history-card">
     <details class="flight-report-history-item">
       <summary>
         <span class="flight-report-history-route">${escapeReportText(item.route)}</span>
@@ -8951,14 +8965,15 @@ function renderFlightReportHistory(){
         <span class="flight-report-history-caret">⌄</span>
       </summary>
       <div class="flight-report-history-body">
-        <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}</div>
+        <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}${typeof item.flightFollowing==="boolean" ? ` • Flight Following ${item.flightFollowing?"On":"Off"}` : ""}</div>
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
         ${renderSavedRadioExchange(item.radioExchange)}
-        <button type="button" class="flight-report-delete" data-report-id="${escapeReportText(item.id)}">Delete report</button>
       </div>
     </details>
+    <button type="button" class="flight-report-delete" data-report-id="${escapeReportText(item.id)}" aria-label="Delete report for ${escapeReportText(item.route)}, ${escapeReportText(flightReportDate(item.completedAt))}">Delete report</button>
+    </article>
   `).join("");
   holder.querySelectorAll(".flight-report-delete").forEach(button=>{
     button.addEventListener("click",()=>deleteFlightReport(button.dataset.reportId));
@@ -9406,15 +9421,17 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="tower"){
+    const flightFollowing=app.config.flightFollowing!==false;
+    const useGroundDepartureHeading=flightFollowing && clearanceOnGround;
     const departureFacility=airportFacility(depAirport(),"departure");
     const nextStage=STAGES[app.stageIndex+1];
     const contactDeparture=nextStage?.id==="departure";
-    const monitorArrivalAtis=nextStage?.id==="arrivalAtis";
+    const monitorArrivalAtis=flightFollowing && nextStage?.id==="arrivalAtis";
     const arrivalTower=monitorArrivalAtis ? STAGES[app.stageIndex+2] : null;
-    const handoffVisual=clearanceOnGround
+    const handoffVisual=!flightFollowing ? "frequency change approved." : useGroundDepartureHeading
       ? `${stage.facility}, on departure, turn left heading 120, contact ${departureFacility}.`
       : contactDeparture ? `frequency change approved, contact ${departureFacility}.` : `frequency change approved. Monitor ${nextStage.facility} ${nextStage.freq}, then contact ${arrivalTower.facility} ${arrivalTower.freq}.`;
-    const handoffPrompt=clearanceOnGround
+    const handoffPrompt=useGroundDepartureHeading
       ? `Read back left heading 120 and ${departureFacility}.`
       : monitorArrivalAtis ? `Read back ${nextStage.freq} and ${arrivalTower.freq} with your callsign.` : "Read back the frequency change with your callsign."; 
     const handoffSpoken=monitorArrivalAtis ? handoffVisual.replace(nextStage.freq,frequencySpoken(nextStage.freq)).replace(arrivalTower.freq,frequencySpoken(arrivalTower.freq)) : handoffVisual.replace("heading 120","heading one two zero");
@@ -9434,12 +9451,12 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, verify runway ${runwaySpoken()}.`;
         $("feedback").textContent=`Runway mismatch: you reported Runway ${wrongRunway}, but the active assigned runway is ${app.config.runway}. Verify the runway and make the tower call again.`;
       }else if(checks.facility&&checks.callsign&&checks.runway&&checks.ready){
-        const changed=!clearanceOnGround&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
-        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${clearanceOnGround?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
-        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${clearanceOnGround?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
+        const changed=!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
+        replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${useGroundDepartureHeading?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
+        replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${useGroundDepartureHeading?"":` Proceed ${app.config.direction.toLowerCase()}.`}`;
         $("feedback").textContent=changed
           ? `Unexpected departure-direction change. Read back runway, takeoff clearance, and ${app.config.direction.toLowerCase()} departure.`
-          : clearanceOnGround ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
+          : useGroundDepartureHeading ? "Read back runway and takeoff clearance." : "Read back runway, takeoff clearance, and departure direction.";
         if(/\bin[\s-]+sequence\b/.test(n)){
           app.phase="towerStandby";
           scheduleATCFollowup({
@@ -9464,7 +9481,7 @@ function evaluateTransmission(text){
       }
     }else if(app.phase==="towerHandoffReadback"){
       const frequencies=monitorArrivalAtis ? handoffFrequencies(text) : [];
-      checks=clearanceOnGround ? {
+      checks=useGroundDepartureHeading ? {
         departureInstruction:fullertonHeadingReadback(n),
         facility:facilityMentioned(text,depAirport(),"departure")
       } : {
@@ -9484,7 +9501,7 @@ function evaluateTransmission(text){
       checks={
         runway:containsRunway(text),
         takeoff:n.includes("takeoff")||n.includes("take off")||n.includes("cleared"),
-        direction:clearanceOnGround||containsDirection(text),
+        direction:useGroundDepartureHeading||containsDirection(text),
         callsign:hasCallsign(text)
       };
       const essential=checks.runway&&checks.takeoff&&checks.direction;
@@ -10117,7 +10134,9 @@ function completeStage(){
   if(nextStage){
     const tuning=clearanceUsesSameGroundFrequency(depAirport(),stage,nextStage)
       ? `stay on ${nextStage.facility}.` : `switch freq to ${nextStage.facility}.`;
-    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and ${tuning}`;
+    const nextAction=app.config.flightFollowing===false && stage.id==="tower" && nextStage.id==="arrivalAtis"
+      ? `monitor ${nextStage.facility} on ${nextStage.freq}.` : tuning;
+    $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Click Next and ${nextAction}`;
   }else{
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
@@ -10220,7 +10239,7 @@ function resetTraining(){
   resetSessionStats();
   app.config.atis=randomAtisCode();
   app.config.arrivalAtis=randomAtisCode(app.config.atis);
-  STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport);
+  STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport,app.config.flightFollowing);
   app.stageIndex=0;
   app.phase="idle";
   app.stageComplete=false;
@@ -10431,6 +10450,7 @@ function applyInitialSetupOpenState(){
 applyInitialSetupOpenState();
 
 renderRadioDigits();
+$("flightFollowing").addEventListener("change",updateSetupSummary);
 const restoredLastSetup=loadLastSetup();
 if(!restoredLastSetup){
   updateDepartureChoices(false);
