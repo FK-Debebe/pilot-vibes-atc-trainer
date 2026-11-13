@@ -5291,12 +5291,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <option>Southwest</option>
             <option>Northeast</option>
             <option>Northwest</option>
-            <option>Left at the river</option>
-            <option>91/605</option>
-            <option>Left crosswind</option>
-            <option>Right crosswind</option>
-            <option>Left downwind</option>
-            <option>Right downwind</option>
             <option>Other</option>
           </select>
         </label>
@@ -7348,7 +7342,10 @@ function loadLastSetup(){
     if(saved.destRunway && [...$("destRunway").options].some(o=>o.value===saved.destRunway)){
       $("destRunway").value=saved.destRunway;
     }
-    if(saved.direction && $("direction")) $("direction").value=saved.direction;
+    if(saved.direction){
+      const direction=$("direction");
+      direction.value=[...direction.options].some(option=>option.value===saved.direction) ? saved.direction : "Other";
+    }
     if(saved.altitude && $("altitude")) $("altitude").value=saved.altitude;
 
     updateVfrAltitudeGuide();
@@ -9499,8 +9496,8 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, say departure direction or route.`;
         $("feedback").textContent="Include your requested departure, for example: request left crosswind departure.";
       }else if(checks.facility&&checks.callsign&&checks.runway&&checks.ready){
-        if(!useGroundDepartureHeading && requestedDirection) app.config.direction=requestedDirection;
-        const changed=!requestedDirection&&!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
+        if(checks.direction) app.config.direction=requestedDirection;
+        const changed=!checks.direction&&!useGroundDepartureHeading&&unexpectedEnabled("directionChange")&&!unexpectedTriggered("directionChange")&&triggerDirectionChange();
         const instruction=useGroundDepartureHeading?"":towerDepartureInstruction(app.config.direction.toLowerCase());
         replyVisual=`${app.config.aircraft}, runway ${app.config.runway}, cleared for takeoff.${instruction}`;
         replySpoken=`${callsignSpoken()}, runway ${runwaySpoken()}, cleared for takeoff.${instruction.replace("91/605","nine one six zero five")}`;
