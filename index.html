@@ -9387,13 +9387,15 @@ function evaluateTransmission(text){
     const departureFacility=airportFacility(depAirport(),"departure");
     const nextStage=STAGES[app.stageIndex+1];
     const contactDeparture=nextStage?.id==="departure";
+    const monitorArrivalAtis=nextStage?.id==="arrivalAtis";
+    const arrivalTower=monitorArrivalAtis ? STAGES[app.stageIndex+2] : null;
     const handoffVisual=clearanceOnGround
       ? `${stage.facility}, on departure, turn left heading 120, contact ${departureFacility}.`
-      : contactDeparture ? `frequency change approved, contact ${departureFacility}.` : "frequency change approved.";
+      : contactDeparture ? `frequency change approved, contact ${departureFacility}.` : `frequency change approved. Monitor ${nextStage.facility} ${nextStage.freq}, then contact ${arrivalTower.facility} ${arrivalTower.freq}.`;
     const handoffPrompt=clearanceOnGround
       ? `Read back left heading 120 and ${departureFacility}.`
-      : "Read back the frequency change with your callsign.";
-    const handoffSpoken=handoffVisual.replace("heading 120","heading one two zero");
+      : monitorArrivalAtis ? `Read back ${nextStage.freq} and ${arrivalTower.freq} with your callsign.` : "Read back the frequency change with your callsign."; 
+    const handoffSpoken=monitorArrivalAtis ? handoffVisual.replace(nextStage.freq,frequencySpoken(nextStage.freq)).replace(arrivalTower.freq,frequencySpoken(arrivalTower.freq)) : handoffVisual.replace("heading 120","heading one two zero");
     if(app.phase==="towerInitial"){
       checks={
         facility:n.includes("tower")||airportMentioned(text,app.config.departureAirport),
@@ -9439,11 +9441,12 @@ function evaluateTransmission(text){
         $("feedback").textContent="Tower call incomplete. Try again.";
       }
     }else if(app.phase==="towerHandoffReadback"){
+      const frequencies=monitorArrivalAtis ? handoffFrequencies(text) : [];
       checks=clearanceOnGround ? {
         departureInstruction:fullertonHeadingReadback(n),
         facility:facilityMentioned(text,depAirport(),"departure")
       } : {
-        request:/\bfrequency change approved\b/.test(n) ||
+        request:monitorArrivalAtis ? frequencies.includes(Number(nextStage.freq)) && frequencies.includes(Number(arrivalTower.freq)) : /\bfrequency change approved\b/.test(n) ||
           (contactDeparture && n.includes(norm(departureFacility))),
         callsign:hasCallsign(text)
       };
