@@ -4916,10 +4916,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   box-shadow:none;
 }
 .flight-report-history-body .saved-radio-exchange{margin-top:12px}
-.flight-report-history-body .saved-radio-exchange summary{display:list-item;cursor:pointer;font-weight:700}
-.saved-radio-exchange ol{max-height:24rem;overflow:auto;margin:8px 0;padding:0;list-style:none}
-.saved-radio-exchange li{padding:8px;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
-.saved-radio-exchange li div{white-space:pre-wrap}
+.saved-radio-exchange .transcript{max-height:24rem;margin-bottom:12px}
+.saved-radio-exchange .bubble{overflow-wrap:anywhere}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7041,6 +7039,9 @@ function altitudeSpoken(value=app.config.altitude, conversational=false){
     ? `${radioDigits(remainder/100)} hundred` : numberUnderThousand(remainder));
   return parts.join(" ");
 }
+const vfrRadioExchange=[];
+const ifrRadioExchange=[];
+
 function append(type,speaker,text){
   const el=document.createElement("div");
   el.className="msg "+type;
@@ -7056,6 +7057,7 @@ function append(type,speaker,text){
   }
 
   el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker">${escapeReportText(displaySpeaker)}</span></div><div class="bubble">${escapeReportText(text)}</div>`;
+  vfrRadioExchange.push({direction,speaker:displaySpeaker,text:String(text??"")});
   $("transcript").appendChild(el);
   $("transcript").scrollTop=$("transcript").scrollHeight;
 }
@@ -7354,7 +7356,10 @@ function collapseSetupAfterApplyIfSmall(){
 
 function readSetup(generateCodes=true){
   if(!app.scenario) newScenario();
-  if(generateCodes && $("transcript")) $("transcript").innerHTML="";
+  if(generateCodes){
+    $("transcript").innerHTML="";
+    vfrRadioExchange.length=0;
+  }
   const depCode=$("departureAirport").value || "KLGB";
   const destCode=$("destinationAirport").value || "KCRQ";
 
@@ -8895,13 +8900,7 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     summaryHtml:$("reportSummary")?.innerHTML||"",
     stagesHtml:$("reportStages")?.innerHTML||"",
     recommendationsHtml:$("reportRecommendations")?.innerHTML||"",
-    radioExchange:[...$(mode==="ifr"?"ifr-transcript":"transcript").children]
-      .filter(entry=>entry.classList.contains("msg"))
-      .map(entry=>({
-        direction:entry.querySelector(".log-direction")?.textContent||"",
-        speaker:entry.querySelector(".speaker")?.textContent||"",
-        text:entry.querySelector(".bubble")?.textContent||""
-      })),
+    radioExchange:(mode==="ifr" ? ifrRadioExchange : vfrRadioExchange).slice(),
     xpReplay:(window.XP_STATE?.replayLog||[]).slice(-50),
     xpCategoryScores:window.XP_STATE?.categoryScores||{},
     xpProfile:window.XP_STATE?.aircraftProfile?.profileName||""
@@ -8919,11 +8918,15 @@ function renderSavedRadioExchange(entries){
   }
   return `<section class="saved-radio-exchange">
     <h4>Radio Exchange</h4>
-    <ol>${entries.map(entry=>`
-      <li><strong>${escapeReportText(entry.direction)} · ${escapeReportText(entry.speaker)}</strong>
-        <div>${escapeReportText(entry.text)}</div>
-      </li>`).join("")}</ol>
-  </details>`;
+    <div class="transcript" role="region" aria-label="Saved Radio Exchange" tabindex="0">
+      ${entries.map(entry=>`
+        <div class="msg ${entry.direction==="RX"?"atc":entry.direction==="TX"?"pilot":"system"}">
+          <div class="log-head"><span class="log-direction">${escapeReportText(entry.direction)}</span><span class="speaker">${escapeReportText(entry.speaker)}</span></div>
+          <div class="bubble">${escapeReportText(entry.text)}</div>
+        </div>`).join("")}
+    </div>
+  </section>
+`;
 }
 
 function deleteFlightReport(reportId){
@@ -8966,10 +8969,10 @@ function renderFlightReportHistory(){
       </summary>
       <div class="flight-report-history-body">
         <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}${typeof item.flightFollowing==="boolean" ? ` • Flight Following ${item.flightFollowing?"On":"Off"}` : ""}</div>
+        ${renderSavedRadioExchange(item.radioExchange)}
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
-        ${renderSavedRadioExchange(item.radioExchange)}
       </div>
     </details>
     <button type="button" class="flight-report-delete" data-report-id="${escapeReportText(item.id)}" aria-label="Delete report for ${escapeReportText(item.route)}, ${escapeReportText(flightReportDate(item.completedAt))}">Delete report</button>
@@ -10233,6 +10236,7 @@ function nextStage(){
 }
 
 function resetTraining(){
+  vfrRadioExchange.length=0;
   $("transcript").innerHTML="";
   if("speechSynthesis" in window) speechSynthesis.cancel();
   newScenario();
@@ -11052,7 +11056,10 @@ function ifrLoadLastSetup(){
 }
 
 function ifrReadSetup(generateCodes=true){
-  if(generateCodes && ifr$("transcript")) ifr$("transcript").innerHTML="";
+  if(generateCodes){
+    ifr$("transcript").innerHTML="";
+    ifrRadioExchange.length=0;
+  }
   const priorAtis=IFR_APP.config.atis, priorArrival=IFR_APP.config.arrivalAtis;
   IFR_APP.config={
     departureAirport:ifr$("departureAirport").value||"KLGB",
@@ -11255,6 +11262,7 @@ function ifrAppend(type,speaker,text){
   el.innerHTML=`<div class="log-head"><span class="log-direction">${direction}</span><span class="speaker"></span></div><div class="bubble"></div>`;
   el.querySelector(".speaker").textContent=String(speaker||"").toUpperCase();
   el.querySelector(".bubble").textContent=text;
+  ifrRadioExchange.push({direction,speaker:String(speaker||"").toUpperCase(),text:String(text??"")});
   ifr$("transcript").appendChild(el);
   /* Preserve prior exchanges and automatically show the newest/current section. */
   ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
