@@ -1673,6 +1673,8 @@ details.setup:not([open]) .setup-bottom-toggle{
 .flight-report-history-caret{font-size:14px;text-align:right;transition:transform .15s ease}
 .flight-report-history-item[open] .flight-report-history-caret{transform:rotate(180deg)}
 .flight-report-history-body{padding:12px}
+.flight-report-delete{margin-top:12px;border:1px solid #b42318;background:#fff;color:#912018}
+.flight-report-delete:hover{background:#fff0ee}
 .flight-report-history-body .report-summary{margin-top:0}
 .flight-report-history-body .report-action-row{display:none}
 @media(max-width:700px){
@@ -5868,7 +5870,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     </div>
     <div id="flightReportHistoryCount" class="small">0 reports</div>
   </div>
-  <div id="flightReportHistoryList" class="flight-report-history-list"></div>
+  <div id="flightReportHistoryList" tabindex="-1" class="flight-report-history-list"></div>
 </section>
     </section>
 
@@ -8911,6 +8913,22 @@ function renderSavedRadioExchange(entries){
   </details>`;
 }
 
+function deleteFlightReport(reportId){
+  const history=loadFlightReportHistory();
+  const index=history.findIndex(item=>item.id===reportId);
+  if(index<0) return;
+  if(!window.confirm(`Delete the saved flight report for ${history[index].route}?`)) return;
+
+  history.splice(index,1);
+  if(!saveFlightReportHistory(history)){
+    window.alert("The flight report could not be deleted. Please try again.");
+    return;
+  }
+  renderFlightReportHistory();
+  const summaries=$("flightReportHistoryList").querySelectorAll(".flight-report-history-item > summary");
+  (summaries[Math.min(index,summaries.length-1)]||$("flightReportHistoryList")).focus();
+}
+
 function renderFlightReportHistory(){
   const holder=$("flightReportHistoryList");
   const count=$("flightReportHistoryCount");
@@ -8938,9 +8956,13 @@ function renderFlightReportHistory(){
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
         ${renderSavedRadioExchange(item.radioExchange)}
+        <button type="button" class="flight-report-delete" data-report-id="${escapeReportText(item.id)}">Delete report</button>
       </div>
     </details>
   `).join("");
+  holder.querySelectorAll(".flight-report-delete").forEach(button=>{
+    button.addEventListener("click",()=>deleteFlightReport(button.dataset.reportId));
+  });
 }
 
 function resetSessionStats(){
