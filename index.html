@@ -5265,6 +5265,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <select id="arrivalParking">
           <option value="">Airport Default</option>
           <option value="ga">General Aviation (GA) Parking</option>
+          <option value="transient" hidden disabled>Transient Parking</option>
         </select>
       </label>
 
@@ -5658,6 +5659,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <select id="ifr-arrivalParking">
           <option value="">Airport Default</option>
           <option value="ga">General Aviation (GA) Parking</option>
+          <option value="transient" hidden disabled>Transient Parking</option>
         </select>
       </label>
 
@@ -6693,9 +6695,23 @@ function updateDepartureChoices(preserve=true){
   updateRouteHeading();
 }
 
+function updateArrivalParking(id,airportCode,preferred=$(id).value){
+  const select=$(id);
+  const transient=[...select.options].find(option=>option.value==="transient");
+  transient.hidden=transient.disabled=airportCode!=="KCRQ";
+  select.value=preferred==="ga" || (preferred==="transient" && !transient.disabled) ? preferred : "";
+}
+
+function arrivalParkingLabel(value,fallback="parking"){
+  if(value==="transient") return "transient parking";
+  if(value==="ga") return "general aviation parking";
+  return fallback;
+}
+
 function updateDestinationChoices(preserve=true){
   const code=$("destinationAirport").value;
   const ap=airportData(code);
+  updateArrivalParking("arrivalParking",code);
   const oldRunway=preserve ? $("destRunway").value : "";
   const runwayChoice=(preserve && ap.runways.includes(oldRunway)) ? oldRunway : (ap.preferredRunway || ap.runways[0]);
   setOptions("destRunway",ap.runways,runwayChoice);
@@ -7286,7 +7302,7 @@ function loadLastSetup(){
     }else if(saved.aircraft && $("callsign")){
       $("callsign").value=String(saved.aircraft).trim().replace(/^[A-Za-z]+\s+/,"") || "724SP";
     }
-    $("arrivalParking").value=saved.arrivalParking==="ga"?"ga":"";
+    updateArrivalParking("arrivalParking",$("destinationAirport").value,saved.arrivalParking);
     if(saved.location && [...$("location").options].some(o=>o.value===saved.location)){
       $("location").value=saved.location;
     }
@@ -7388,7 +7404,7 @@ function instructionFor(stage){
     destTower:isVeryShortVFRRoute(c.departureAirport,c.destinationAirport)
       ? `After monitoring ${dest.radioName||dest.name} ATIS, call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`
       : `Call ${airportFacility(dest,"tower")} with callsign, position, inbound request, information ${c.arrivalAtis}, and runway ${c.destRunway}.`,
-    destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to ${c.arrivalParking==="ga"?"general aviation parking":"parking"}.`
+    destGround:`After clearing the runway, contact ${airportFacility(dest,"ground")} and request taxi to ${arrivalParkingLabel(c.arrivalParking)}.`
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
@@ -8243,6 +8259,14 @@ function frequencyRecognitionRepair(text){
   return s;
 }
 
+function handoffFrequencies(text){
+  const repaired=frequencyRecognitionRepair(text);
+  const decimal=repaired.matchAll(/\b(1[1-3]\d)\s*\.\s*(\d+)\b/g);
+  const digit="(?:[0-9]|zero|oh|one|two|three|four|five|six|seven|eight|nine|niner)";
+  const spoken=repaired.matchAll(new RegExp(`\\b(${digit}\\s+${digit}\\s+${digit})\\s+(?:point|decimal)\\s+(${digit}(?:\\s+${digit})*)\\b`,"gi"));
+  return [...decimal,...spoken].map(match=>Number(`${textDigits(match[1])}.${textDigits(match[2])}`));
+}
+
 function containsFrequency(text,freq){
   const target=String(freq);
   const targetDigits=target.replace(/\D/g,"");
@@ -8396,7 +8420,7 @@ function destinationArrivalTaxiRoute(){
 }
 
 function destinationParkingName(){
-  if(app.config.arrivalParking==="ga") return "general aviation parking";
+  if(app.config.arrivalParking) return arrivalParkingLabel(app.config.arrivalParking);
   const route=destinationArrivalTaxiRoute();
   return route?.parking || destAirport().defaultArrivalParking || "parking";
 }
@@ -9407,13 +9431,7 @@ function evaluateTransmission(text){
         $("feedback").textContent="Departure check-in incomplete. Try again.";
       }
     }else if(app.phase==="departureHandoffReadback"){
-      const repaired=frequencyRecognitionRepair(text);
-      const decimal=repaired.match(/\b(1[1-3]\d)\s*\.\s*(\d+)\b/);
-      const digit="(?:[0-9]|zero|oh|one|two|three|four|five|six|seven|eight|nine|niner)";
-      const spoken=repaired.match(new RegExp(`\\b(${digit}\\s+${digit}\\s+${digit})\\s+(?:point|decimal)\\s+(${digit}(?:\\s+${digit})*)\\b`,"i"));
-      const reported=decimal||spoken;
-      const frequency=reported ? Number(`${textDigits(reported[1])}.${textDigits(reported[2])}`) : NaN;
-      checks={frequency:frequency===Number(nextStage.freq),callsign:hasCallsign(text)};
+      checks={frequency:handoffFrequencies(text).includes(Number(nextStage.freq)),callsign:hasCallsign(text)};
       $("score").textContent=grade(checks)+"%";
       if(checks.frequency&&checks.callsign){
         complete=true;
@@ -9449,32 +9467,52 @@ function evaluateTransmission(text){
   }
 
   if(stage.id==="enroute"){
-    const reportedAltitude=reportedAltitudeFeet(text);
-    checks={
-      facility:enrouteFacilityMentioned(text),
-      callsign:hasCallsign(text),
-      altitude:reportedAltitude>0,
-      altitudeMatch:reportedAltitude===altitudeFeet(app.config.altitude),
-      level:n.includes("level")||n.includes("leveling")||n.includes("level at")||n.includes("at ")
-    };
-
-    const essential=checks.facility&&checks.callsign&&checks.altitude;
-    $("score").textContent=(essential?(checks.level?100:90):grade(checks))+"%";
-
-    if(essential){
-      const nextStage=STAGES[app.stageIndex+1];
-      const altitudeText=`${reportedAltitude.toLocaleString("en-US")} ft`;
-      replyVisual=`${app.config.aircraft}, roger, ${altitudeText}. Contact ${nextStage.facility} ${nextStage.freq}.`;
-      replySpoken=`${callsignSpoken()}, roger, ${altitudeSpoken(altitudeText)}. Contact ${nextStage.facility} ${frequencySpoken(nextStage.freq)}.`;
-      complete=true;
+    const approach=STAGES.find(item=>item.id==="arrival");
+    const atis=STAGES.find(item=>item.id==="arrivalAtis");
+    const handoff=`Contact ${approach.facility} ${Number(approach.freq)}. ${atis.facility} ${atis.freq}.`;
+    const spokenHandoff=`Contact ${approach.facility} ${frequencySpoken(approach.freq)}. ${atis.facility} ${frequencySpoken(atis.freq)}.`;
+    const prompt=`Read back ${approach.freq} and ${atis.freq} with your callsign.`;
+    if(app.phase==="enrouteHandoffReadback"){
+      const frequencies=handoffFrequencies(text);
+      checks={
+        frequency:frequencies.includes(Number(approach.freq)) && frequencies.includes(Number(atis.freq)),
+        callsign:hasCallsign(text)
+      };
+      $("score").textContent=grade(checks)+"%";
+      complete=checks.frequency&&checks.callsign;
+      if(!complete){
+        replyVisual=`${app.config.aircraft}, verify frequencies. ${handoff}`;
+        replySpoken=`${callsignSpoken()}, verify frequencies. ${spokenHandoff}`;
+        $("feedback").textContent=prompt;
+      }
     }else{
-      const missing=[];
-      if(!checks.facility) missing.push("facility (e.g. SoCal / SoCal Approach / Approach)");
-      if(!checks.callsign) missing.push("callsign");
-      if(!checks.altitude) missing.push("altitude");
-      replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
-      replySpoken=`${callsignSpoken()}, say again enroute check-in.`;
-      $("feedback").textContent=`Enroute check-in incomplete. Missing or not recognized: ${missing.join(", ")}.`;
+      const reportedAltitude=reportedAltitudeFeet(text);
+      checks={
+        facility:enrouteFacilityMentioned(text),
+        callsign:hasCallsign(text),
+        altitude:reportedAltitude>0,
+        altitudeMatch:reportedAltitude===altitudeFeet(app.config.altitude),
+        level:n.includes("level")||n.includes("leveling")||n.includes("level at")||n.includes("at ")
+      };
+
+      const essential=checks.facility&&checks.callsign&&checks.altitude;
+      $("score").textContent=(essential?(checks.level?100:90):grade(checks))+"%";
+
+      if(essential){
+        const altitudeText=`${reportedAltitude.toLocaleString("en-US")} ft`;
+        replyVisual=`${app.config.aircraft}, roger, ${altitudeText}. ${handoff}`;
+        replySpoken=`${callsignSpoken()}, roger, ${altitudeSpoken(altitudeText)}. ${spokenHandoff}`;
+        $("feedback").textContent=prompt;
+        app.phase="enrouteHandoffReadback";
+      }else{
+        const missing=[];
+        if(!checks.facility) missing.push("facility (e.g. SoCal / SoCal Approach / Approach)");
+        if(!checks.callsign) missing.push("callsign");
+        if(!checks.altitude) missing.push("altitude");
+        replyVisual=`${app.config.aircraft}, say again ${missing.join(", ")}.`;
+        replySpoken=`${callsignSpoken()}, say again enroute check-in.`;
+        $("feedback").textContent=`Enroute check-in incomplete. Missing or not recognized: ${missing.join(", ")}.`;
+      }
     }
   }
 
@@ -10767,6 +10805,7 @@ function ifrUpdateApproachChoices(preserve=true){
 function ifrUpdateDestinationChoices(preserve=true){
   const code=ifr$("destinationAirport").value;
   const ap=ifrAirport(code);
+  updateArrivalParking("ifr-arrivalParking",code);
   const oldRunway=preserve?ifr$("destRunway").value:"";
   ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
   ifrUpdateApproachChoices(preserve);
@@ -10845,7 +10884,7 @@ function ifrLoadLastSetup(){
     if(saved.runway && [...ifr$("runway").options].some(o=>o.value===saved.runway)){
       ifr$("runway").value=saved.runway;
     }
-    ifr$("arrivalParking").value=saved.arrivalParking==="ga"?"ga":"";
+    ifrupdateArrivalParking("arrivalParking",$("destinationAirport").value,saved.arrivalParking);
     if(saved.location && [...ifr$("location").options].some(o=>o.value===saved.location)){
       ifr$("location").value=saved.location;
     }
@@ -10916,7 +10955,7 @@ function ifrInstructionFor(stage){
     arrivalAtis:`Monitor ${dest.name} ATIS before the approach. Record the information code and landing runway.`,
     approach:`Contact ${ifrFacility(c.destinationAirport,"approach")} with callsign, altitude, information ${c.arrivalAtis}, and request the ${ifrApproachName()}.`,
     destTower:`After approach handoff, contact ${ifrFacility(c.destinationAirport,"tower")} and report established on the ${c.approachType} approach Runway ${c.destRunway}.`,
-    destGround:`After clearing the runway, contact ${ifrFacility(c.destinationAirport,"ground")} and request taxi to ${c.arrivalParking==="ga"?"general aviation parking":"parking"}.`
+    destGround:`After clearing the runway, contact ${ifrFacility(c.destinationAirport,"ground")} and request taxi to ${arrivalParkingLabel(c.arrivalParking)}.`
   };
   const intermediate={
     atis:"Monitor departure ATIS and record the information.",
@@ -11766,7 +11805,7 @@ function ifrEvaluateTransmission(text){
       if(ifrMeetsLevel(checks,["callsign","request","parking"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
         IFR_APP.destTaxiway=taxi;
-        const parking=IFR_APP.config.arrivalParking==="ga"?"general aviation parking":"parking";
+        const parking=arrivalParkingLabel(IFR_APP.config.arrivalParking);
         ifrATC(`${ifrCallsignVisual()}, taxi to ${parking} via ${taxi}.`);
         IFR_APP.phase="destGroundReadback";
         ifr$("feedback").textContent="Read back taxiway and parking destination.";
