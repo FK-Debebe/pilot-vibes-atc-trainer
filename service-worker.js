@@ -1,4 +1,4 @@
-const CACHE_NAME = "fk-atc-com-trainer-v5-53-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v5-56-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -33,7 +33,7 @@ self.addEventListener("fetch", event => {
 
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, {cache:"no-cache"})
         .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
@@ -49,7 +49,7 @@ self.addEventListener("fetch", event => {
 
   event.respondWith(
     caches.match(event.request).then(cached => {
-      const network = fetch(event.request)
+      const network = fetch(event.request, {cache:"no-cache"})
         .then(response => {
           if (response && response.status === 200) {
             const copy = response.clone();

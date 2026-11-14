@@ -4972,7 +4972,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.56 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5289,14 +5289,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </div>
       </div>
 
-      <label>Arrival Parking
-        <select id="arrivalParking">
-          <option value="">Airport Default</option>
-          <option value="ga">General Aviation (GA) Parking</option>
-          <option value="transient" hidden disabled>Transient Parking</option>
-        </select>
-      </label>
-
       <div class="vfr-departure-options">
         <label>Departure Direction
           <select id="direction">
@@ -5328,6 +5320,14 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <div id="vfrAltitudeGuide" class="vfr-altitude-guide">
           VFR ALTITUDE GUIDE — More than 3,000 ft above the surface: EASTBOUND → Odd thousands + 500; WESTBOUND → Even thousands + 500 ft MSL.
         </div>
+      </label>
+
+      <label>Arrival Parking
+        <select id="arrivalParking">
+          <option value="">Airport Default</option>
+          <option value="ga">General Aviation (GA) Parking</option>
+          <option value="transient" hidden disabled>Transient Parking</option>
+        </select>
       </label>
 
     </div>
@@ -10779,7 +10779,7 @@ if(location.protocol==="file:"){
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js").catch(err=>{
+    navigator.serviceWorker.register("./service-worker.js", {updateViaCache:"none"}).catch(err=>{
       console.warn("Service worker registration failed:",err);
     });
   });
