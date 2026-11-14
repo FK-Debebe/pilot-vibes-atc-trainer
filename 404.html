@@ -9591,7 +9591,7 @@ function evaluateTransmission(text){
         facility:n.includes("tower")||airportMentioned(text,app.config.departureAirport),
         callsign:hasCallsign(text),
         runway:containsRunway(text),
-        ready:n.includes("ready")||n.includes("departure")
+        ready:n.includes("ready")||n.includes("departure")||!!requestedDirection
       };
       if(!useGroundDepartureHeading && app.config.direction==="Other") checks.direction=!!requestedDirection;
       const s=grade(checks); $("score").textContent=s+"%";

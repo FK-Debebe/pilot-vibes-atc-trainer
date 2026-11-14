@@ -25,3 +25,11 @@ exec('practiceSingleStage("IFR","clearance")');
 assert.equal(exec('ifrTuned()'), true);
 assert.equal(exec('IFR_APP.session.practiceStage'), 'clearance');
 console.log('V5.49 regression checks passed.');
+
+const river = run().exec;
+river('$("flightFollowing").value="off"; $("direction").value="Other"; readSetup(true); practiceSingleStage("VFR","tower");');
+assert.equal(river('app.config.flightFollowing'), false);
+river('evaluateTransmission("Long Beach Tower, Cessna 724SP, holding short 26L, in sequence, request Left at the River.")');
+assert.equal(river('app.phase'), 'towerStandby');
+assert.equal(river('app.config.direction'), 'left at the river');
+assert.match(river('app.lastATC.visual'), /stand by/i);
