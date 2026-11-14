@@ -4902,10 +4902,9 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 }
 .scorebar:not(:has(> .feedback)){display:none!important}
 .stage-heading + div:not(:empty) > .stage-complete-alert{margin-top:8px}
-#navRow, #ifr-navRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+#navRow, #ifr-navRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
 #previous, #ifr-previous{grid-column:1}
-.stage-start{grid-column:2}
-#next, #ifr-next, #reset, #ifr-reset{grid-column:3}
+#next, #ifr-next, #reset, #ifr-reset{grid-column:2}
 #navRow .btn, #ifr-navRow .btn{min-width:0}
 .stage-heading + div:not(:empty) + .nav-row{margin-top:6px;padding-top:0;border-top:0}
 /* Keep traffic radios compact across the desktop, tablet and phone layouts. */
@@ -4977,7 +4976,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.58 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.59 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5153,13 +5152,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
   <div class="setup-content">
     <div class="setup-grid">
-      <label>Training Scope
-        <select id="trainingScope">
-          <option value="full" selected>Full Flight</option>
-          <option value="single">Single Stage</option>
-        </select>
-      </label>
-      <label id="practiceControls" class="hidden">Practice Stage <select id="practiceChoice"></select></label>
       <div class="setup-section-label">FLIGHT</div>
       <label>Training Level
         <select id="level">
@@ -5359,7 +5351,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     <div id="nextActionSlot"></div>
     <div id="navRow" class="nav-row">
       <button id="previous" class="btn">← PREVIOUS</button>
-      <button id="startPractice" class="btn primary stage-start hidden" type="button">Start ▷</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
       <button id="reset" class="btn primary hidden">RESET / START OVER</button>
     </div>
@@ -5516,13 +5507,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
   <div class="setup-content">
     <div class="setup-grid ifr-setup-flow">
-      <label>Training Scope
-        <select id="ifr-trainingScope">
-          <option value="full" selected>Full Flight</option>
-          <option value="single">Single Stage</option>
-        </select>
-      </label>
-      <label id="ifr-practiceControls" class="hidden">Practice Stage <select id="ifr-practiceChoice"></select></label>
 
       <div class="setup-section-label">TRAINING</div>
       <label>Training Level
@@ -5741,7 +5725,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     <div id="ifr-nextActionSlot"></div>
     <div id="ifr-navRow" class="nav-row">
       <button id="ifr-previous" class="btn">← PREVIOUS</button>
-      <button id="ifr-startPractice" class="btn primary stage-start hidden" type="button">Start ▷</button>
       <button id="ifr-next" class="btn primary" disabled>NEXT →</button>
       <button id="ifr-reset" class="btn primary hidden">RESET / START OVER</button>
     </div>
@@ -6131,7 +6114,6 @@ function updateSetupSummary(){
   let nm=0;
   try{ nm=Math.round(routeDistanceNm(dep,dest)); }catch(e){}
   const stages=buildStages(dep,dest,$("flightFollowing")?.value!=="off");
-  updatePracticeChoices("",stages);
 
   if($("setupSummaryRoute")) $("setupSummaryRoute").textContent=`${dep} → ${dest}`;
   if($("setupSummaryDistance")) $("setupSummaryDistance").textContent=nm ? `${nm} NM` : "— NM";
@@ -7506,7 +7488,6 @@ function renderProgressMarkers(currentComplete=false){
 
 function renderStage(resetFrequency=true){
   clearVoiceReview("",app);
-  if(!app.session.practiceStage) updatePracticeChoices("",STAGES);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
   const phaseMap={
@@ -8983,23 +8964,6 @@ function bindTransmissionReview(prefix,engine,transmit){
     clearVoiceReview(prefix,engine);
     $(prefix+"pilotText").value="";
     $(prefix+"ptt").click();
-  });
-}
-
-function updatePracticeChoices(prefix,stages){
-  const choice=$(prefix+"practiceChoice");
-  const selected=choice.value;
-  choice.innerHTML=stages.map(stage=>`<option value="${stage.id}">${stage.title}</option>`).join("");
-  choice.value=stages.some(stage=>stage.id===selected) ? selected : stages[0]?.id || "";
-}
-
-function bindTrainingScope(prefix){
-  const scope=$(prefix+"trainingScope");
-  scope.addEventListener("change",()=>{
-    $(prefix+"practiceControls").classList.toggle("hidden",scope.value!=="single");
-  });
-  $(prefix+"startPractice").addEventListener("click",()=>{
-    practiceSingleStage(prefix ? "IFR" : "VFR",$(prefix+"practiceChoice").value);
   });
 }
 
@@ -10510,11 +10474,9 @@ $("level").addEventListener("change",()=>{
   updateApplicationStatus();
 });
 
-bindTrainingScope("");
 function applyVFRSetup(){
   resetSessionStats();
   readSetup(true);
-  $("startPractice").classList.toggle("hidden",$("trainingScope").value!=="single");
   updateApplicationStatus();
   showSetupSavedFeedback("VFR");
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
@@ -11428,7 +11390,6 @@ function ifrUpdateTuneUI(){
 
 function ifrRenderStage(resetFrequency=true){
   clearVoiceReview("ifr-",IFR_APP);
-  if(!IFR_APP.session.practiceStage) updatePracticeChoices("ifr-",IFR_STAGES);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
@@ -12534,10 +12495,8 @@ function ifrInit(){
     ifr$("altitude").value=normalized;
   });
 
-  bindTrainingScope("ifr-");
   const applyIFRSetup=()=>{
     ifrReadSetup(true);
-    $("ifr-startPractice").classList.toggle("hidden",$("ifr-trainingScope").value!=="single");
     ifrSaveLastSetup();
     showSetupSavedFeedback("IFR");
     requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));

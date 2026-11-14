@@ -19,7 +19,7 @@ function run(mobile=false,stored={},patch=false) {
   click(){if(!this.disabled)this.events.click?.forEach(fn=>fn({target:this,preventDefault(){},stopPropagation(){}}));}
   scrollIntoView(){} focus(){}
  }
- const root=new E(require('./qa-dom-v558.json')),body=root.querySelector('body');
+ const root=new E(require('./qa-dom-v559.json')),body=root.querySelector('body');
  const document={body,getElementById:id=>root.querySelector('#'+id),querySelector:s=>root.querySelector(s),querySelectorAll:s=>root.querySelectorAll(s),createElement:tag=>new E([tag]),addEventListener:(k,f)=>(events[k]??=[]).push(f)};
  const spoken=[], requests=[];
  const g={document,console,navigator:{},location:{protocol:'https:',hostname:'test.invalid'},localStorage:{getItem:k=>stored[k]??null,setItem:(k,v)=>stored[k]=String(v),removeItem:k=>delete stored[k]},setTimeout:f=>timers.push(f),clearTimeout(){},setInterval(){},clearInterval(){},requestAnimationFrame:f=>timers.push(f),scrollTo(){},matchMedia:()=>({matches:mobile,addEventListener(){}}),addEventListener(){},isSecureContext:true,fetch:(...args)=>{requests.push(args);throw Error('Unexpected request')},SpeechSynthesisUtterance:class{constructor(text){this.text=text}},speechSynthesis:{getVoices:()=>[],speak:u=>spoken.push(u.text),cancel(){},addEventListener(){}}};
