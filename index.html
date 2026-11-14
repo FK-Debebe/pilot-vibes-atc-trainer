@@ -4936,6 +4936,49 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 .flight-report-history-body .saved-radio-exchange{margin-top:12px}
 .saved-radio-exchange .transcript{max-height:24rem;margin-bottom:12px}
 .saved-radio-exchange .bubble{overflow-wrap:anywhere}
+
+/* Shared trainer surfaces and transmission controls. */
+.current-stage-card{
+  background:#fff;
+  border:1px solid #d7e2eb;
+  border-radius:16px;
+  box-shadow:0 6px 20px rgba(27,52,76,.07);
+}
+.current-stage-card .stage-heading{padding:12px;border-radius:10px}
+.current-stage-card .stage-instruction{line-height:1.5}
+.app-title-block .app-version{
+  display:inline-block;
+  margin:3px 0;
+  font-size:10px;
+  font-weight:600;
+  opacity:.85;
+}
+.transmission-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:8px;
+}
+.transmission-actions .btn{min-height:44px;white-space:normal}
+.transmission-actions .primary{order:-1}
+.transmission-label{display:block;margin:10px 0 4px;font-size:12px;font-weight:700}
+.transmission-help{margin-top:8px;line-height:1.45}
+.current-stage-card :is(button,select,input,textarea):focus-visible,
+.flight-report-history :is(button,summary):focus-visible{
+  outline:2px solid #1976b8;
+  outline-offset:3px;
+}
+.flight-report-history-card{
+  border:1px solid #d7e2eb;
+  border-radius:12px;
+  padding:8px;
+  background:#fff;
+}
+@media(max-width:540px){
+  #navRow .btn,#ifr-navRow .btn{min-height:44px}
+  .transmission-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .transmission-actions .primary{grid-column:1/-1}
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -4976,7 +5019,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.59 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.60 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5450,14 +5493,15 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button id="ptt" class="ptt" disabled>
         <span class="mic">🎙</span><span id="pttLabel">TAP TO TALK</span>
       </button>
+      <label class="transmission-label" for="pilotText">Pilot transmission</label>
       <textarea id="pilotText" rows="4" placeholder="Tune the correct frequency to enable speech or typed transmission."></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
+      <div class="transmission-actions">
         <button id="retryVoice" class="btn" type="button" hidden>Retry transmission</button>
         <button id="sendTyped" class="btn primary">Send transmission</button>
         <button id="clearText" class="btn">CLEAR</button>
         <button id="sayAgain" class="btn" disabled>SAY AGAIN</button>
       </div>
-      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
+      <div class="small transmission-help">Tap to talk, then tap again to stop. Review or edit the transcript before sending.</div>
     </div>
 
     <div id="feedbackSlot" class="scorebar">
@@ -5824,14 +5868,15 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button id="ifr-ptt" class="ptt" disabled>
         <span class="mic">🎙</span><span id="ifr-pttLabel">TAP TO TALK</span>
       </button>
+      <label class="transmission-label" for="ifr-pilotText">Pilot transmission</label>
       <textarea id="ifr-pilotText" rows="4" placeholder="Tune the correct frequency to enable speech or typed transmission."></textarea>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:9px">
+      <div class="transmission-actions">
         <button id="ifr-retryVoice" class="btn" type="button" hidden>Retry transmission</button>
         <button id="ifr-sendTyped" class="btn primary">Send transmission</button>
         <button id="ifr-clearText" class="btn">CLEAR</button>
         <button id="ifr-sayAgain" class="btn" disabled>SAY AGAIN</button>
       </div>
-      <div class="small" style="margin-top:8px">Tap once to talk. Tap again to end and evaluate the transmission. Use <strong>Say Again</strong> to practice requesting a repeat from ATC.</div>
+      <div class="small transmission-help">Tap to talk, then tap again to stop. Review or edit the transcript before sending.</div>
     </div>
 
     <div id="ifr-feedbackSlot" class="scorebar">
