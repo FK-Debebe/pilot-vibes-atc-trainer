@@ -5019,7 +5019,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.60 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.63 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -7244,9 +7244,9 @@ function fkPrepareTextForSpeech(text){
     .replace(/\brun[\s-]?up\b/gi,"rann upp");
 }
 
-function speak(text,role=currentVoiceRole()){
+function speak(text,role=currentVoiceRole(),onFinished){
   text=fkPrepareTextForSpeech(text);
-  if(!("speechSynthesis" in window)) return;
+  if(!("speechSynthesis" in window)){onFinished?.();return;}
 
   speechSynthesis.cancel();
   loadATCVoices();
@@ -7267,6 +7267,10 @@ function speak(text,role=currentVoiceRole()){
   u.pitch=profile.pitch;
   u.volume=1;
 
+  if(onFinished){
+    u.onend=onFinished;
+    u.onerror=onFinished;
+  }
   fkSpeakUtterance(u);
 }
 
@@ -7532,6 +7536,8 @@ function renderProgressMarkers(currentComplete=false){
 }
 
 function renderStage(resetFrequency=true){
+  app.straightInArrival=false;
+  app.atisPlayback=null;
   clearVoiceReview("",app);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
@@ -7578,8 +7584,9 @@ function renderStage(resetFrequency=true){
   $("atisText").textContent="";
   $("pilotText").value="";
   $("score").textContent="—";
-  positionStageFeedback("",false);
-  $("feedback").textContent="Tune the radio to begin.";
+  const openingStage=app.stageIndex===0 && stage.id==="atis" && !app.session.practiceStage;
+  positionStageFeedback("",openingStage);
+  $("feedback").textContent=openingStage ? sessionStartMessage() : "Tune to the active facility.";
   $("next").disabled=true;
   $("next").classList.remove("hidden","next-complete-blink");
   $("next").textContent=app.stageIndex===STAGES.length-1?"FINISH":"NEXT →";
@@ -7633,7 +7640,7 @@ function updatePilotInputState(){
      the correct ATIS frequency is tuned, and the stage is not complete. */
   if(monitorAtisBtn){
     const atisStage=STAGES?.[app.stageIndex]?.type==="atis";
-    const enableAtis=atisStage && correctFrequency && !stageComplete;
+    const enableAtis=atisStage && correctFrequency && !stageComplete && !app.atisPlayback;
     monitorAtisBtn.disabled=!enableAtis;
     monitorAtisBtn.classList.toggle("disabled",!enableAtis);
     monitorAtisBtn.setAttribute("aria-disabled",enableAtis?"false":"true");
@@ -7663,6 +7670,10 @@ function updatePilotInputState(){
 }
 
 function updateTuneUI(){
+  if(tuned() && $("feedback").textContent===sessionStartMessage()){
+    positionStageFeedback("",false);
+    $("feedback").textContent="Select Monitor ATIS to begin.";
+  }
   if(tuned()){
     $("tuneMsg").textContent=`Tuned to ${STAGES[app.stageIndex].facility}`;
     $("tuneMsg").className="tune-msg good";
@@ -8656,6 +8667,15 @@ function trafficDescription(){
 }
 
 function towerPatternInstruction(prefix=""){
+  if(app.straightInArrival){
+    const runway=app.config.destRunway;
+    const lead=prefix ? prefix+" " : "";
+    return {
+      visual:`${callsignVisual()}, ${lead}make straight-in Runway ${runway}.`,
+      spoken:`${callsignSpoken()}, ${lead}make straight in runway ${runwaySpoken(runway)}.`,
+      feedback:"Read back straight-in and the assigned runway."
+    };
+  }
   const extend=unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind");
   if(extend) markUnexpected("extendDownwind");
 
@@ -9968,6 +9988,9 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, negative, runway ${runwaySpoken(app.config.destRunway)}.`;
         $("feedback").textContent=`Incorrect runway: you said Runway ${wrongRunway}. Expected Runway ${app.config.destRunway}. Make the tower call again.`;
       }else if(essential){
+        app.straightInArrival=app.config.departureAirport==="KLGB" &&
+          app.config.destinationAirport==="KTOA" && /^29[LR]$/.test(app.config.destRunway) &&
+          /\b(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:(?:nautical\s+)?miles?\s+)?(?:south(?:[ -]?(?:east|west))?|s[ew]?)\b/i.test(n);
         if(trafficAdvisoryEnabled()&&!app.scenario.trafficAdvisoryHandled){
           app.scenario.trafficAdvisoryHandled=true;
           app.scenario.traffic=trafficDescription();
@@ -10028,6 +10051,20 @@ function evaluateTransmission(text){
         replySpoken=`${callsignSpoken()}, report traffic in sight or negative contact.`;
         $("feedback").textContent='Respond to the traffic advisory with “traffic in sight” or “negative contact.”';
       }
+    }else if(app.phase==="destTowerPatternReadback" && app.straightInArrival){
+      checks={
+        pattern:/\bstraight[ -]+in\b/.test(n),
+        runway:containsDestRunway(text),
+        callsign:hasCallsign(text)
+      };
+      const accepted=Object.values(checks).every(Boolean) &&
+        !wrongRunwayMention(text,app.config.destRunway,destAirport());
+      $("score").textContent=grade(checks)+"%";
+      const instruction=accepted ? "cleared to land" : "verify straight-in";
+      replyVisual=`${app.config.aircraft}, ${instruction}, Runway ${app.config.destRunway}.`;
+      replySpoken=`${callsignSpoken()}, ${instruction.replace("straight-in","straight in")}, runway ${runwaySpoken(app.config.destRunway)}.`;
+      $("feedback").textContent=accepted ? "Read back the landing clearance." : "Read back straight-in, the assigned runway, and your callsign.";
+      if(accepted) app.phase="destTowerLandingReadback";
     }else if(app.phase==="destTowerPatternReadback"){
       const extendRequired=unexpectedTriggered("extendDownwind");
       checks={
@@ -10386,6 +10423,7 @@ function compactAtisText(text){
 }
 
 function monitorAtis(){
+  if(app.atisPlayback || app.stageComplete) return;
   const stage=STAGES[app.stageIndex];
   if(stage?.type!=="atis") return;
 
@@ -10418,10 +10456,21 @@ function monitorAtis(){
   $("atisText").textContent=compactAtisText(visual);
   append("atc",label,visual);
   rememberATC(visual,spoken,label,"atis");
-  speak(spoken,"atis");
-  $("score").textContent="100%";
-  $("feedback").textContent=`Information ${code} received. Select NEXT.`;
-  completeStage();
+  const playback={};
+  app.atisPlayback=playback;
+  $("monitorAtis").disabled=true;
+  $("feedback").textContent="ATIS transmission in progress.";
+  speak(spoken,"atis",event=>{
+    if(app.atisPlayback!==playback) return;
+    app.atisPlayback=null;
+    if(event?.error==="canceled" || event?.error==="interrupted"){
+      updateTuneUI();
+      $("feedback").textContent="Select Monitor ATIS to replay the transmission.";
+      return;
+    }
+    $("score").textContent="100%";
+    completeStage();
+  });
 }
 
 function nextStage(){
@@ -10805,6 +10854,8 @@ function collapseSetupAndTop(button){
     window.scrollTo({top:0,left:0,behavior:"smooth"});
   });
 }
+
+function sessionStartMessage(){ return "Tune in the radio to begin the session."; }
 
 function positionStageFeedback(prefix, completed){
   const feedback=document.getElementById(prefix+"feedback");
@@ -11401,6 +11452,10 @@ function ifrTuned(){
   return stage && Math.abs(parseFloat(ifr$("frequency").value)-parseFloat(stage.freq))<0.001;
 }
 function ifrUpdateTuneUI(){
+  if(ifrTuned() && $("ifr-feedback").textContent===sessionStartMessage()){
+    positionStageFeedback("ifr-",false);
+    $("ifr-feedback").textContent="Select Monitor ATIS to begin.";
+  }
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
   const ok=ifrTuned();
@@ -11419,7 +11474,7 @@ function ifrUpdateTuneUI(){
 
   const monitor=ifr$("monitorAtis");
   if(monitor){
-    const enableAtis=stage.type==="atis" && ok && active;
+    const enableAtis=stage.type==="atis" && ok && active && !IFR_APP.atisPlayback;
     monitor.disabled=!enableAtis;
     monitor.classList.toggle("disabled",!enableAtis);
     monitor.setAttribute("aria-disabled",enableAtis?"false":"true");
@@ -11434,6 +11489,7 @@ function ifrUpdateTuneUI(){
 }
 
 function ifrRenderStage(resetFrequency=true){
+  IFR_APP.atisPlayback=null;
   clearVoiceReview("ifr-",IFR_APP);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
@@ -11450,8 +11506,9 @@ function ifrRenderStage(resetFrequency=true){
   ifr$("stageState").className="small";
   ifr$("instruction").textContent=ifrInstructionFor(stage);
   ifr$("score").textContent="—";
-  positionStageFeedback("ifr-",false);
-  ifr$("feedback").textContent="Follow the IFR instruction and use the radio controls.";
+  const openingStage=IFR_APP.stageIndex===0 && stage.id==="atis" && !IFR_APP.session.practiceStage;
+  positionStageFeedback("ifr-",openingStage);
+  $("ifr-feedback").textContent=openingStage ? sessionStartMessage() : "Tune to the active facility.";
   ifr$("next").disabled=true;
   ifr$("next").classList.remove("hidden");
   ifr$("next").textContent=IFR_APP.stageIndex===IFR_STAGES.length-1?"FINISH":"NEXT →";
@@ -11481,12 +11538,16 @@ function ifrAppend(type,speaker,text){
   /* Preserve prior exchanges and automatically show the newest/current section. */
   ifr$("transcript").scrollTop=ifr$("transcript").scrollHeight;
 }
-function ifrSpeak(text){
+function ifrSpeak(text,onFinished){
   text=fkPrepareTextForSpeech(text);
-  if(!("speechSynthesis" in window)) return;
+  if(!("speechSynthesis" in window)){onFinished?.();return;}
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(fkPrepareTextForSpeech(text));
   u.lang="en-US"; u.rate=.94; u.pitch=.92;
+  if(onFinished){
+    u.onend=onFinished;
+    u.onerror=onFinished;
+  }
   fkSpeakUtterance(u);
 }
 function ifrATC(visual,spoken=null){
@@ -11853,6 +11914,7 @@ function ifrCompleteStage(score=100){
 }
 
 function ifrMonitorAtis(){
+  if(IFR_APP.atisPlayback || IFR_APP.stageComplete) return;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage||stage.type!=="atis") return;
   if(!ifrTuned()){
@@ -11875,9 +11937,21 @@ function ifrMonitorAtis(){
   const atisSpoken=`${airport.radioName||airport.name} information ${code}. Winned two six zero at eight. Visibility one zero. Ceiling four thousand five hundred broken. Runway ${ifrRunwaySpoken(runway)} in use. Altimeter three zero zero two.`;
   IFR_APP.lastATC={visual,spoken:atisSpoken,speaker:atisSpeaker};
   ifrUpdateRepeatButton();
-  ifrSpeak(atisSpoken);
-  ifr$("feedback").textContent=`ATIS received: information ${code}, Runway ${runway}.`;
-  ifrCompleteStage(100);
+  const playback={};
+  IFR_APP.atisPlayback=playback;
+  $("ifr-monitorAtis").disabled=true;
+  $("ifr-feedback").textContent="ATIS transmission in progress.";
+  ifrSpeak(atisSpoken,event=>{
+    if(IFR_APP.atisPlayback!==playback) return;
+    IFR_APP.atisPlayback=null;
+    if(event?.error==="canceled" || event?.error==="interrupted"){
+      ifrUpdateTuneUI();
+      $("ifr-feedback").textContent="Select Monitor ATIS to replay the transmission.";
+      return;
+    }
+    $("ifr-score").textContent="100%";
+    ifrCompleteStage(100);
+  });
 }
 
 
