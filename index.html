@@ -4902,6 +4902,11 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 }
 .scorebar:not(:has(> .feedback)){display:none!important}
 .stage-heading + div:not(:empty) > .stage-complete-alert{margin-top:8px}
+#navRow, #ifr-navRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+#previous, #ifr-previous{grid-column:1}
+.stage-start{grid-column:2}
+#next, #ifr-next, #reset, #ifr-reset{grid-column:3}
+#navRow .btn, #ifr-navRow .btn{min-width:0}
 .stage-heading + div:not(:empty) + .nav-row{margin-top:6px;padding-top:0;border-top:0}
 /* Keep traffic radios compact across the desktop, tablet and phone layouts. */
 .runway-setup{min-width:0}
@@ -4972,7 +4977,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.57 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small>V5.58 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5154,6 +5159,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <option value="single">Single Stage</option>
         </select>
       </label>
+      <label id="practiceControls" class="hidden">Practice Stage <select id="practiceChoice"></select></label>
       <div class="setup-section-label">FLIGHT</div>
       <label>Training Level
         <select id="level">
@@ -5352,11 +5358,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
     <div id="nextActionSlot"></div>
     <div id="navRow" class="nav-row">
-          <div id="practiceControls" class="hidden">
-        <label>Practice Stage <select id="practiceChoice"></select></label>
-        <button id="startPractice" class="btn primary" type="button">Start</button>
-      </div>
       <button id="previous" class="btn">← PREVIOUS</button>
+      <button id="startPractice" class="btn primary stage-start hidden" type="button">Start ▷</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
       <button id="reset" class="btn primary hidden">RESET / START OVER</button>
     </div>
@@ -5519,6 +5522,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <option value="single">Single Stage</option>
         </select>
       </label>
+      <label id="ifr-practiceControls" class="hidden">Practice Stage <select id="ifr-practiceChoice"></select></label>
 
       <div class="setup-section-label">TRAINING</div>
       <label>Training Level
@@ -5736,11 +5740,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
     <div id="ifr-nextActionSlot"></div>
     <div id="ifr-navRow" class="nav-row">
-          <div id="ifr-practiceControls" class="hidden">
-        <label>Practice Stage <select id="ifr-practiceChoice"></select></label>
-        <button id="ifr-startPractice" class="btn primary" type="button">Start</button>
-      </div>
       <button id="ifr-previous" class="btn">← PREVIOUS</button>
+      <button id="ifr-startPractice" class="btn primary stage-start hidden" type="button">Start ▷</button>
       <button id="ifr-next" class="btn primary" disabled>NEXT →</button>
       <button id="ifr-reset" class="btn primary hidden">RESET / START OVER</button>
     </div>
@@ -8993,6 +8994,10 @@ function updatePracticeChoices(prefix,stages){
 }
 
 function bindTrainingScope(prefix){
+  const scope=$(prefix+"trainingScope");
+  scope.addEventListener("change",()=>{
+    $(prefix+"practiceControls").classList.toggle("hidden",scope.value!=="single");
+  });
   $(prefix+"startPractice").addEventListener("click",()=>{
     practiceSingleStage(prefix ? "IFR" : "VFR",$(prefix+"practiceChoice").value);
   });
@@ -10509,7 +10514,7 @@ bindTrainingScope("");
 function applyVFRSetup(){
   resetSessionStats();
   readSetup(true);
-  $("practiceControls").classList.toggle("hidden",$("trainingScope").value!=="single");
+  $("startPractice").classList.toggle("hidden",$("trainingScope").value!=="single");
   updateApplicationStatus();
   showSetupSavedFeedback("VFR");
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
@@ -12532,7 +12537,7 @@ function ifrInit(){
   bindTrainingScope("ifr-");
   const applyIFRSetup=()=>{
     ifrReadSetup(true);
-    $("ifr-practiceControls").classList.toggle("hidden",$("ifr-trainingScope").value!=="single");
+    $("ifr-startPractice").classList.toggle("hidden",$("ifr-trainingScope").value!=="single");
     ifrSaveLastSetup();
     showSetupSavedFeedback("IFR");
     requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
