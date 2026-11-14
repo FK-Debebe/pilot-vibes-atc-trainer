@@ -1672,15 +1672,19 @@ details.setup:not([open]) .setup-bottom-toggle{
 .flight-report-history-date{color:var(--muted);font-weight:700;text-align:right}
 .flight-report-history-caret{font-size:14px;text-align:right;transition:transform .15s ease}
 .flight-report-history-item[open] .flight-report-history-caret{transform:rotate(180deg)}
-.vfr-departure-options{
+.vfr-departure-options,
+.vfr-aircraft-fields{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
   gap:10px;
   align-items:end;
   grid-column:1 / -1;
 }
-.vfr-departure-options label{min-width:0}
-.vfr-departure-options select{width:100%;min-width:0}
+.vfr-departure-options label,
+.vfr-aircraft-fields label{min-width:0}
+.vfr-departure-options select,
+.vfr-aircraft-fields select,
+.vfr-aircraft-fields input{width:100%;min-width:0}
 
 .flight-report-history-body{padding:12px}
 .flight-report-history-card .flight-report-delete{margin:8px 0 0;border:1px solid #b42318;background:#fff;color:#912018}
@@ -5144,6 +5148,15 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
   <div class="setup-content">
     <div class="setup-grid">
+      <label>Training Scope
+        <select id="trainingScope">
+          <option value="full" selected>Full Flight</option>
+          <option value="single">Single Stage</option>
+        </select>
+      </label>
+      <label id="practiceChoiceLabel" class="hidden">Practice Stage
+        <select id="practiceChoice"></select>
+      </label>
       <div class="setup-section-label">FLIGHT</div>
       <label>Training Level
         <select id="level">
@@ -5152,6 +5165,30 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <option value="advanced">Advanced</option>
         </select>
 </label>
+
+      <div class="setup-section-label">AIRCRAFT</div>
+      <div class="vfr-aircraft-fields">
+        <label>Aircraft Type
+          <select id="aircraftType">
+            <option value="Cessna 152">Cessna 152</option>
+            <option value="Cessna 172" selected>Cessna 172</option>
+            <option value="Skyhawk">Skyhawk</option>
+            <option value="Piper Archer">Piper Archer</option>
+            <option value="Piper Warrior">Piper Warrior</option>
+            <option value="Cirrus SR20">Cirrus SR20</option>
+            <option value="Cirrus SR22">Cirrus SR22</option>
+            <option value="Diamond DA40">Diamond DA40</option>
+            <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+        <label>Call Sign
+          <input id="callsign" value="724SP" autocomplete="off" spellcheck="false">
+        </label>
+      </div>
+      <label id="otherAircraftTypeLabel" class="hidden">Other Aircraft Type
+        <input id="otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
+      </label>
 
       <div class="setup-section-label">ROUTE</div>
       <label>Departure Airport
@@ -5208,30 +5245,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </select>
       </label>
 
-      <div class="setup-section-label">AIRCRAFT</div>
-      <label>Aircraft Type
-        <select id="aircraftType">
-          <option value="Cessna 152">Cessna 152</option>
-          <option value="Cessna 172" selected>Cessna 172</option>
-          <option value="Skyhawk">Skyhawk</option>
-          <option value="Piper Archer">Piper Archer</option>
-          <option value="Piper Warrior">Piper Warrior</option>
-          <option value="Cirrus SR20">Cirrus SR20</option>
-          <option value="Cirrus SR22">Cirrus SR22</option>
-          <option value="Diamond DA40">Diamond DA40</option>
-          <option value="Beechcraft Bonanza">Beechcraft Bonanza</option>
-          <option value="Other">Other</option>
-        </select>
-      </label>
-
-      <label id="otherAircraftTypeLabel" class="hidden">Other Aircraft Type
-        <input id="otherAircraftType" value="" placeholder="Type aircraft type" autocomplete="off" spellcheck="false">
-      </label>
-
-      <label>Call Sign
-        <input id="callsign" value="724SP" autocomplete="off" spellcheck="false">
-      </label>
-
       <div class="setup-section-label">DEPARTURE / ARRIVAL</div>
       <label>Starting Location
         <select id="location">
@@ -5276,14 +5289,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </div>
       </div>
 
-      <label>Arrival Parking
-        <select id="arrivalParking">
-          <option value="">Airport Default</option>
-          <option value="ga">General Aviation (GA) Parking</option>
-          <option value="transient" hidden disabled>Transient Parking</option>
-        </select>
-      </label>
-
       <div class="vfr-departure-options">
         <label>Departure Direction
           <select id="direction">
@@ -5317,6 +5322,14 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </div>
       </label>
 
+      <label>Arrival Parking
+        <select id="arrivalParking">
+          <option value="">Airport Default</option>
+          <option value="ga">General Aviation (GA) Parking</option>
+          <option value="transient" hidden disabled>Transient Parking</option>
+        </select>
+      </label>
+
     </div>
 
     <div class="setup-action-row vfr-setup-bottom-actions">
@@ -5342,8 +5355,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
     <div id="nextActionSlot"></div>
     <div id="navRow" class="nav-row">
-      <label>Single-stage practice <select id="practiceChoice"></select></label>
-          <button id="practiceStage" class="btn" type="button">Start practice</button>
           <button id="previous" class="btn">← PREVIOUS</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
       <button id="reset" class="btn primary hidden">RESET / START OVER</button>
@@ -5501,6 +5512,15 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
   <div class="setup-content">
     <div class="setup-grid ifr-setup-flow">
+      <label>Training Scope
+        <select id="ifr-trainingScope">
+          <option value="full" selected>Full Flight</option>
+          <option value="single">Single Stage</option>
+        </select>
+      </label>
+      <label id="ifr-practiceChoiceLabel" class="hidden">Practice Stage
+        <select id="ifr-practiceChoice"></select>
+      </label>
 
       <div class="setup-section-label">TRAINING</div>
       <label>Training Level
@@ -5718,8 +5738,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
     <div id="ifr-nextActionSlot"></div>
     <div id="ifr-navRow" class="nav-row">
-      <label>Single-stage practice <select id="ifr-practiceChoice"></select></label>
-          <button id="ifr-practiceStage" class="btn" type="button">Start practice</button>
           <button id="ifr-previous" class="btn">← PREVIOUS</button>
       <button id="ifr-next" class="btn primary" disabled>NEXT →</button>
       <button id="ifr-reset" class="btn primary hidden">RESET / START OVER</button>
@@ -6110,6 +6128,7 @@ function updateSetupSummary(){
   let nm=0;
   try{ nm=Math.round(routeDistanceNm(dep,dest)); }catch(e){}
   const stages=buildStages(dep,dest,$("flightFollowing")?.value!=="off");
+  updatePracticeChoices("",stages);
 
   if($("setupSummaryRoute")) $("setupSummaryRoute").textContent=`${dep} → ${dest}`;
   if($("setupSummaryDistance")) $("setupSummaryDistance").textContent=nm ? `${nm} NM` : "— NM";
@@ -7484,9 +7503,7 @@ function renderProgressMarkers(currentComplete=false){
 
 function renderStage(resetFrequency=true){
   clearVoiceReview("",app);
-  const practiceChoice=$("practiceChoice");
-  practiceChoice.innerHTML=STAGES.map(stage=>`<option value="${stage.id}">${stage.title}</option>`).join("");
-  practiceChoice.value=STAGES[app.stageIndex].id;
+  if(!app.session.practiceStage) updatePracticeChoices("",STAGES);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
   const phaseMap={
@@ -8966,11 +8983,27 @@ function bindTransmissionReview(prefix,engine,transmit){
   });
 }
 
-function practiceSingleStage(mode,id,setup){
+function updatePracticeChoices(prefix,stages){
+  const choice=$(prefix+"practiceChoice");
+  const selected=choice.value;
+  choice.innerHTML=stages.map(stage=>`<option value="${stage.id}">${stage.title}</option>`).join("");
+  choice.value=stages.some(stage=>stage.id===selected) ? selected : stages[0]?.id || "";
+}
+
+function bindTrainingScope(prefix){
+  const scope=$(prefix+"trainingScope");
+  scope.addEventListener("change",()=>{
+    $(prefix+"practiceChoiceLabel").classList.toggle("hidden",scope.value!=="single");
+  });
+}
+
+function practiceSingleStage(mode,id,setup,prepared=false){
   const isIfr=mode==="IFR";
   const engine=isIfr ? IFR_APP : app;
-  if(isIfr) ifrResetTraining();
-  else resetTraining();
+  if(!prepared){
+    if(isIfr) ifrResetTraining();
+    else resetTraining();
+  }
   if(setup){
     engine.config={...engine.config,...setup};
     if(!isIfr) configureUnexpectedEvents();
@@ -9109,10 +9142,10 @@ function renderFlightReportHistory(){
       <div class="flight-report-history-body">
         <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}${typeof item.flightFollowing==="boolean" ? ` • Flight Following ${item.flightFollowing?"On":"Off"}` : ""}</div>
         ${item.recognitionCorrections!==undefined ? `<p>Recognition corrections ${item.recognitionCorrections} · Voice retries ${item.voiceRetries}</p>` : ""}
-        ${renderSavedRadioExchange(item.radioExchange)}
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
+        ${renderSavedRadioExchange(item.radioExchange)}
       </div>
     </details>
     <button type="button" class="flight-report-delete" data-report-id="${escapeReportText(item.id)}" aria-label="Delete report for ${escapeReportText(item.route)}, ${escapeReportText(flightReportDate(item.completedAt))}">Delete report</button>
@@ -10471,8 +10504,13 @@ $("level").addEventListener("change",()=>{
   updateApplicationStatus();
 });
 
+bindTrainingScope("");
 function applyVFRSetup(){
+  resetSessionStats();
   readSetup(true);
+  if($("trainingScope").value==="single"){
+    practiceSingleStage("VFR",$("practiceChoice").value,null,true);
+  }
   updateApplicationStatus();
   showSetupSavedFeedback("VFR");
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
@@ -10493,7 +10531,6 @@ $("applySetupBottom")?.addEventListener("click",(e)=>{
 });
 $("monitorAtis").addEventListener("click",monitorAtis);
 bindTransmissionReview("",app,evaluateTransmission);
-$("practiceStage").addEventListener("click",()=>practiceSingleStage("VFR",$("practiceChoice").value || STAGES[app.stageIndex].id));
 $("clearText").addEventListener("click",()=>{$("pilotText").value=""});
 $("sayAgain").addEventListener("click",sayAgainRequest);
 $("next").addEventListener("click",nextStage);
@@ -11387,9 +11424,7 @@ function ifrUpdateTuneUI(){
 
 function ifrRenderStage(resetFrequency=true){
   clearVoiceReview("ifr-",IFR_APP);
-  const practiceChoice=$("ifr-practiceChoice");
-  practiceChoice.innerHTML=IFR_STAGES.map(stage=>`<option value="${stage.id}">${stage.title}</option>`).join("");
-  practiceChoice.value=IFR_STAGES[IFR_APP.stageIndex].id;
+  if(!IFR_APP.session.practiceStage) updatePracticeChoices("ifr-",IFR_STAGES);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
@@ -12495,8 +12530,12 @@ function ifrInit(){
     ifr$("altitude").value=normalized;
   });
 
+  bindTrainingScope("ifr-");
   const applyIFRSetup=()=>{
     ifrReadSetup(true);
+    if(ifr$("trainingScope").value==="single"){
+      practiceSingleStage("IFR",ifr$("practiceChoice").value,null,true);
+    }
     ifrSaveLastSetup();
     showSetupSavedFeedback("IFR");
     requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
@@ -12519,7 +12558,6 @@ function ifrInit(){
   });
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   bindTransmissionReview("ifr-",IFR_APP,ifrEvaluateTransmission);
-  ifr$("practiceStage").addEventListener("click",()=>practiceSingleStage("IFR",$("ifr-practiceChoice").value || IFR_STAGES[IFR_APP.stageIndex].id));
   ifr$("clearText").addEventListener("click",()=>{ifr$("pilotText").value="";});
   ifr$("sayAgain").addEventListener("click",ifrSayAgainRequest);
   ifr$("ptt").addEventListener("click",ifrTogglePTT);
