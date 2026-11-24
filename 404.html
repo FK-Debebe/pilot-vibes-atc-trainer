@@ -5018,10 +5018,11 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <dialog id="mobileIntroduction" aria-labelledby="mobileIntroductionTitle">
   <h2 id="mobileIntroductionTitle">Start practicing ATC</h2>
   <ol>
-    <li><strong>Set up your flight.</strong> Open Flight Setup, choose your airports and aircraft, then tap Apply Setup.</li>
-    <li><strong>Tune the radio.</strong> Use + and − to match the displayed frequency. Wait for READY.</li>
-    <li><strong>Listen and transmit.</strong> Tap Monitor ATIS. For radio calls, tap to talk, then tap again to stop. Review the text and tap Send transmission. You can also type.</li>
-    <li><strong>Follow Next Action.</strong> Complete each readback, then tap Next. Tap Finish at the end to review your report.</li>
+    <li><strong>Review Flight Setup.</strong> After closing this popup, Flight Setup opens first. New users start with Beginner, callsign 172SP, and KLGB → KCRQ. Your saved settings may appear instead.</li>
+    <li><strong>Tap Apply Setup.</strong> Keep or change the settings, then tap either Apply Setup button. Flight Setup collapses and the radio and training panels appear.</li>
+    <li><strong>Tune and listen.</strong> Use the radio’s + and − buttons to match the target frequency. When READY appears, tap Monitor ATIS and listen for the information letter and runway.</li>
+    <li><strong>Make your call.</strong> Tap to talk, then tap again to stop. Review or edit the words and tap Send transmission. You can also type your call.</li>
+    <li><strong>Follow Next Action.</strong> Include your callsign in every readback. When a stage is complete, tap Next and tune to the next facility. Tap Finish at the end to review your Flight Report.</li>
   </ol>
   <button id="confirmMobileIntroduction" class="btn primary" type="button">Got it — start practicing</button>
 </dialog>
@@ -5060,7 +5061,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.67 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.69 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5134,7 +5135,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KVNY">KVNY — Van Nuys</option>
 <option value="KWHP">KWHP — Whiteman</option>
         </select></label>
-            <label>Callsign<input id="v492Callsign" value="724SP"></label>
+            <label>Callsign<input id="v492Callsign" value="172SP"></label>
             <label>Altitude<input id="v492Altitude" type="number" min="1500" max="18000" step="500" value="3500"></label>
             <label>Training Level<select id="v492Level"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></label>
           </div>
@@ -5263,7 +5264,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           </select>
         </label>
         <label>Call Sign
-          <input id="callsign" value="724SP" autocomplete="off" spellcheck="false">
+          <input id="callsign" value="172SP" autocomplete="off" spellcheck="false">
         </label>
       </div>
       <label id="otherAircraftTypeLabel" class="hidden">Other Aircraft Type
@@ -5623,7 +5624,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </label>
 
         <label>Call Sign
-          <input id="ifr-callsign" value="724SP" autocomplete="off" spellcheck="false">
+          <input id="ifr-callsign" value="172SP" autocomplete="off" spellcheck="false">
         </label>
       </div>
 
@@ -6978,11 +6979,11 @@ function normalizeSetupCallsign(value){
   if(/^N[1-9][0-9]{0,4}[A-HJ-NP-Z]{0,2}$/.test(registration) && registration.length<=6){
     return registration;
   }
-  return text.replace(/\s+/g,"").toUpperCase() || "724SP";
+  return text.replace(/\s+/g,"").toUpperCase() || "172SP";
 }
 
 function buildAircraftCallsign(type,callsign){
-  const clean=String(callsign||"724SP").replace(/\s+/g,"").toUpperCase();
+  const clean=String(callsign||"172SP").replace(/\s+/g,"").toUpperCase();
   return `${radioPrefixForType(type)} ${clean}`;
 }
 
@@ -7002,8 +7003,8 @@ const app = {
     destinationAirport:"KCRQ",
     aircraftType:"Cessna 172",
     otherAircraftType:"",
-    callsign:"724SP",
-    aircraft:"Cessna 724SP",
+    callsign:"172SP",
+    aircraft:"Cessna 172SP",
     location:"Long Beach Flying Club",
     atis:"",
     arrivalAtis:"",
@@ -7433,7 +7434,7 @@ function loadLastSetup(){
     if(saved.callsign && $("callsign")){
       $("callsign").value=saved.callsign;
     }else if(saved.aircraft && $("callsign")){
-      $("callsign").value=String(saved.aircraft).trim().replace(/^[A-Za-z]+\s+/,"") || "724SP";
+      $("callsign").value=String(saved.aircraft).trim().replace(/^[A-Za-z]+\s+/,"") || "172SP";
     }
     updateArrivalParking("arrivalParking",$("destinationAirport").value,saved.arrivalParking);
     if(saved.location && [...$("location").options].some(o=>o.value===saved.location)){
@@ -11024,7 +11025,7 @@ const IFR_APP={
     departureAirport:"KLGB",
     destinationAirport:"KCRQ",
     aircraftType:"Cessna 172",
-    callsign:"724SP",
+    callsign:"172SP",
     location:"Long Beach Flying Club",
     runway:"26L",
     destRunway:"24",
@@ -11062,7 +11063,7 @@ function ifrFacility(code,key){
   const ap=ifrAirport(code);
   return ap?.facilities?.[key] || `${ap?.radioName||ap?.name||code} ${key}`;
 }
-function ifrTail(){ return String(IFR_APP.config.callsign||"724SP").replace(/\s+/g,"").toUpperCase(); }
+function ifrTail(){ return String(IFR_APP.config.callsign||"172SP").replace(/\s+/g,"").toUpperCase(); }
 function ifrAircraftPrefix(){
   const type=String(IFR_APP.config.aircraftType||"Cessna 172");
   if(type.toLowerCase().includes("piper")) return "Piper";
