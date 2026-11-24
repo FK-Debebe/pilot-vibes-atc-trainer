@@ -4998,6 +4998,12 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 #mobileIntroduction ol{padding-left:22px;margin:0 0 20px}
 #mobileIntroduction li{font-size:15px;line-height:1.5;margin:0 0 12px}
 #confirmMobileIntroduction{width:100%;min-height:48px;font-size:15px}
+
+@media(max-width:700px){
+  .mobile-setup-only .main-grid{display:none!important}
+  .mobile-setup-only .trainer-page-shell{display:block!important}
+  .mobile-setup-only .trainer-setup-column{width:100%!important;max-width:none!important}
+}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5049,7 +5055,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.65 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.66 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -10604,6 +10610,7 @@ function applyVFRSetup(){
   resetSessionStats();
   readSetup(true);
   updateApplicationStatus();
+  finishMobileSetup("");
   showSetupSavedFeedback("VFR");
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
@@ -10615,11 +10622,7 @@ $("applySetupTop")?.addEventListener("click",(e)=>{
 $("applySetupBottom")?.addEventListener("click",(e)=>{
   e.preventDefault();
   applyVFRSetup();
-  if(window.matchMedia("(max-width:700px)").matches){
-    const details=document.getElementById("vfrFlightSetupDetails");
-    if(details) details.open=false;
-    requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
-  }
+
 });
 $("monitorAtis").addEventListener("click",monitorAtis);
 bindTransmissionReview("",app,evaluateTransmission);
@@ -12649,6 +12652,7 @@ function ifrInit(){
   const applyIFRSetup=()=>{
     ifrReadSetup(true);
     ifrSaveLastSetup();
+    finishMobileSetup("ifr-");
     showSetupSavedFeedback("IFR");
     requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
   };
@@ -12660,13 +12664,7 @@ function ifrInit(){
   ifr$("applySetupBottom")?.addEventListener("click",(e)=>{
     e.preventDefault();
     applyIFRSetup();
-    /* Match VFR behavior: on cellphone-size screens only, the bottom
-       Apply Setup button also collapses the Flight Setup panel. */
-    if(window.matchMedia("(max-width:700px)").matches){
-      const details=document.getElementById("ifrFlightSetupDetails");
-      if(details) details.open=false;
-      requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
-    }
+
   });
   ifr$("monitorAtis").addEventListener("click",ifrMonitorAtis);
   bindTransmissionReview("ifr-",IFR_APP,ifrEvaluateTransmission);
@@ -14327,20 +14325,31 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
 
-const MOBILE_INTRO_KEY="fk-atc-mobile-intro-confirmed-v1";
+function finishMobileSetup(prefix){
+  const page=$(prefix ? "page-ifr-trainer" : "page-trainer");
+  page.classList.remove("mobile-setup-only");
+  const details=$(prefix ? "ifrFlightSetupDetails" : "vfrFlightSetupDetails");
+  details.open=false;
+}
+
 function showMobileIntroduction(){
   if(!window.matchMedia("(max-width:700px) and (pointer:coarse)").matches) return;
-  try{
-    if(localStorage.getItem(MOBILE_INTRO_KEY)==="true") return;
-  }catch(error){}
   const dialog=$("mobileIntroduction");
   if(!dialog || dialog.open) return;
-  const previousFocus=document.activeElement;
+  for(const prefix of ["","ifr-"]){
+    $(prefix ? "page-ifr-trainer" : "page-trainer").classList.add("mobile-setup-only");
+    $(prefix ? "ifrFlightSetupDetails" : "vfrFlightSetupDetails").open=true;
+  }
   const confirm=$("confirmMobileIntroduction");
   const acknowledge=()=>{
-    try{localStorage.setItem(MOBILE_INTRO_KEY,"true");}catch(error){}
     dialog.close();
-    previousFocus?.focus?.();
+    showAppPage("trainer",{noScroll:true});
+    const setup=$("vfrFlightSetupDetails");
+    setup.open=true;
+    requestAnimationFrame(()=>{
+      setup.scrollIntoView({behavior:"smooth",block:"start"});
+      $("level").focus({preventScroll:true});
+    });
   };
   confirm.onclick=acknowledge;
   dialog.addEventListener("cancel",event=>{event.preventDefault();acknowledge();},{once:true});
