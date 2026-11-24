@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const {run} = require('./harness.cjs');
 const {exec} = run();
+exec('$("callsign").value="724SP";readSetup(true)');
 
 assert.equal(exec('hasReadbackCallsign("7 to 4SP","724SP")'), true);
 assert.equal(exec('hasReadbackCallsign("725 Sierra Papa","724SP")'), false);
@@ -27,7 +28,7 @@ assert.equal(exec('IFR_APP.session.practiceStage'), 'clearance');
 console.log('V5.49 regression checks passed.');
 
 const river = run().exec;
-river('$("flightFollowing").value="off"; $("direction").value="Other"; readSetup(true); practiceSingleStage("VFR","tower");');
+river('$("callsign").value="724SP";$("flightFollowing").value="off"; $("direction").value="Other"; readSetup(true); practiceSingleStage("VFR","tower");');
 assert.equal(river('app.config.flightFollowing'), false);
 river('evaluateTransmission("Long Beach Tower, Cessna 724SP, holding short 26L, in sequence, request Left at the River.")');
 assert.equal(river('app.phase'), 'towerStandby');

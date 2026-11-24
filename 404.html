@@ -4982,22 +4982,40 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
 
 #mobileIntroduction{
-  width:min(400px,calc(100vw - 32px));
-  max-height:calc(100dvh - 40px);
+  width:min(420px,calc(100vw - 24px));
+  max-width:calc(100vw - 24px);
+  max-height:calc(100vh - 24px);
+  max-height:calc(100dvh - 24px);
   box-sizing:border-box;
-  overflow:auto;
-  padding:24px;
+  overflow:hidden;
+  padding:16px;
   border:1px solid #cbdbe8;
   border-radius:16px;
   color:#173e5c;
   background:#fff;
   box-shadow:0 18px 60px rgba(12,35,55,.25);
 }
+#mobileIntroduction[open]{display:flex;flex-direction:column;gap:12px}
 #mobileIntroduction::backdrop{background:rgba(12,28,43,.65)}
-#mobileIntroduction h2{font-size:22px;margin:0 0 16px;line-height:1.25}
-#mobileIntroduction ol{padding-left:22px;margin:0 0 20px}
-#mobileIntroduction li{font-size:15px;line-height:1.5;margin:0 0 12px}
-#confirmMobileIntroduction{width:100%;min-height:48px;font-size:15px}
+#mobileIntroduction h2{
+  flex-shrink:0;
+  font-size:clamp(11px,3.6vw,16px);
+  font-weight:800;
+  white-space:nowrap;
+  margin:0;
+  line-height:1.35;
+}
+#mobileIntroduction ol{
+  flex:1 1 auto;
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:0 4px 0 21px;
+  margin:0;
+}
+#mobileIntroduction li{font-size:14px;line-height:1.4;margin:0 0 10px}
+#mobileIntroduction li:last-child{margin-bottom:0}
+#confirmMobileIntroduction{flex-shrink:0;width:100%;min-height:46px;font-size:14px;white-space:normal}
 
 @media(max-width:700px){
   #page-trainer.mobile-setup-only .main-grid,
@@ -5017,12 +5035,12 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <body>
 <dialog id="mobileIntroduction" aria-labelledby="mobileIntroductionTitle">
   <h2 id="mobileIntroductionTitle">Welcome to FK ATC COM Trainer</h2>
-  <ol>
+  <ol tabindex="0" aria-label="How to use the trainer">
     <li><strong>Review Flight Setup.</strong> After closing this popup, customize your flight.</li>
-    <li><strong>Tap Apply Setup.</strong> Keep or change the settings, then tap either Apply Setup button. Flight Setup collapses and the radio and training panels appear.</li>
-    <li><strong>Tune and listen.</strong> Use the radio’s + and − buttons to match the target frequency. When READY appears, tap Monitor ATIS and listen for the information letter and runway.</li>
-    <li><strong>Make your call.</strong> Tap to talk, then tap again to stop. At Beginner level, review or edit the words and tap Send transmission. At Intermediate and Advanced, Tap to End &amp; Send submits your call immediately. You can also type your call.</li>
-    <li><strong>Follow Next Action.</strong> Include your callsign in every readback. When a stage is complete, tap Next and tune to the next facility. Tap Finish at the end to review your Flight Report.</li>
+    <li><strong>Choose Flight Type.</strong> Select Flight Following, No Flight Following, or Traffic Pattern. Tap Apply Setup to reveal the trainer.</li>
+    <li><strong>Tune and listen.</strong> Match the target frequency using + and −. When READY, tap Monitor ATIS and listen to the broadcast.</li>
+    <li><strong>Make your call.</strong> Tap to talk. Beginner: tap to end, review, then Send transmission. Intermediate / Advanced: Tap to End &amp; Send. You can also type.</li>
+    <li><strong>Follow Next Action.</strong> Include your callsign in readbacks. Tap Next after each stage. For pattern work, choose another circuit or taxi to parking. Tap Finish to review your report.</li>
   </ol>
   <button id="confirmMobileIntroduction" class="btn primary" type="button">Got it — start practicing</button>
 </dialog>
@@ -5061,7 +5079,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.74 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.76 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5381,10 +5399,11 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           </select>
         </label>
 
-        <label>VFR Flight Following
+        <label>Flight Type
           <select id="flightFollowing">
-            <option value="on" selected>On</option>
-            <option value="off">Off</option>
+            <option value="on" selected>Flight Following</option>
+            <option value="off">No Flight Following</option>
+            <option value="pattern">Traffic Pattern</option>
           </select>
         </label>
       </div>
@@ -5435,6 +5454,10 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     </div>
 
     <div id="nextActionSlot"></div>
+    <div id="patternChoice" class="hidden" style="margin:12px 0">
+      <button id="morePattern" class="btn primary" type="button">More Pattern Work</button>
+      <button id="endPattern" class="btn" type="button">End Practice</button>
+    </div>
     <div id="navRow" class="nav-row">
       <button id="previous" class="btn">← PREVIOUS</button>
       <button id="next" class="btn primary" disabled>NEXT →</button>
@@ -6202,7 +6225,7 @@ function updateSetupSummary(){
   const dest=$("destinationAirport")?.value || (typeof app!=="undefined" ? app.config?.destinationAirport : "KCRQ") || "KCRQ";
   let nm=0;
   try{ nm=Math.round(routeDistanceNm(dep,dest)); }catch(e){}
-  const stages=buildStages(dep,dest,$("flightFollowing")?.value!=="off");
+  const stages=buildStages(dep,dest,$("flightFollowing")?.value==="pattern"?"pattern":$("flightFollowing")?.value!=="off");
 
   if($("setupSummaryRoute")) $("setupSummaryRoute").textContent=`${dep} → ${dest}`;
   if($("setupSummaryDistance")) $("setupSummaryDistance").textContent=nm ? `${nm} NM` : "— NM";
@@ -6745,6 +6768,7 @@ function enrouteFacilityMentioned(text){
 }
 
 function buildStages(depCode,destCode,flightFollowing=true){
+  if(flightFollowing==="pattern") return buildPatternStages(depCode);
   const dep=airportData(depCode);
   const dest=airportData(destCode);
 
@@ -7404,7 +7428,8 @@ function loadLastSetup(){
     const raw=localStorage.getItem(LAST_SETUP_KEY);
     if(!raw) return false;
     const saved=JSON.parse(raw)||{};
-    $("flightFollowing").value=saved.flightFollowing==="off" ? "off" : "on";
+    Object.assign(saved,{level:"beginner",callsign:"172SP",departureAirport:"KLGB",destinationAirport:"KCRQ"});
+    $("flightFollowing").value=["off","pattern"].includes(saved.flightFollowing) ? saved.flightFollowing : "on";
 
     if(saved.level && $("level")) $("level").value=saved.level;
     if(saved.departureAirport && AIRPORTS[saved.departureAirport]){
@@ -7501,7 +7526,8 @@ function readSetup(generateCodes=true){
     aircraft:"",
     location:$("location").value,
     arrivalParking:$("arrivalParking").value,
-    flightFollowing:$("flightFollowing").value!=="off",
+    flightType:$("flightFollowing").value,
+    flightFollowing:$("flightFollowing").value==="on",
     arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
     departureTraffic:selectedTrafficPattern("departureTraffic"),
     atis:app.config.atis || randomAtisCode(),
@@ -7516,7 +7542,7 @@ function readSetup(generateCodes=true){
   app.config.aircraft=buildAircraftCallsign(app.config.aircraftType,app.config.callsign);
 
   saveLastSetup();
-  STAGES=buildStages(depCode,destCode,app.config.flightFollowing);
+  STAGES=buildStages(depCode,destCode,app.config.flightType==="pattern"?"pattern":app.config.flightFollowing);
   configureUnexpectedEvents();
   app.stageIndex=0;
   $("next").classList.remove("hidden");
@@ -7530,6 +7556,11 @@ function renderNav(){
 }
 
 function instructionFor(stage,showExample=false){
+  if(app.config.flightType==="pattern" && stage.type!=="atis"){
+    return stage.id==="ground" ? "Contact Ground with your callsign, position, ATIS and request taxi for closed traffic." :
+      stage.id==="parking" ? "Contact Ground, report clear of the runway and request taxi to parking. Read back the instructions." :
+      "Contact Tower holding short for closed traffic. Read back takeoff and pattern instructions, report downwind, then read back landing and Ground handoff instructions.";
+  }
   const c=app.config;
   const dep=depAirport();
   const dest=destAirport();
@@ -7584,6 +7615,7 @@ function renderProgressMarkers(currentComplete=false){
 }
 
 function renderStage(resetFrequency=true){
+  $("patternChoice").classList.add("hidden");
   app.straightInArrival=false;
   app.atisPlayback=null;
   clearVoiceReview("",app);
@@ -7597,6 +7629,7 @@ function renderStage(resetFrequency=true){
     enroute:"enrouteInitial",
     arrival:"arrivalInitial",
     destTower:"destTowerInitial",
+    parking:"patternParkingInitial",
     destGround:"destGroundInitial"
   };
 
@@ -9107,7 +9140,7 @@ function practiceSingleStage(mode,id,setup,prepared=false){
     engine.config={...engine.config,...setup};
     if(!isIfr) configureUnexpectedEvents();
     if(isIfr) IFR_STAGES=buildIFRStages();
-    else STAGES=buildStages(setup.departureAirport,setup.destinationAirport,setup.flightFollowing);
+    else STAGES=buildStages(setup.departureAirport,setup.destinationAirport,setup.flightType==="pattern"?"pattern":setup.flightFollowing);
   }
   const stages=isIfr ? IFR_STAGES : STAGES;
   const index=stages.findIndex(entry=>entry.id===id);
@@ -9157,9 +9190,11 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     completedAt:new Date().toISOString(),
     mode:mode==="ifr"?"IFR":"VFR",
     flightFollowing:mode==="ifr" ? undefined : app.config.flightFollowing!==false,
-    route:String(route||"Completed training"),
+    route:mode==="vfr" && app.config.flightType==="pattern" ? app.config.departureAirport+" Traffic Pattern" : String(route||"Completed training"),
     level:String(level||"beginner"),
     overall:Number(overall)||0,
+    flightType:mode==="vfr" ? app.config.flightType : undefined,
+    circuits:session.circuits||0,
     practiceStage:session.practiceStage,
     setup:{...(mode==="ifr" ? IFR_APP.config : app.config)},
     recognitionCorrections:session.recognitionCorrections||0,
@@ -9241,6 +9276,7 @@ function renderFlightReportHistory(){
       <div class="flight-report-history-body">
         <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}${typeof item.flightFollowing==="boolean" ? ` • Flight Following ${item.flightFollowing?"On":"Off"}` : ""}</div>
         ${item.recognitionCorrections!==undefined ? `<p>Recognition corrections ${item.recognitionCorrections} · Voice retries ${item.voiceRetries}</p>` : ""}
+        ${item.flightType==="pattern" ? `<p>Traffic Pattern · ${item.circuits} circuits</p>` : ""}
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
@@ -9402,7 +9438,7 @@ function stageBest(stage){
 
 function renderFinalReport(){
   activeReportMode="vfr";
-  const stageStats=STAGES.filter(stage=>!app.session.practiceStage || stage.id===app.session.practiceStage).map(stage=>{
+  const stageStats=STAGES.filter((stage,index)=>app.config.flightType!=="pattern" || STAGES.findIndex(item=>item.id===stage.id)===index).filter(stage=>!app.session.practiceStage || stage.id===app.session.practiceStage).map(stage=>{
     const stat=app.session.stages[stage.id] || {
       title:stage.title,attempts:0,best:0,completed:false,misses:{}
     };
@@ -9479,7 +9515,7 @@ function renderFinalReport(){
   xpAppendAdvancedReport?.();
   storeCurrentFlightReport({
     mode:"vfr",
-    route:`${app.config.departureAirport} → ${app.config.destinationAirport}`,
+    route:app.config.flightType==="pattern" ? app.config.departureAirport+" Traffic Pattern" : `${app.config.departureAirport} → ${app.config.destinationAirport}`,
     level:app.config.level,
     overall
   });
@@ -9491,7 +9527,137 @@ function fullertonHeadingReadback(text){
   return /\bleft\s+(?:turn\s+)?(?:to\s+)?(?:heading\s+)?(?:120|(?:1|one)\s+(?:2|two)\s+(?:0|zero|oh))\b/.test(text);
 }
 
+
+function updateFlightTypeSetup(){
+  const pattern=$("flightFollowing").value==="pattern";
+  $("destinationAirport").closest("label").classList.toggle("hidden",pattern);
+  $("destRunway").closest(".runway-setup").classList.toggle("hidden",pattern);
+  $("direction").closest("label").classList.toggle("hidden",pattern);
+  $("altitude").closest("label").classList.toggle("hidden",pattern);
+  updateArrivalParking("arrivalParking",pattern ? $("departureAirport").value : $("destinationAirport").value);
+}
+
+function buildPatternStages(code){
+  const airport=airportData(code);
+  return [
+    {id:"atis",title:"DEPARTURE ATIS",facility:airport.name+" ATIS",freq:airportFrequency(airport,"atis"),type:"atis"},
+    {id:"ground",title:"GROUND · CIRCUIT 1",facility:airportFacility(airport,"ground"),freq:airportFrequency(airport,"ground"),type:"comm"},
+    {id:"tower",title:"TOWER · CIRCUIT 1",facility:airportFacility(airport,"tower"),freq:airportFrequency(airport,"tower"),type:"comm"}
+  ];
+}
+
+function patternReply(text){
+  append("atc",STAGES[app.stageIndex].facility,text);
+  rememberATC(text,text,STAGES[app.stageIndex].facility,currentVoiceRole());
+  speak(text);
+}
+
+function evaluatePatternTransmission(text){
+  if(!text || app.stageComplete) return;
+  const stage=STAGES[app.stageIndex], airport=depAirport(), runway=app.config.runway;
+  if(!tuned()){ $("feedback").textContent="Tune "+stage.freq+" before transmitting."; return; }
+  append("pilot","PILOT",text);
+  const n=norm(fkNormalizeRecognition(text));
+  const before=app.phase;
+  const ground=airportFacility(airport,"ground"), groundFreq=airportFrequency(airport,"ground");
+  const hold=departureHoldShortRunway();
+  const side=app.config.departureTraffic, taxi=departureTaxiway();
+  const readback=before.endsWith("Readback");
+  const checks={callsign:hasCallsign(text)};
+  if(!checks.callsign){
+    recordAttempt(stage,checks);
+    patternReply(app.config.aircraft+", say again with your callsign.");return;
+  }
+  const wrong=wrongRunwayMention(text,runway,airport,stage.id==="ground" && departureHoldShortRunway() ? [departureHoldShortRunway()] : []);
+  if(wrong){ patternReply(app.config.aircraft+", verify Runway "+runway+".");return; }
+  const say=message=>patternReply(app.config.aircraft+", "+message);
+  let accepted=false, complete=false;
+  if(stage.id==="ground" || stage.id==="parking"){
+    const parking=stage.id==="parking";
+    if(!readback){
+      Object.assign(checks,{facility:n.includes("ground"),request:parking ? /parking|ramp|fbo/.test(n) : /taxi/.test(n)});
+      if(!parking && !(app.session.circuits>0)){
+        checks.atis=containsAtisCode(n,app.config.atis);
+        checks.location=containsStartingLocation(text);
+      }
+      if(Object.values(checks).every(Boolean)){
+        say(parking ? "taxi to "+arrivalParkingLabel(app.config.arrivalParking)+" via "+taxi+"." :
+          "Runway "+runway+", taxi via "+taxi+(hold?", hold short Runway "+hold:"."));
+        app.phase=parking?"patternParkingReadback":"patternTaxiReadback";accepted=true;
+      }
+    }else{
+      checks.taxiway=containsTaxiway(text,taxi);
+      checks.destination=parking ? /parking|ramp|fbo/.test(n) : containsRunway(text,runway);
+      if(!parking && hold) checks.holdshort=holdShortRecognized(text,hold);
+      if(Object.values(checks).every(Boolean)){
+        if(!parking) say("contact "+airportFacility(airport,"tower")+" "+airportFrequency(airport,"tower")+".");
+        complete=true;accepted=true;
+      }
+    }
+  }else if(stage.id==="tower"){
+    if(before==="towerInitial"){
+      Object.assign(checks,{facility:n.includes("tower"),runway:containsRunway(text,runway),request:/closed traffic|pattern/.test(n)});
+      if(Object.values(checks).every(Boolean)){
+        say("Runway "+runway+", cleared for takeoff, make "+side+" traffic.");
+        app.phase="patternTakeoffReadback";accepted=true;
+      }
+    }else if(before==="patternTakeoffReadback"){
+      Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n),pattern:n.includes(side)&&/traffic|pattern/.test(n)});
+      if(Object.values(checks).every(Boolean)){
+        say("report "+side+" downwind Runway "+runway+".");
+        app.phase="patternDownwind";accepted=true;
+      }
+    }else if(before==="patternDownwind"){
+      Object.assign(checks,{runway:containsRunway(text,runway),downwind:containsDownwind(text,side)});
+      if(Object.values(checks).every(Boolean)){
+        say("Runway "+runway+", cleared to land, full stop.");
+        app.phase="patternLandingReadback";accepted=true;
+      }
+    }else if(before==="patternLandingReadback"){
+      Object.assign(checks,{runway:containsRunway(text,runway),landing:/cleared to land/.test(n)});
+      if(Object.values(checks).every(Boolean)){
+        say("after clearing the runway, contact "+ground+" "+groundFreq+".");
+        app.phase="patternGroundHandoffReadback";accepted=true;
+      }
+    }else if(before==="patternGroundHandoffReadback"){
+      checks.frequency=containsFrequency(text,groundFreq);
+      checks.facility=n.includes("ground");
+      if(Object.values(checks).every(Boolean)){
+        app.session.circuits=(app.session.circuits||0)+1;
+        complete=true;accepted=true;
+      }
+    }
+  }
+  $("score").textContent=grade(checks)+"%";
+  recordAttempt(stage,checks);
+  if(accepted) clearAcceptedTransmission("");
+  else say("say again. "+instructionFor(stage));
+  if(complete){
+    completeStage();
+    if(stage.id==="tower"){
+      $("patternChoice").classList.remove("hidden");
+      $("next").disabled=true;
+      $("next").textContent="NEXT →";
+      $("feedback").textContent="Circuit complete. Choose More Pattern Work or End Practice.";
+    }
+  }
+}
+
+function choosePatternContinuation(more){
+  if(app.config.flightType!=="pattern" || !app.stageComplete || STAGES[app.stageIndex].id!=="tower") return;
+  const stages=buildPatternStages(app.config.departureAirport);
+  if(more){
+    stages[1].title="GROUND · CIRCUIT "+(app.session.circuits+1);
+    stages[2].title="TOWER · CIRCUIT "+(app.session.circuits+1);
+    STAGES.push(stages[1],stages[2]);
+  }else{
+    STAGES.push({...stages[1],id:"parking",title:"GROUND · PARKING"});
+  }
+  $("patternChoice").classList.add("hidden");
+  nextStage();
+}
 function evaluateTransmission(text){
+  if(app.config.flightType==="pattern") return evaluatePatternTransmission(text);
   if(!text || app.phase==="towerStandby") return;
   xpEvaluateLiveTransmission?.(text);
   if(!tuned()){
@@ -10539,6 +10705,7 @@ function monitorAtis(){
 }
 
 function nextStage(){
+  if(app.config.flightType==="pattern" && app.stageComplete && STAGES[app.stageIndex].id==="tower" && !STAGES[app.stageIndex+1]) return;
   if(!app.stageComplete) return;
   if("speechSynthesis" in window) speechSynthesis.cancel();
 
@@ -10569,7 +10736,7 @@ function resetTraining(){
   resetSessionStats();
   app.config.atis=randomAtisCode();
   app.config.arrivalAtis=randomAtisCode(app.config.atis);
-  STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport,app.config.flightFollowing);
+  STAGES=buildStages(app.config.departureAirport,app.config.destinationAirport,app.config.flightType==="pattern"?"pattern":app.config.flightFollowing);
   app.stageIndex=0;
   app.phase="idle";
   app.stageComplete=false;
@@ -10622,6 +10789,7 @@ $("destRunway").addEventListener("change",()=>setTrafficPattern("arrivalTraffic"
 $("runway").addEventListener("change",()=>setTrafficPattern("departureTraffic",airportData($("departureAirport").value),$("runway").value));
 $("departureAirport").addEventListener("change",()=>{
   updateDepartureChoices(false);
+  updateFlightTypeSetup();
   updateSetupSummary();
 });
 $("destinationAirport").addEventListener("change",()=>{
@@ -10651,6 +10819,8 @@ $("applySetupBottom")?.addEventListener("click",(e)=>{
   applyVFRSetup();
 
 });
+$("morePattern").addEventListener("click",()=>choosePatternContinuation(true));
+$("endPattern").addEventListener("click",()=>choosePatternContinuation(false));
 $("monitorAtis").addEventListener("click",monitorAtis);
 bindTransmissionReview("",app,evaluateTransmission);
 $("clearText").addEventListener("click",()=>{$("pilotText").value=""});
@@ -10778,7 +10948,7 @@ function applyInitialSetupOpenState(){
 applyInitialSetupOpenState();
 
 renderRadioDigits();
-$("flightFollowing").addEventListener("change",updateSetupSummary);
+$("flightFollowing").addEventListener("change",()=>{updateFlightTypeSetup();updateSetupSummary();});
 const restoredLastSetup=loadLastSetup();
 if(!restoredLastSetup){
   updateDepartureChoices(false);
@@ -10786,6 +10956,7 @@ if(!restoredLastSetup){
   $("runway").value="26L";
   $("destRunway").value="24";
 }
+updateFlightTypeSetup();
 readSetup(true);
 renderStudyHistory();
 
