@@ -5027,6 +5027,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 }
 
 #page-trainer .vfr-setup-title-alone{font-weight:800!important;color:#1264a3!important}
+
+.vfr-departure-options.pattern-only, .runway-pair.pattern-only{grid-template-columns:minmax(0,1fr)!important}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5079,7 +5081,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.76 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.77 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5317,6 +5319,26 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </select>
       </label>
 
+      <div class="vfr-departure-options">
+        <label>Flight Type
+          <select id="flightFollowing">
+            <option value="on" selected>Flight Following</option>
+            <option value="off">No Flight Following</option>
+            <option value="pattern">Traffic Pattern</option>
+          </select>
+        </label>
+        <label>Departure Direction
+          <select id="direction">
+            <option>Southeast</option>
+            <option>Southwest</option>
+            <option>Northeast</option>
+            <option>Northwest</option>
+            <option>Other</option>
+          </select>
+        </label>
+
+      </div>
+
       <label>Destination Airport
         <select id="destinationAirport">
 <option value="KBUR">KBUR — Hollywood Burbank</option>
@@ -5388,25 +5410,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </div>
       </div>
 
-      <div class="vfr-departure-options">
-        <label>Departure Direction
-          <select id="direction">
-            <option>Southeast</option>
-            <option>Southwest</option>
-            <option>Northeast</option>
-            <option>Northwest</option>
-            <option>Other</option>
-          </select>
-        </label>
-
-        <label>Flight Type
-          <select id="flightFollowing">
-            <option value="on" selected>Flight Following</option>
-            <option value="off">No Flight Following</option>
-            <option value="pattern">Traffic Pattern</option>
-          </select>
-        </label>
-      </div>
 
       <label>Requested Altitude
         <div class="altitude-stepper">
@@ -9534,6 +9537,9 @@ function updateFlightTypeSetup(){
   $("destRunway").closest(".runway-setup").classList.toggle("hidden",pattern);
   $("direction").closest("label").classList.toggle("hidden",pattern);
   $("altitude").closest("label").classList.toggle("hidden",pattern);
+  $("arrivalParking").closest("label").classList.toggle("hidden",pattern);
+  $("flightFollowing").closest(".vfr-departure-options").classList.toggle("pattern-only",pattern);
+  $("runway").closest(".runway-pair").classList.toggle("pattern-only",pattern);
   updateArrivalParking("arrivalParking",pattern ? $("departureAirport").value : $("destinationAirport").value);
 }
 
