@@ -4980,19 +4980,41 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   .transmission-actions .primary{grid-column:1/-1}
 }
 
-.mobile-guide{display:none}
-@media(max-width:700px){
- .mobile-guide{display:block;background:#edf5fb;border:1px solid #b7d3e8;border-radius:12px;padding:16px;margin:0 0 12px;color:#173e5c}
- .mobile-guide h2{font-size:19px;margin:0 0 6px}
- .mobile-guide p{font-size:14px;line-height:1.5;margin:0 0 12px}
- .mobile-guide .btn{width:100%;min-height:46px;font-size:14px}
+
+#mobileIntroduction{
+  width:min(400px,calc(100vw - 32px));
+  max-height:calc(100dvh - 40px);
+  box-sizing:border-box;
+  overflow:auto;
+  padding:24px;
+  border:1px solid #cbdbe8;
+  border-radius:16px;
+  color:#173e5c;
+  background:#fff;
+  box-shadow:0 18px 60px rgba(12,35,55,.25);
 }
+#mobileIntroduction::backdrop{background:rgba(12,28,43,.65)}
+#mobileIntroduction h2{font-size:22px;margin:0 0 16px;line-height:1.25}
+#mobileIntroduction ol{padding-left:22px;margin:0 0 20px}
+#mobileIntroduction li{font-size:15px;line-height:1.5;margin:0 0 12px}
+#confirmMobileIntroduction{width:100%;min-height:48px;font-size:15px}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="ATC Trainer">
 </head>
 <body>
+<dialog id="mobileIntroduction" aria-labelledby="mobileIntroductionTitle">
+  <h2 id="mobileIntroductionTitle">Start practicing ATC</h2>
+  <ol>
+    <li><strong>Set up your flight.</strong> Open Flight Setup, choose your airports and aircraft, then tap Apply Setup.</li>
+    <li><strong>Tune the radio.</strong> Use + and − to match the displayed frequency. Wait for READY.</li>
+    <li><strong>Listen and transmit.</strong> Tap Monitor ATIS. For radio calls, tap to talk, then tap again to stop. Review the text and tap Send transmission. You can also type.</li>
+    <li><strong>Follow Next Action.</strong> Complete each readback, then tap Next. Tap Finish at the end to review your report.</li>
+  </ol>
+  <button id="confirmMobileIntroduction" class="btn primary" type="button">Got it — start practicing</button>
+</dialog>
+
   <div id="setupSavedToast" class="setup-saved-toast" role="status" aria-live="polite" aria-atomic="true">
     <span class="setup-saved-check" aria-hidden="true">✓</span>
     <span id="setupSavedToastText">Flight setup saved</span>
@@ -5027,7 +5049,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.64 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.65 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5184,11 +5206,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 </section>
 
 <section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
-<div id="mobileGuide" class="mobile-guide" aria-label="Training guidance">
-  <h2 id="mobileGuideTitle">Start your flight</h2>
-  <p id="mobileGuideText">Choose your airports and aircraft, then select Apply Setup.</p>
-  <button id="mobileGuideAction" type="button" class="btn primary">Open Flight Setup</button>
-</div>
 
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="Flight Setup">
@@ -5545,11 +5562,6 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     </section>
 
     <section id="page-ifr-trainer" class="app-page" data-title="IFR RADIO TRAINER">
-<div id="ifr-mobileGuide" class="mobile-guide" aria-label="Training guidance">
-  <h2 id="ifr-mobileGuideTitle">Start your flight</h2>
-  <p id="ifr-mobileGuideText">Choose your airports and aircraft, then select Apply Setup.</p>
-  <button id="ifr-mobileGuideAction" type="button" class="btn primary">Open Flight Setup</button>
-</div>
 
 
       <div class="trainer-shell trainer-page-shell">
@@ -7690,7 +7702,6 @@ function updatePilotInputState(){
 }
 
 function updateTuneUI(){
-  updateMobileGuide("");
   if(tuned() && $("feedback").textContent===sessionStartMessage()){
     positionStageFeedback("",false);
     $("feedback").textContent="Select Monitor ATIS to begin.";
@@ -10389,7 +10400,6 @@ function clearanceUsesSameGroundFrequency(airport,stage,nextStage){
 function completeStage(){
   recordStageComplete();
   app.stageComplete=true;
-  updateMobileGuide("");
   updatePilotInputState();
   $("stageState").textContent="Complete";
   $("stageState").className="small good";
@@ -10480,7 +10490,6 @@ function monitorAtis(){
   rememberATC(visual,spoken,label,"atis");
   const playback={};
   app.atisPlayback=playback;
-  updateMobileGuide("");
   $("monitorAtis").disabled=true;
   $("feedback").textContent="ATIS transmission in progress.";
   speak(spoken,"atis",event=>{
@@ -10595,8 +10604,6 @@ function applyVFRSetup(){
   resetSessionStats();
   readSetup(true);
   updateApplicationStatus();
-  $("mobileGuide").dataset.configured="true";
-  updateMobileGuide("");
   showSetupSavedFeedback("VFR");
   requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
 }
@@ -11477,7 +11484,6 @@ function ifrTuned(){
   return stage && Math.abs(parseFloat(ifr$("frequency").value)-parseFloat(stage.freq))<0.001;
 }
 function ifrUpdateTuneUI(){
-  updateMobileGuide("ifr-");
   if(ifrTuned() && $("ifr-feedback").textContent===sessionStartMessage()){
     positionStageFeedback("ifr-",false);
     $("ifr-feedback").textContent="Select Monitor ATIS to begin.";
@@ -11920,7 +11926,6 @@ function ifrRenderFinalReport(){
 
 function ifrCompleteStage(score=100){
   IFR_APP.stageComplete=true;
-  updateMobileGuide("ifr-");
   positionStageFeedback("ifr-",true);
   ifr$("score").textContent=`${score}%`;
   ifr$("stageState").textContent="Completed";
@@ -11966,7 +11971,6 @@ function ifrMonitorAtis(){
   ifrUpdateRepeatButton();
   const playback={};
   IFR_APP.atisPlayback=playback;
-  updateMobileGuide("ifr-");
   $("ifr-monitorAtis").disabled=true;
   $("ifr-feedback").textContent="ATIS transmission in progress.";
   ifrSpeak(atisSpoken,event=>{
@@ -12645,8 +12649,6 @@ function ifrInit(){
   const applyIFRSetup=()=>{
     ifrReadSetup(true);
     ifrSaveLastSetup();
-    $("ifr-mobileGuide").dataset.configured="true";
-    updateMobileGuide("ifr-");
     showSetupSavedFeedback("IFR");
     requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"smooth"}));
   };
@@ -14325,56 +14327,27 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
 
-function updateMobileGuide(prefix){
-  const guide=$(prefix+"mobileGuide");
-  if(!guide) return;
-  const engine=prefix ? IFR_APP : app;
-  const stages=prefix ? IFR_STAGES : STAGES;
-  const stage=stages[engine.stageIndex];
-  if(!stage) return;
-  let title="Set up your flight",text="Choose your airports and aircraft, then select Apply Setup.",action="Open Flight Setup",target="setup";
-  if(guide.dataset.configured==="true"){
-    if(engine.stageComplete){
-      title="Stage complete";
-      text="Select Next to continue, then tune to the next facility.";
-      action="Continue";target="next";
-    }else if(engine.atisPlayback){
-      title="Listen to ATIS";text="Listen for the information letter and runway. Next becomes available when the broadcast finishes.";
-      action="View ATIS";target="atisText";
-    }else if(!(prefix ? ifrTuned() : tuned())){
-      title="Tune your radio";
-      text="Use the + and − buttons to tune "+stage.freq+" MHz for "+stage.facility+". The radio will show READY.";
-      action="Go to radio";target="frequency";
-    }else if(stage.type==="atis"){
-      title="Listen to airport information";
-      text="The radio is ready. Select Monitor ATIS and note the information letter and runway.";
-      action="Monitor ATIS";target="monitorAtis";
-    }else{
-      title="Make your radio call";
-      text="Tap to Talk, speak, then tap again to stop. Review the words and select Send transmission. You can also type your call.";
-      action="Go to your transmission";target="commPanel";
-    }
-  }
-  $(prefix+"mobileGuideTitle").textContent=title;
-  $(prefix+"mobileGuideText").textContent=text;
-  const button=$(prefix+"mobileGuideAction");
-  button.textContent=action;
-  button.onclick=()=>{
-    if(target==="setup"){
-      const setup=document.querySelector("#page-"+(prefix?"ifr-trainer":"trainer")+" details.setup");
-      setup.open=true; setup.scrollIntoView({behavior:"smooth",block:"start"});
-    }else if(target==="monitorAtis" || target==="next"){
-      $(prefix+target).click();
-      updateMobileGuide(prefix);
-    }else{
-      $(prefix+target).scrollIntoView({behavior:"smooth",block:"center"});
-    }
+const MOBILE_INTRO_KEY="fk-atc-mobile-intro-confirmed-v1";
+function showMobileIntroduction(){
+  if(!window.matchMedia("(max-width:700px) and (pointer:coarse)").matches) return;
+  try{
+    if(localStorage.getItem(MOBILE_INTRO_KEY)==="true") return;
+  }catch(error){}
+  const dialog=$("mobileIntroduction");
+  if(!dialog || dialog.open) return;
+  const previousFocus=document.activeElement;
+  const confirm=$("confirmMobileIntroduction");
+  const acknowledge=()=>{
+    try{localStorage.setItem(MOBILE_INTRO_KEY,"true");}catch(error){}
+    dialog.close();
+    previousFocus?.focus?.();
   };
+  confirm.onclick=acknowledge;
+  dialog.addEventListener("cancel",event=>{event.preventDefault();acknowledge();},{once:true});
+  dialog.showModal();
+  confirm.focus();
 }
-document.addEventListener("DOMContentLoaded",()=>{
-  updateMobileGuide("");
-  updateMobileGuide("ifr-");
-});
+document.addEventListener("DOMContentLoaded",showMobileIntroduction);
 </script>
 </body>
 </html>
