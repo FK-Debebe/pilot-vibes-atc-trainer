@@ -5000,10 +5000,15 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 #confirmMobileIntroduction{width:100%;min-height:48px;font-size:15px}
 
 @media(max-width:700px){
-  .mobile-setup-only .main-grid{display:none!important}
+  #page-trainer.mobile-setup-only .main-grid,
+  #page-ifr-trainer.mobile-setup-only .main-grid,
+  #page-trainer.mobile-setup-only .radio-exchange-card,
+  #page-ifr-trainer.mobile-setup-only .radio-exchange-card{display:none!important}
   .mobile-setup-only .trainer-page-shell{display:block!important}
   .mobile-setup-only .trainer-setup-column{width:100%!important;max-width:none!important}
 }
+
+#page-trainer .vfr-setup-title-alone{font-weight:800!important;color:#1264a3!important}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5055,7 +5060,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.66 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.67 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5211,7 +5216,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   </section>
 </section>
 
-<section id="page-trainer" class="app-page active" data-title="VFR RADIO TRAINER">
+<section id="page-trainer" class="app-page active mobile-setup-only" data-title="VFR RADIO TRAINER">
 
       <div class="trainer-shell trainer-page-shell">
         <aside class="trainer-setup-column" aria-label="Flight Setup">
@@ -5567,7 +5572,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       </div>
     </section>
 
-    <section id="page-ifr-trainer" class="app-page" data-title="IFR RADIO TRAINER">
+    <section id="page-ifr-trainer" class="app-page mobile-setup-only" data-title="IFR RADIO TRAINER">
 
 
       <div class="trainer-shell trainer-page-shell">
@@ -14356,7 +14361,13 @@ function showMobileIntroduction(){
   dialog.showModal();
   confirm.focus();
 }
-document.addEventListener("DOMContentLoaded",showMobileIntroduction);
+document.addEventListener("DOMContentLoaded",()=>{
+  if(window.matchMedia("(max-width:700px)").matches){
+    $("vfrFlightSetupDetails").open=true;
+    $("ifrFlightSetupDetails").open=true;
+  }
+  showMobileIntroduction();
+});
 </script>
 </body>
 </html>
