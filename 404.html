@@ -5021,7 +5021,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     <li><strong>Review Flight Setup.</strong> After closing this popup, customize your flight.</li>
     <li><strong>Tap Apply Setup.</strong> Keep or change the settings, then tap either Apply Setup button. Flight Setup collapses and the radio and training panels appear.</li>
     <li><strong>Tune and listen.</strong> Use the radio’s + and − buttons to match the target frequency. When READY appears, tap Monitor ATIS and listen for the information letter and runway.</li>
-    <li><strong>Make your call.</strong> Tap to talk, then tap again to stop. Review or edit the words and tap Send transmission. You can also type your call.</li>
+    <li><strong>Make your call.</strong> Tap to talk, then tap again to stop. At Beginner level, review or edit the words and tap Send transmission. At Intermediate and Advanced, Tap to End &amp; Send submits your call immediately. You can also type your call.</li>
     <li><strong>Follow Next Action.</strong> Include your callsign in every readback. When a stage is complete, tap Next and tune to the next facility. Tap Finish at the end to review your Flight Report.</li>
   </ol>
   <button id="confirmMobileIntroduction" class="btn primary" type="button">Got it — start practicing</button>
@@ -5061,7 +5061,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.71 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.74 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5544,7 +5544,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <button id="clearText" class="btn">CLEAR</button>
         <button id="sayAgain" class="btn" disabled>SAY AGAIN</button>
       </div>
-      <div class="small transmission-help">Tap to talk, then tap again to stop. Review or edit the transcript before sending.</div>
+      <div class="small transmission-help">Tap to talk. Beginner: tap to end, review, then send. Intermediate and Advanced: tap to end and send.</div>
     </div>
 
     <div id="feedbackSlot" class="scorebar">
@@ -5920,7 +5920,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         <button id="ifr-clearText" class="btn">CLEAR</button>
         <button id="ifr-sayAgain" class="btn" disabled>SAY AGAIN</button>
       </div>
-      <div class="small transmission-help">Tap to talk, then tap again to stop. Review or edit the transcript before sending.</div>
+      <div class="small transmission-help">Tap to talk. Beginner: tap to end, review, then send. Intermediate and Advanced: tap to end and send.</div>
     </div>
 
     <div id="ifr-feedbackSlot" class="scorebar">
@@ -7037,8 +7037,12 @@ const app = {
   }
 };
 
+function normalizeRunwayTwo(text){
+  return String(text||"").replace(/(\brunway\s+)to\s+(\d)\b/gi,"$12$2").replace(/(\brunway\s+)to\b/gi,"$1two");
+}
+
 function norm(s){
-  return (s||"")
+  return normalizeRunwayTwo(s)
     .toLowerCase()
     /* SpeechRecognition sometimes renders spoken runway digits as a fraction,
        e.g. "one three" -> "1/3". For runway-style digit groups, collapse the slash. */
@@ -7734,6 +7738,7 @@ function updateTuneUI(){
 }
 
 function updatePTTState(){
+  $("sendTyped").textContent=app.config.level==="beginner" ? "Send transmission" : "Send text transmission";
   const stage=STAGES[app.stageIndex];
   if(stage.type!=="comm") return;
 
@@ -7745,7 +7750,7 @@ function updatePTTState(){
 
   if(app.recognizer){
     $("ptt").disabled=false;
-    $("pttLabel").textContent="TAP TO END & SEND";
+    $("pttLabel").textContent=app.config.level==="beginner" ? "Tap to End" : "Tap to End & Send";
     return;
   }
 
@@ -7855,7 +7860,7 @@ function startRecognitionSegment(){
 
   r.onstart=()=>{
     $("ptt").classList.add("listening");
-    $("pttLabel").textContent="TAP TO END & SEND";
+    $("pttLabel").textContent=app.config.level==="beginner" ? "Tap to End" : "Tap to End & Send";
     $("stageState").textContent="Listening";
     $("feedback").textContent="Listening... tap again when finished.";
   };
@@ -8347,7 +8352,7 @@ function containsDirection(text){
 
 
 function fkNormalizeRecognition(text){
-  let s=String(text||"").trim();
+  let s=normalizeRunwayTwo(text).trim();
   if(window.XP_STATE?.pttTestActive && s) xpPttTestCaptureText?.(s);
   if(!s) return s;
 
@@ -9045,8 +9050,23 @@ function escapeReportText(value){
     .replace(/'/g,"&#39;");
 }
 
+function clearAcceptedTransmission(prefix){
+  const engine=prefix ? IFR_APP : app;
+  $(prefix+"pilotText").value="";
+  engine.recognitionCommitted="";
+  engine.recognitionText="";
+  engine.recognitionSegment="";
+  engine.recognitionInterim="";
+  clearVoiceReview(prefix,engine);
+}
+
 function reviewVoiceTransmission(prefix,text){
   const engine=prefix ? IFR_APP : app;
+  if(engine.config.level!=="beginner"){
+    clearVoiceReview(prefix,engine);
+    (prefix ? ifrEvaluateTransmission : evaluateTransmission)(text);
+    return;
+  }
   engine.pendingVoice=text;
   $(prefix+"pilotText").value=text;
   $(prefix+"retryVoice").hidden=false;
@@ -10386,6 +10406,7 @@ function evaluateTransmission(text){
     speak(replySpoken);
   }
 
+  if(complete || app.phase!==phaseAtStart) clearAcceptedTransmission("");
   if(complete) completeStage();
 }
 
@@ -12014,6 +12035,9 @@ function ifrNormalizeClearanceTranscript(text){
 }
 
 function ifrEvaluateTransmission(text){
+  const phaseAtStart=IFR_APP.phase;
+  const wasComplete=IFR_APP.stageComplete;
+  try{
   text=String(text||"").trim();
   if(!text) return;
   xpEvaluateLiveTransmission?.(text);
@@ -12308,6 +12332,12 @@ function ifrEvaluateTransmission(text){
       }else ifrATC(`${ifrCallsignVisual()}, verify taxi via ${IFR_APP.destTaxiway}.`);
     }
   }
+  }finally{
+    if(IFR_APP.phase!==phaseAtStart || (!wasComplete && IFR_APP.stageComplete)){
+      clearAcceptedTransmission("ifr-");
+    }
+  }
+
 }
 
 function ifrNextStage(){
@@ -12423,6 +12453,7 @@ function ifrSayAgainRequest(){
 }
 
 function ifrUpdatePTTState(){
+  ifr$("sendTyped").textContent=IFR_APP.config.level==="beginner" ? "Send transmission" : "Send text transmission";
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   const ptt=ifr$("ptt");
   if(!stage || !ptt) return;
@@ -12445,7 +12476,7 @@ function ifrUpdatePTTState(){
 
   if(IFR_APP.pttActive){
     ptt.disabled=false;
-    ifr$("pttLabel").textContent="TAP TO END & SEND";
+    ifr$("pttLabel").textContent=IFR_APP.config.level==="beginner" ? "Tap to End" : "Tap to End & Send";
     ifrUpdateRepeatButton();
     return;
   }
