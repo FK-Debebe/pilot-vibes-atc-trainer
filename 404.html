@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.90 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.91 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -11427,7 +11427,11 @@ function collapseSetupAndTop(button){
   });
 }
 
-function sessionStartMessage(){ return "Tune in the radio to begin the session."; }
+function sessionStartMessage(prefix=""){
+  const config=prefix ? IFR_APP.config : app.config;
+  const airport=airportData(config.departureAirport);
+  return `Tune in the radio to ${airport.radioName||airport.name} ATIS to begin the session.`;
+}
 
 function positionStageFeedback(prefix, completed){
   const feedback=document.getElementById(prefix+"feedback");
@@ -12024,7 +12028,7 @@ function ifrTuned(){
   return stage && Math.abs(parseFloat(ifr$("frequency").value)-parseFloat(stage.freq))<0.001;
 }
 function ifrUpdateTuneUI(){
-  if(ifrTuned() && $("ifr-feedback").textContent===sessionStartMessage()){
+  if(ifrTuned() && $("ifr-feedback").textContent===sessionStartMessage("ifr-")){
     positionStageFeedback("ifr-",false);
     $("ifr-feedback").textContent="Select Monitor ATIS to begin.";
   }
