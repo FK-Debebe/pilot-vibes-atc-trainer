@@ -5081,7 +5081,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.78 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.80 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -7315,6 +7315,15 @@ function currentVoiceRole(){
    Keep ATIS visible on-screen, but speak it as "Weather information". */
 function fkPrepareTextForSpeech(text){
   return String(text||"")
+    .replace(/\brunway\s+(\d{1,2})\s*(left|right|center|[LRC])?\b/gi,(_,digits,side)=>{
+      const suffix={left:"L",right:"R",center:"C"}[String(side||"").toLowerCase()] || String(side||"").toUpperCase();
+      return "runway "+runwaySpoken(digits+suffix);
+    })
+    .replace(/\b(1[1-3]\d\.\d{1,3})\b/g,frequency=>frequencySpoken(frequency))
+    .replace(/\bsquawk\s+(\d{4})\b/gi,(_,code)=>"squawk "+radioDigits(code))
+    .replace(/\bheading\s+(\d{1,3})\b/gi,(_,heading)=>"heading "+radioDigits(heading))
+    .replace(/\b(maintain|at or below|climb to|descend to)\s+(\d{1,2},\d{3}|\d{3,5})\b(?!\.\d)/gi,
+      (_,instruction,altitude)=>instruction+" "+altitudeSpoken(altitude))
     .replace(/\bATIS\b/gi,"Weather information")
     .replace(/\brun[\s-]?up\b/gi,"rann upp");
 }
@@ -7562,7 +7571,7 @@ function instructionFor(stage,showExample=false){
   if(app.config.flightType==="pattern" && stage.type!=="atis"){
     return stage.id==="ground" ? `Contact Ground with your callsign, position, ATIS and request taxi to Runway ${app.config.runway}.` :
       stage.id==="parking" ? "Contact Ground, report clear of the runway and request taxi to parking. Read back the instructions." :
-      "Contact Tower holding short for closed traffic. Read back takeoff and pattern instructions, report downwind, then read back landing and Ground handoff instructions.";
+      "Contact Tower holding short for closed traffic. Read back the takeoff clearance.";
   }
   const c=app.config;
   const dep=depAirport();
@@ -9554,8 +9563,9 @@ function buildPatternStages(code){
 
 function patternReply(text){
   append("atc",STAGES[app.stageIndex].facility,text);
-  rememberATC(text,text,STAGES[app.stageIndex].facility,currentVoiceRole());
-  speak(text);
+  const spoken=fkPrepareTextForSpeech(text.split(app.config.aircraft).join(callsignSpoken()));
+  rememberATC(text,spoken,STAGES[app.stageIndex].facility,currentVoiceRole());
+  speak(spoken);
 }
 
 function evaluatePatternTransmission(text){
@@ -9609,13 +9619,38 @@ function evaluatePatternTransmission(text){
         app.phase="patternTakeoffReadback";accepted=true;
       }
     }else if(before==="patternTakeoffReadback"){
-      Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n),pattern:n.includes(side)&&/traffic|pattern/.test(n)});
+      Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n)});
       if(Object.values(checks).every(Boolean)){
-        say("report "+side+" downwind Runway "+runway+".");
+        say("turn "+side+" crosswind.");
+        app.phase="patternCrosswindReadback";accepted=true;
+      }
+    }else if(before==="patternCrosswindReadback"){
+      checks.pattern=n.includes(side)&&/\bcross[ -]?wind\b/.test(n);
+      if(Object.values(checks).every(Boolean)){
+        say("turn "+side+" downwind, report downwind Runway "+runway+".");
         app.phase="patternDownwind";accepted=true;
       }
     }else if(before==="patternDownwind"){
       Object.assign(checks,{runway:containsRunway(text,runway),downwind:containsDownwind(text,side)});
+      if(Object.values(checks).every(Boolean)){
+        if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
+          markUnexpected("extendDownwind");
+          say("extend downwind, I will call your base.");
+          app.phase="patternExtendReadback";
+        }else{
+          say("turn "+side+" base.");
+          app.phase="patternBaseReadback";
+        }
+        accepted=true;
+      }
+    }else if(before==="patternExtendReadback"){
+      Object.assign(checks,{extend:/extend(?:ing|ed)?\s+downwind/.test(n),base:/call.*base/.test(n)});
+      if(Object.values(checks).every(Boolean)){
+        say("turn "+side+" base.");
+        app.phase="patternBaseReadback";accepted=true;
+      }
+    }else if(before==="patternBaseReadback"){
+      checks.base=n.includes(side)&&/\bbase\b/.test(n);
       if(Object.values(checks).every(Boolean)){
         say("Runway "+runway+", cleared to land, full stop.");
         app.phase="patternLandingReadback";accepted=true;
@@ -9638,7 +9673,18 @@ function evaluatePatternTransmission(text){
   $("score").textContent=grade(checks)+"%";
   recordAttempt(stage,checks);
   if(accepted) clearAcceptedTransmission("");
-  else say("say again. "+instructionFor(stage));
+  else{
+    const guidance={
+      patternCrosswindReadback:"Read back the crosswind turn and your callsign.",
+      patternDownwind:"Report "+side+" downwind Runway "+runway+" with your callsign.",
+      patternExtendReadback:"Read back extend downwind and Tower calling your base, with your callsign.",
+      patternBaseReadback:"Read back the base turn and your callsign.",
+      patternLandingReadback:"Read back the landing clearance, runway and your callsign.",
+      patternGroundHandoffReadback:"Read back Ground and "+groundFreq+" with your callsign."
+    };
+    $("feedback").textContent=guidance[before]||instructionFor(stage);
+    say("say again. "+$("feedback").textContent);
+  }
   if(complete){
     completeStage();
     if(stage.id==="tower"){
