@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.86 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.90 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5341,6 +5341,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
       </div>
 
+      <label id="patternLandingTypeLabel" class="hidden">Landing Practice
+        <select id="patternLandingType">
+          <option value="fullstop">Full-stop taxi-back</option>
+          <option value="touchgo">Touch-and-go</option>
+          <option value="option">Cleared for the option</option>
+        </select>
+      </label>
       <label>Destination Airport
         <select id="destinationAirport">
 <option value="KBUR">KBUR — Hollywood Burbank</option>
@@ -5459,6 +5466,12 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
     </div>
 
     <div id="nextActionSlot"></div>
+    <button id="patternRunwayClear" class="btn primary hidden" type="button">Runway clear — continue</button>
+    <div id="patternOptionChoice" class="hidden" style="margin:12px 0">
+      <p>Choose your landing under the option clearance.</p>
+      <button id="patternOptionTouchGo" class="btn primary" type="button">Touch-and-go</button>
+      <button id="patternOptionFullStop" class="btn" type="button">Full stop</button>
+    </div>
     <div id="patternChoice" class="hidden" style="margin:12px 0">
       <button id="morePattern" class="btn primary" type="button">More Pattern Work</button>
       <button id="endPattern" class="btn" type="button">End Practice</button>
@@ -7425,6 +7438,7 @@ function saveLastSetup(){
       location:$("location")?.value,
       arrivalParking:$("arrivalParking")?.value,
       flightFollowing:$("flightFollowing").value,
+      patternLandingType:$("patternLandingType").value,
       arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
       departureTraffic:selectedTrafficPattern("departureTraffic"),
       runway:$("runway")?.value,
@@ -7442,6 +7456,7 @@ function loadLastSetup(){
     const raw=localStorage.getItem(LAST_SETUP_KEY);
     if(!raw) return false;
     const saved=JSON.parse(raw)||{};
+    $("patternLandingType").value=["touchgo","option"].includes(saved.patternLandingType)?saved.patternLandingType:"fullstop";
     Object.assign(saved,{level:"beginner",callsign:"172SP",departureAirport:"KLGB",destinationAirport:"KCRQ"});
     $("flightFollowing").value=["off","pattern"].includes(saved.flightFollowing) ? saved.flightFollowing : "on";
 
@@ -7541,6 +7556,7 @@ function readSetup(generateCodes=true){
     location:$("location").value,
     arrivalParking:$("arrivalParking").value,
     flightType:$("flightFollowing").value,
+    patternLandingType:$("patternLandingType").value,
     flightFollowing:$("flightFollowing").value==="on",
     arrivalTraffic:selectedTrafficPattern("arrivalTraffic"),
     departureTraffic:selectedTrafficPattern("departureTraffic"),
@@ -7571,6 +7587,9 @@ function renderNav(){
 
 function instructionFor(stage,showExample=false){
   if(app.config.flightType==="pattern" && stage.type!=="atis"){
+    if(stage.airborneStart) return stage.fullStop
+      ? "Continue closed traffic for a final full-stop landing. Follow Tower instructions, then contact Ground after vacating."
+      : "Continue closed traffic. Follow Tower instructions for the next circuit.";
     return stage.id==="ground" ? `Contact Ground with your callsign, position, ATIS and request taxi to Runway ${app.config.runway}.` :
       stage.id==="parking" ? "Contact Ground, report clear of the runway and request taxi to parking. Read back the instructions." :
       "Contact Tower holding short for closed traffic. Read back the takeoff clearance.";
@@ -7629,12 +7648,15 @@ function renderProgressMarkers(currentComplete=false){
 }
 
 function renderStage(resetFrequency=true){
+  $("patternRunwayClear").classList.add("hidden");
+  $("patternOptionChoice").classList.add("hidden");
   $("patternChoice").classList.add("hidden");
   app.straightInArrival=false;
   app.atisPlayback=null;
   clearVoiceReview("",app);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
+  if(app.config.flightType==="pattern" && stage.id==="tower") stage.airborneCompletion=false;
   const phaseMap={
     clearance:"clearanceInitial",
     ground:"groundInitial",
@@ -7651,7 +7673,7 @@ function renderStage(resetFrequency=true){
   app.unexpectedTimer=null;
   app.awaitingATC=false;
   app.callsignAbbreviated=false;
-  app.phase=phaseMap[stage.id]||"initial";
+  app.phase=stage.airborneStart?"patternCrosswindReadback":phaseMap[stage.id]||"initial";
   app.stageComplete=false;
   app.recognitionText="";
   app.lastATC=null;
@@ -8400,6 +8422,7 @@ function containsDirection(text){
 
 function fkNormalizeRecognition(text){
   let s=normalizeRunwayTwo(text).trim()
+    .replace(/\bup[\s-]+wind\b/gi,"upwind")
     .replace(/\bclear for take[ -]?off\b/gi,"cleared for takeoff")
     .replace(/(\brunway\s+)([0-3])\s*\/\s*([0-9])(?=\s|[LRC]\b|$)/gi,"$1$2$3")
     .replace(/\b([0-3])\s*\/\s*([0-9])(?=\s*(?:left|right|center|[LRC])\b)/gi,"$1$2");
@@ -9212,6 +9235,7 @@ function storeCurrentFlightReport({mode,route,level,overall}){
     level:String(level||"beginner"),
     overall:Number(overall)||0,
     flightType:mode==="vfr" ? app.config.flightType : undefined,
+    landingPractice:mode==="vfr" ? app.config.patternLandingType : undefined,
     circuits:session.circuits||0,
     practiceStage:session.practiceStage,
     setup:{...(mode==="ifr" ? IFR_APP.config : app.config)},
@@ -9294,7 +9318,7 @@ function renderFlightReportHistory(){
       <div class="flight-report-history-body">
         <div class="small" style="margin-bottom:8px"><b>${escapeReportText(String(item.level||"beginner").toUpperCase())}</b> training • ${escapeReportText(item.mode)} • ${escapeReportText(item.route)}${typeof item.flightFollowing==="boolean" ? ` • Flight Following ${item.flightFollowing?"On":"Off"}` : ""}</div>
         ${item.recognitionCorrections!==undefined ? `<p>Recognition corrections ${item.recognitionCorrections} · Voice retries ${item.voiceRetries}</p>` : ""}
-        ${item.flightType==="pattern" ? `<p>Traffic Pattern · ${item.circuits} circuits</p>` : ""}
+        ${item.flightType==="pattern" ? `<p>Traffic Pattern · ${item.circuits} circuits · ${escapeReportText({fullstop:"Full-stop taxi-back",touchgo:"Touch-and-go",option:"The option"}[item.landingPractice]||"Full-stop taxi-back")}</p>` : ""}
         <div class="report-summary">${item.summaryHtml||""}</div>
         <div class="report-stages">${item.stagesHtml||""}</div>
         <div class="report-recommendations">${item.recommendationsHtml||""}</div>
@@ -9550,6 +9574,7 @@ function fullertonHeadingReadback(text){
 function updateFlightTypeSetup(){
   updateRouteHeading();
   const pattern=$("flightFollowing").value==="pattern";
+  $("patternLandingTypeLabel").classList.toggle("hidden",!pattern);
   $("destinationAirport").closest("label").classList.toggle("hidden",pattern);
   $("destRunway").closest(".runway-setup").classList.toggle("hidden",pattern);
   $("direction").closest("label").classList.toggle("hidden",pattern);
@@ -9569,11 +9594,41 @@ function buildPatternStages(code){
   ];
 }
 
+function patternWind(){
+  return "wind "+app.scenario.depWindDir+" at "+app.scenario.depWindSpeed;
+}
+
+function confirmPatternRunwayExit(){
+  if(app.config.flightType!=="pattern" || app.phase!=="patternExitClearReport" || app.stageComplete) return;
+  const stage=STAGES[app.stageIndex];
+  append("system","TRAINER","Pilot confirmed runway clear.");
+  $("patternRunwayClear").classList.add("hidden");
+  app.session.circuits=Math.max(app.session.circuits||0,stage.circuit||1);
+  completeStage();
+  $("patternChoice").classList.remove("hidden");
+  $("next").disabled=true;
+  $("next").textContent="NEXT →";
+  $("feedback").textContent="Circuit complete. Choose More Pattern Work or End Practice.";
+}
+
+function choosePatternOption(fullStop){
+  if(app.phase!=="patternOptionDecision" || app.config.flightType!=="pattern") return;
+  evaluateTransmission(app.config.aircraft+", "+(fullStop?"full stop":"touch and go"));
+}
+
 function patternReply(text){
   append("atc",STAGES[app.stageIndex].facility,text);
-  const spoken=fkPrepareTextForSpeech(text.split(app.config.aircraft).join(callsignSpoken()));
+  const spoken=fkPrepareTextForSpeech(text.split(app.config.aircraft).join(callsignSpoken()))
+    .replace(/\bwind\s+(\d{1,3})\s+at\s+(\d{1,2})\b/gi,
+      (_,direction,speed)=>"wind "+radioDigits(direction)+" at "+radioDigits(speed));
   rememberATC(text,spoken,STAGES[app.stageIndex].facility,currentVoiceRole());
   speak(spoken);
+}
+
+function matchesPatternSide(text,side,leg="traffic",required=true){
+  const normalized=norm(fkNormalizeRecognition(text));
+  const matches=[...normalized.matchAll(new RegExp("\\b(left|right)(?:[ -]hand)?\\s+(?:"+leg+")\\b","g"))];
+  return (!required || matches.length>0) && matches.every(match=>match[1]===side);
 }
 
 function evaluatePatternTransmission(text){
@@ -9602,6 +9657,28 @@ function evaluatePatternTransmission(text){
     patternReply(app.config.aircraft+", verify Runway "+runway+".");return;
   }
   const say=message=>patternReply(app.config.aircraft+", "+message);
+  const landingType=stage.fullStop ? "fullstop" : (app.config.patternLandingType||"fullstop");
+  function startDownwind(){
+    if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
+      markUnexpected("extendDownwind");
+      say("extend downwind, I will call your base, traffic departing.");
+      app.phase="patternExtendReadback";
+    }else{
+      say("report downwind Runway "+runway+".");
+      app.phase="patternDownwind";
+    }
+  }
+  function issuePatternLanding(){
+    if(unexpectedEnabled("goAround")&&!unexpectedTriggered("goAround")){
+      markUnexpected("goAround");
+      say("go around, make "+side+" traffic.");
+      app.phase="patternGoAroundReadback";
+    }else{
+      const clearance=landingType==="touchgo"?"cleared for touch-and-go":landingType==="option"?"cleared for the option":"cleared to land, full stop";
+      say(patternWind()+", Runway "+runway+", "+clearance+".");
+      app.phase="patternLandingReadback";
+    }
+  }
   let accepted=false, complete=false;
   if(stage.id==="ground" || stage.id==="parking"){
     const parking=stage.id==="parking";
@@ -9618,24 +9695,31 @@ function evaluatePatternTransmission(text){
           "Runway "+runway+", taxi via "+taxi+(hold?", hold short Runway "+hold:"."));
         app.phase=parking?"patternParkingReadback":"patternTaxiReadback";accepted=true;
       }
+    }else if(before==="patternTowerHandoffReadback"){
+      checks.frequency=containsFrequency(text,airportFrequency(airport,"tower"));
+      checks.facility=n.includes("tower");
+      if(Object.values(checks).every(Boolean)){complete=true;accepted=true;}
     }else{
       checks.taxiway=containsTaxiway(text,taxi);
       checks.destination=parking ? /parking|ramp|fbo/.test(n) : containsRunway(text,runway);
       if(!parking && hold) checks.holdshort=holdShortRecognized(text,hold);
       if(Object.values(checks).every(Boolean)){
-        if(!parking) say("contact "+airportFacility(airport,"tower")+" "+airportFrequency(airport,"tower")+".");
-        complete=true;accepted=true;
+        if(!parking){
+          say("contact "+airportFacility(airport,"tower")+" "+airportFrequency(airport,"tower")+".");
+          app.phase="patternTowerHandoffReadback";
+        }else complete=true;
+        accepted=true;
       }
     }
   }else if(stage.id==="tower"){
     if(before==="towerInitial"){
       Object.assign(checks,{facility:n.includes("tower"),runway:containsRunway(text,runway),request:/closed traffic|pattern/.test(n)});
       if(Object.values(checks).every(Boolean)){
-        say("Runway "+runway+", cleared for takeoff, make "+side+" traffic.");
+        say(patternWind()+", Runway "+runway+", cleared for takeoff, make "+side+" traffic.");
         app.phase="patternTakeoffReadback";accepted=true;
       }
     }else if(before==="patternTakeoffReadback"){
-      Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n),pattern:n.includes(side)&&!/\bright\b/.test(side==="left"?n:"")&&!/\bleft\b/.test(side==="right"?n:"")&&/traffic|pattern/.test(n)});
+      Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n),pattern:matchesPatternSide(text,side,"traffic|pattern")});
       if(Object.values(checks).every(Boolean)){
         if(unexpectedEnabled("extendUpwind")&&!unexpectedTriggered("extendUpwind")){
           markUnexpected("extendUpwind");
@@ -9659,21 +9743,43 @@ function evaluatePatternTransmission(text){
         accepted=true;
       }
     }else if(before==="patternCrosswindReadback"){
-      checks.pattern=n.includes(side)&&/\bcross[ -]?wind\b/.test(n);
+      checks.pattern=matchesPatternSide(text,side,"cross[ -]?wind");
       if(Object.values(checks).every(Boolean)){
-        say("report mid downwind Runway "+runway+".");
+        if(trafficAdvisoryEnabled()&&!stage.trafficHandled){
+          stage.trafficHandled=true;
+          app.session.trafficAdvisories++;
+          say("traffic, Cessna on three-mile final Runway "+runway+". Report traffic in sight.");
+          app.phase="patternTrafficResponse";
+        }else startDownwind();
+        accepted=true;
+      }
+    }else if(before==="patternTrafficResponse"){
+      checks.traffic=trafficInSight(text)||negativeTrafficContact(text);
+      if(Object.values(checks).every(Boolean)){
+        if(trafficInSight(text)){
+          say("number two, follow the Cessna on final, Runway "+runway+".");
+          app.phase="patternSequenceReadback";
+        }else{
+          say("extend downwind, I will call your base, traffic on final.");
+          app.phase="patternExtendReadback";
+        }
+        accepted=true;
+      }
+    }else if(before==="patternSequenceReadback"){
+      Object.assign(checks,{sequence:/number (?:two|2)|(?:two|2) following|following.*cessna/.test(n),traffic:/follow|following/.test(n)});
+      if(Object.values(checks).every(Boolean)){
+        say("report downwind Runway "+runway+".");
         app.phase="patternDownwind";accepted=true;
       }
     }else if(before==="patternDownwind"){
-      Object.assign(checks,{runway:containsRunway(text,runway),downwind:/\bdown[ -]?wind\b/.test(n)&&!new RegExp("\\b"+(side==="left"?"right":"left")+"\\b").test(n)});
+      Object.assign(checks,{runway:containsRunway(text,runway),downwind:/\bdown[ -]?wind\b/.test(n)&&matchesPatternSide(text,side,"down[ -]?wind",false)});
       if(Object.values(checks).every(Boolean)){
         if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
           markUnexpected("extendDownwind");
           say("extend downwind, I will call your base.");
           app.phase="patternExtendReadback";
         }else{
-          say("turn "+side+" base.");
-          app.phase="patternBaseReadback";
+          issuePatternLanding();
         }
         accepted=true;
       }
@@ -9689,33 +9795,78 @@ function evaluatePatternTransmission(text){
         accepted=true;
       }
     }else if(before==="patternBaseReadback"){
-      checks.base=n.includes(side)&&/\bbase\b/.test(n);
+      checks.base=matchesPatternSide(text,side,"base");
       if(Object.values(checks).every(Boolean)){
-        if(unexpectedEnabled("goAround")&&!unexpectedTriggered("goAround")){
-          markUnexpected("goAround");
-          say("go around, make "+side+" traffic.");
-          app.phase="patternGoAroundReadback";
-        }else{
-          say("Runway "+runway+", cleared to land, full stop.");
-          app.phase="patternLandingReadback";
-        }
+        issuePatternLanding();
         accepted=true;
       }
     }else if(before==="patternGoAroundReadback"){
       Object.assign(checks,{
         goAround:/go(?:ing)?[ -]?around/.test(n),
-        pattern:n.includes(side)&&/traffic|pattern/.test(n)&&
-          !new RegExp("\\b"+(side==="left"?"right":"left")+"\\b").test(n)
+        pattern:matchesPatternSide(text,side,"traffic|pattern")
       });
       if(Object.values(checks).every(Boolean)){
         say("turn "+side+" crosswind.");
         app.phase="patternCrosswindReadback";accepted=true;
       }
     }else if(before==="patternLandingReadback"){
-      Object.assign(checks,{runway:containsRunway(text,runway),landing:/cleared to land/.test(n)});
+      const fullStop=/cleared to land/.test(n);
+      const touchGo=/cleared.*touch[ -]?(?:and[ -]?)?go/.test(n);
+      const option=/cleared.*option/.test(n);
+      Object.assign(checks,{runway:containsRunway(text,runway),landing:landingType==="fullstop"?fullStop:landingType==="touchgo"?touchGo:option});
+      if(Object.values(checks).every(Boolean)){
+        if(landingType==="option"){
+          app.phase="patternOptionDecision";
+          $("patternOptionChoice").classList.remove("hidden");
+        }else if(landingType==="touchgo"){
+          say("make "+side+" traffic. Report airborne after the touch-and-go.");
+          app.phase="patternTouchGoReport";
+        }else{
+          stage.exitStyle=stage.exitStyle??randomBetween(0,1);
+          if(stage.exitStyle===0){
+            say("exit the runway when able, report clear.");
+            app.phase="patternClearRunway";
+          }else{
+            say("exit the runway when able. When clear, contact "+ground+" "+groundFreq+".");
+            app.phase="patternExitHandoffReadback";
+          }
+        }
+        accepted=true;
+      }
+    }else if(before==="patternOptionDecision"){
+      const fullStop=/full[ -]?stop/.test(n);
+      const touchGo=/touch[ -]?(?:and[ -]?)?go/.test(n);
+      checks.request=fullStop!==touchGo;
+      if(Object.values(checks).every(Boolean)){
+        $("patternOptionChoice").classList.add("hidden");
+        if(fullStop){
+          say("roger full stop, exit the runway when able, report clear.");
+          app.phase="patternClearRunway";
+        }else{
+          say("roger touch-and-go, make "+side+" traffic. Report airborne after the touch-and-go.");
+          app.phase="patternTouchGoReport";
+        }
+        accepted=true;
+      }
+    }else if(before==="patternTouchGoReport"){
+      checks.position=/airborne|touch[ -]?(?:and[ -]?)?go (?:complete|completed)/.test(n);
+      if(Object.values(checks).every(Boolean)){
+        stage.airborneCompletion=true;
+        app.session.circuits=Math.max(app.session.circuits||0,stage.circuit||1);
+        complete=true;accepted=true;
+      }
+    }else if(before==="patternExitHandoffReadback"){
+      Object.assign(checks,{frequency:containsFrequency(text,groundFreq),facility:n.includes("ground")});
       if(Object.values(checks).every(Boolean)){
         say("report clear of the runway.");
-        app.phase="patternClearRunway";accepted=true;
+        app.phase="patternExitClearReport";
+        $("patternRunwayClear").classList.remove("hidden");accepted=true;
+      }
+    }else if(before==="patternExitClearReport"){
+      checks.position=/clear of (?:the )?runway|runway (?:is )?clear|vacated/.test(n);
+      if(Object.values(checks).every(Boolean)){
+        app.session.circuits=Math.max(app.session.circuits||0,stage.circuit||1);
+        complete=true;accepted=true;
       }
     }else if(before==="patternClearRunway"){
       checks.position=/clear of (?:the )?runway|runway (?:is )?clear|vacated/.test(n);
@@ -9734,10 +9885,37 @@ function evaluatePatternTransmission(text){
   }
   $("score").textContent=grade(checks)+"%";
   recordAttempt(stage,checks);
-  if(accepted) clearAcceptedTransmission("");
+  if(accepted){
+    clearAcceptedTransmission("");
+    const guidance={
+      patternTrafficResponse:"Report traffic in sight or negative contact, with your callsign.",
+      patternSequenceReadback:"Read back number two, following the Cessna, with your callsign.",
+      patternOptionDecision:"Choose touch-and-go or full stop, or transmit your choice with your callsign.",
+      patternTouchGoReport:"After the touch-and-go, report airborne with your callsign.",
+      patternExitHandoffReadback:"Read back Ground "+groundFreq+" with your callsign.",
+      patternExitClearReport:"After landing and vacating the runway, tap Runway clear to continue to Ground.",
+      patternTaxiReadback:"Read back Runway "+runway+", taxi via "+taxi+(hold?", hold short Runway "+hold:"")+", and your callsign.",
+      patternParkingReadback:"Read back taxi to parking via "+taxi+" with your callsign.",
+      patternTowerHandoffReadback:"Read back Tower "+airportFrequency(airport,"tower")+" with your callsign.",
+      patternTakeoffReadback:"Read back Runway "+runway+", cleared for takeoff, "+side+" traffic, and your callsign.",
+      patternUpwindReadback:"Read back extend upwind and Tower calling your crosswind, with your callsign.",
+      patternAwaitCrosswind:"Continue upwind. Wait for Tower to call crosswind.",
+      patternCrosswindReadback:"Read back the "+side+" crosswind turn with your callsign.",
+      patternDownwind:"Report downwind Runway "+runway+" with your callsign.",
+      patternExtendReadback:"Read back extend downwind and Tower calling your base, with your callsign.",
+      patternAwaitBase:"Continue downwind. Wait for Tower to call base.",
+      patternBaseReadback:"Read back the "+side+" base turn with your callsign.",
+      patternGoAroundReadback:"Read back going around and "+side+" traffic with your callsign.",
+      patternLandingReadback:"Read back Runway "+runway+", "+(landingType==="option"?"cleared for the option":landingType==="touchgo"?"cleared for touch-and-go":"cleared to land")+", and your callsign.",
+      patternClearRunway:"After landing, report clear of the runway with your callsign.",
+      patternGroundHandoffReadback:"Read back Ground "+groundFreq+" with your callsign."
+    };
+    if(!complete) $("feedback").textContent=guidance[app.phase]||instructionFor(stage);
+  }
   else{
     const labels={
-      callsign:"include your callsign",facility:"call "+stage.facility,
+      traffic:"report traffic in sight or negative contact",sequence:"read back number two and follow the Cessna",
+      callsign:"include your callsign",facility:before==="patternTowerHandoffReadback"?"read back Tower":["patternGroundHandoffReadback","patternExitHandoffReadback"].includes(before)?"read back Ground":"call "+stage.facility,
       runway:"use Runway "+runway,taxiway:"read back taxi via "+taxi,
       destination:stage.id==="parking"?"read back taxi to parking":"read back Runway "+runway,
       holdshort:"read back hold short Runway "+hold,
@@ -9746,10 +9924,10 @@ function evaluatePatternTransmission(text){
       downwind:"report mid downwind Runway "+runway,
       crosswind:"read back Tower calling your crosswind",
       base:before==="patternBaseReadback"?"read back "+side+" base":"read back Tower calling your base",extend:before==="patternUpwindReadback"?"read back extend upwind":"read back extend downwind",
-      goAround:"read back going around",landing:"read back cleared to land",frequency:"read back Ground frequency "+groundFreq,
-      request:stage.id==="parking"?"request taxi to parking":stage.id==="ground"?
+      goAround:"read back going around",landing:"read back the issued "+(landingType==="option"?"option":landingType==="touchgo"?"touch-and-go":"landing")+" clearance",frequency:before==="patternTowerHandoffReadback"?"read back Tower frequency "+airportFrequency(airport,"tower"):"read back Ground frequency "+groundFreq,
+      request:before==="patternOptionDecision"?"choose full stop or touch-and-go":stage.id==="parking"?"request taxi to parking":stage.id==="ground"?
         (stage.circuit>1?"request taxi back for another circuit":"request taxi to Runway "+runway):"request closed traffic",
-      position:before==="patternAirborne"?"report airborne":before==="patternFinal"?
+      position:["patternAirborne","patternTouchGoReport"].includes(before)?"report airborne":before==="patternFinal"?
         "report final Runway "+runway:"report clear of the runway"
     };
     const missing=Object.entries(checks).filter(([,ok])=>!ok).map(([key])=>labels[key]||key);
@@ -9757,12 +9935,15 @@ function evaluatePatternTransmission(text){
     say("verify: "+missing.join(", ")+".");
   }
   if(complete){
+    $("patternRunwayClear").classList.add("hidden");
     completeStage();
     if(stage.id==="tower"){
       $("patternChoice").classList.remove("hidden");
       $("next").disabled=true;
       $("next").textContent="NEXT →";
-      $("feedback").textContent="Circuit complete. Choose More Pattern Work or End Practice.";
+      $("feedback").textContent=stage.airborneCompletion
+        ? "Touch-and-go complete. Choose More Pattern Work or End Practice for a final full-stop landing."
+        : "Circuit complete. Choose More Pattern Work or End Practice.";
     }
   }
 }
@@ -9772,6 +9953,22 @@ function choosePatternContinuation(more){
   const current=STAGES[app.stageIndex];
   app.session.circuits=current.circuit||1;
   const nextCircuit=(current.circuit||1)+1;
+  if(current.airborneCompletion){
+    if(STAGES[app.stageIndex+1]?.airborneStart && STAGES[app.stageIndex+1].fullStop===!more){
+      nextStage();return;
+    }
+    for(const removed of STAGES.splice(app.stageIndex+1)) delete app.session.stages[removed.statKey||removed.id];
+    const tower={...buildPatternStages(app.config.departureAirport)[2],
+      circuit:nextCircuit,statKey:"tower-"+nextCircuit,title:"TOWER · CIRCUIT "+nextCircuit,
+      airborneStart:true,fullStop:!more};
+    STAGES.push(tower);
+    nextStage();
+    app.phase="patternCrosswindReadback";
+    patternReply(app.config.aircraft+", "+(!more?"next landing full stop. ":"")+"Turn "+app.config.departureTraffic+" crosswind.");
+    $("feedback").textContent="Read back the "+app.config.departureTraffic+" crosswind turn with your callsign.";
+    return;
+  }
+
   if(STAGES[app.stageIndex+1] &&
       (more ? STAGES[app.stageIndex+1].id==="ground" : STAGES[app.stageIndex+1].id==="parking")){
     $("patternChoice").classList.add("hidden");
@@ -10849,7 +11046,7 @@ function nextStage(){
   if("speechSynthesis" in window) speechSynthesis.cancel();
 
   if(!app.session.practiceStage && app.stageIndex<STAGES.length-1){
-    const keepFrequency=clearanceUsesSameGroundFrequency(depAirport(),STAGES[app.stageIndex],STAGES[app.stageIndex+1]);
+    const keepFrequency=clearanceUsesSameGroundFrequency(depAirport(),STAGES[app.stageIndex],STAGES[app.stageIndex+1]) || (app.config.flightType==="pattern" && STAGES[app.stageIndex].airborneCompletion && STAGES[app.stageIndex+1].airborneStart);
     app.stageIndex++;
     renderStage(!keepFrequency);
     window.scrollTo({top:0,behavior:"smooth"});
@@ -10958,6 +11155,9 @@ $("applySetupBottom")?.addEventListener("click",(e)=>{
   applyVFRSetup();
 
 });
+$("patternRunwayClear").addEventListener("click",confirmPatternRunwayExit);
+$("patternOptionTouchGo").addEventListener("click",()=>choosePatternOption(false));
+$("patternOptionFullStop").addEventListener("click",()=>choosePatternOption(true));
 $("morePattern").addEventListener("click",()=>choosePatternContinuation(true));
 $("endPattern").addEventListener("click",()=>choosePatternContinuation(false));
 $("monitorAtis").addEventListener("click",monitorAtis);

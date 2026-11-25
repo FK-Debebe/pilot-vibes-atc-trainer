@@ -58,7 +58,11 @@ for(const extended of [false,true]){
   const cs=e('app.config.aircraft'), side=e('app.config.departureTraffic'), other=side==='left'?'right':'left';
   const ground=()=>{
     call('Long Beach Ground, '+cs+', '+e('app.config.location')+', information '+e('app.config.atis')+', request taxi runway 26L');
-    call('Runway 26L taxi via Foxtrot, '+cs);next();
+    call('Runway 26L taxi via Foxtrot, '+cs);
+    assert.equal(e('app.stageComplete'),false);
+    call('Tower 118.1, '+cs);assertPhase('patternTowerHandoffReadback');
+    call('Tower 119.4');assertPhase('patternTowerHandoffReadback');
+    call('Tower 119.4, '+cs);next();
   };
   ground();
   e('unexpectedEnabled=k=>k==="extendDownwind"&&'+extended);
@@ -72,16 +76,16 @@ for(const extended of [false,true]){
     call('Runway 26L cleared for takeoff, '+side+' traffic');assertPhase('patternTakeoffReadback');
     call('Runway 26L cleared for takeoff, '+side+' traffic, '+cs);assertPhase('patternCrosswindReadback');
     call(side+' crosswind, '+cs);
-    call('mid downwind runway 26L, '+cs);
+    if(e('app.phase')==='patternDownwind') call('Downwind runway 26L, '+cs);
     if(e('app.phase')==='patternExtendReadback'){
       call('Extend downwind, you will call base, '+cs);
       assertPhase('patternAwaitBase');
       call(side+' base, '+cs);assertPhase('patternAwaitBase');
       q.flush();
     }
-    assertPhase('patternBaseReadback');
-    call(side+' base, '+cs);assertPhase('patternLandingReadback');
-    call('Runway 26L cleared to land, '+cs);
+    if(e('app.phase')==='patternBaseReadback') call(side+' base, '+cs);
+    assertPhase('patternLandingReadback');
+    e('STAGES[app.stageIndex].exitStyle=0');call('Runway 26L cleared to land, '+cs);
     assertPhase('patternClearRunway');
     call('Clear of the runway, '+cs);call('Ground 119.4, '+cs);
     assertPhase('patternGroundHandoffReadback');
@@ -93,7 +97,7 @@ for(const extended of [false,true]){
   call('Long Beach Ground, '+cs+', request taxi to parking');
   assertPhase('groundInitial');
   call('Long Beach Ground, '+cs+', clear of runway, request taxi back');
-  call('Runway 26L via Foxtrot, '+cs);next();
+  call('Runway 26L via Foxtrot, '+cs);call('Tower 119.4, '+cs);next();
   circuit(2);
   e('choosePatternContinuation(false);$("frequency").value=STAGES[app.stageIndex].freq');
   call('Long Beach Ground, '+cs+', request taxi back');assertPhase('patternParkingInitial');
