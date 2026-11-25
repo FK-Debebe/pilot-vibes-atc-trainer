@@ -76,7 +76,8 @@ for(const extended of [false,true]){
     call('Runway 26L cleared for takeoff, '+side+' traffic');assertPhase('patternTakeoffReadback');
     call('Runway 26L cleared for takeoff, '+side+' traffic, '+cs);assertPhase('patternCrosswindReadback');
     call(side+' crosswind, '+cs);
-    if(e('app.phase')==='patternDownwind') call('Downwind runway 26L, '+cs);
+    if(e('app.phase')==='patternDownwindReadback') call('Extend downwind runway 26L, '+cs);
+    if(e('app.phase')==='patternAwaitBase') { q.flush(); }
     if(e('app.phase')==='patternExtendReadback'){
       call('Extend downwind, you will call base, '+cs);
       assertPhase('patternAwaitBase');

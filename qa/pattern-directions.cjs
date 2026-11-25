@@ -2,8 +2,8 @@ const assert=require('node:assert/strict');
 const {run}=require('./harness.cjs');
 
 for(const side of ['left','right']){
-  const {exec}=run();
-  exec('$("flightFollowing").value="pattern";applyVFRSetup();app.stageIndex=2;renderStage();$("frequency").value=STAGES[2].freq;unexpectedEnabled=()=>false');
+  const q=run(),{exec}=q;
+  exec('$("flightFollowing").value="pattern";applyVFRSetup();app.stageIndex=2;renderStage();$("frequency").value=STAGES[2].freq;unexpectedEnabled=()=>false;trafficAdvisoryEnabled=()=>false');
   exec('app.config.departureTraffic='+JSON.stringify(side));
   const callsign=exec('app.config.aircraft');
   const call=text=>exec('evaluateTransmission('+JSON.stringify(text+', '+callsign)+')');
@@ -14,9 +14,11 @@ for(const side of ['left','right']){
   assert.equal(exec('app.phase'),'patternCrosswindReadback');
   assert.match(exec('$("feedback").textContent'),/crosswind/);
   call(side+' crosswind');
-  assert.equal(exec('app.phase'),'patternDownwind');
-  assert.match(exec('$("feedback").textContent'),/Report downwind/);
-  call(side+' downwind runway two six left');
+  assert.equal(exec('app.phase'),'patternDownwindReadback');
+  assert.match(exec('$("feedback").textContent'),/extend downwind/);
+  call('Extend downwind runway two six left');
+  assert.equal(exec('app.phase'),'patternAwaitBase');
+  q.flush();call(side+' base');
   assert.equal(exec('app.phase'),'patternLandingReadback');
   assert.match(exec('$("feedback").textContent'),/cleared to land/);
 }

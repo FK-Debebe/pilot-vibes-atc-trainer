@@ -6,7 +6,7 @@ function pattern(type){
   const call=text=>e('evaluateTransmission('+JSON.stringify(text+', Cessna 172SP')+')');
   const phase=p=>assert.equal(e('app.phase'),p,e('app.lastATC?.visual'));
   const takeoff=()=>{call('Long Beach Tower, holding short runway 26L, request closed traffic');call('Runway 26L cleared for takeoff left traffic');call('Left crosswind');};
-  const land=()=>{call('Downwind runway 26L');phase('patternLandingReadback');};
+  const land=()=>{call('Extend downwind runway 26L');q.flush();call('Left base');phase('patternLandingReadback');};
   return {q,e,call,phase,takeoff,land};
 }
 
@@ -18,7 +18,7 @@ for(const seen of [true,false]){
   if(seen){
     phase('patternSequenceReadback');
     call('Number two, following the Cessna');
-    call('Downwind runway 26L');
+    call('Extend downwind runway 26L');q.flush();call('Left base');
   }else{
     phase('patternExtendReadback');
     call('Extend downwind, you will call base');

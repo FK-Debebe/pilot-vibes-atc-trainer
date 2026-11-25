@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.94 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.98 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -8952,6 +8952,7 @@ function scheduleATCFollowup({stageId,phase,visual,spoken,feedback,nextPhase,rol
 
     app.awaitingATC=false;
     app.phase=nextPhase;
+    if(nextPhase==="patternBaseReadback") stage.baseInstructionIssued=true;
     append("atc",stage.facility.toUpperCase(),visual);
     rememberATC(visual,spoken,stage.facility,role||currentVoiceRole());
     speak(spoken,role||currentVoiceRole());
@@ -9661,16 +9662,24 @@ function evaluatePatternTransmission(text){
   const say=message=>patternReply(app.config.aircraft+", "+message);
   const landingType=stage.fullStop ? "fullstop" : (app.config.patternLandingType||"fullstop");
   function startDownwind(){
+    stage.baseInstructionIssued=false;
     if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
       markUnexpected("extendDownwind");
       say("extend downwind, I will call your base, traffic departing.");
       app.phase="patternExtendReadback";
     }else{
-      say("report downwind Runway "+runway+".");
-      app.phase="patternDownwind";
+      say("extend downwind Runway "+runway+".");
+      app.phase="patternDownwindReadback";
     }
   }
   function issuePatternLanding(){
+    // Every pattern landing requires an issued base turn and its pilot readback.
+    if(!stage.baseInstructionIssued){
+      say("turn "+side+" base.");
+      stage.baseInstructionIssued=true;
+      app.phase="patternBaseReadback";
+      return;
+    }
     if(unexpectedEnabled("goAround")&&!unexpectedTriggered("goAround")){
       markUnexpected("goAround");
       say("go around, make "+side+" traffic.");
@@ -9777,23 +9786,14 @@ function evaluatePatternTransmission(text){
     }else if(before==="patternSequenceReadback"){
       Object.assign(checks,{sequence:/number (?:two|2)|(?:two|2) following|following.*cessna/.test(n),traffic:/follow|following/.test(n)});
       if(Object.values(checks).every(Boolean)){
-        say("report downwind Runway "+runway+".");
-        app.phase="patternDownwind";accepted=true;
+        stage.baseInstructionIssued=false;
+        say("extend downwind Runway "+runway+".");
+        app.phase="patternDownwindReadback";accepted=true;
       }
-    }else if(before==="patternDownwind"){
-      Object.assign(checks,{runway:containsRunway(text,runway),downwind:/\bdown[ -]?wind\b/.test(n)&&matchesPatternSide(text,side,"down[ -]?wind",false)});
-      if(Object.values(checks).every(Boolean)){
-        if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
-          markUnexpected("extendDownwind");
-          say("extend downwind, I will call your base.");
-          app.phase="patternExtendReadback";
-        }else{
-          issuePatternLanding();
-        }
-        accepted=true;
-      }
-    }else if(before==="patternExtendReadback"){
-      Object.assign(checks,{extend:/extend(?:ing|ed)?\s+downwind/.test(n),base:/call.*base/.test(n)});
+    }else if(before==="patternExtendReadback" || before==="patternDownwindReadback"){
+      checks.extend=/extend(?:ing|ed)?\s+downwind/.test(n);
+      if(before==="patternExtendReadback") checks.base=/call.*base/.test(n);
+      else checks.runway=containsRunway(text,runway);
       if(Object.values(checks).every(Boolean)){
         app.phase="patternAwaitBase";
         $("feedback").textContent="Continue downwind and wait for Tower to call base.";
@@ -9909,7 +9909,7 @@ function evaluatePatternTransmission(text){
       patternUpwindReadback:"Read back extend upwind and Tower calling your crosswind, with your callsign.",
       patternAwaitCrosswind:"Continue upwind. Wait for Tower to call crosswind.",
       patternCrosswindReadback:"Read back the "+side+" crosswind turn with your callsign.",
-      patternDownwind:"Report downwind Runway "+runway+" with your callsign.",
+      patternDownwindReadback:"Read back extend downwind Runway "+runway+" with your callsign.",
       patternExtendReadback:"Read back extend downwind and Tower calling your base, with your callsign.",
       patternAwaitBase:"Continue downwind. Wait for Tower to call base.",
       patternBaseReadback:"Read back the "+side+" base turn with your callsign.",
@@ -9929,7 +9929,7 @@ function evaluatePatternTransmission(text){
       holdshort:"read back hold short Runway "+hold,
       atis:"include information "+app.config.atis,location:"include your starting location",
       takeoff:"read back cleared for takeoff",pattern:before==="patternCrosswindReadback"?"read back "+side+" crosswind":before==="patternBaseReadback"?"read back "+side+" base":"read back "+side+" traffic",
-      downwind:"report mid downwind Runway "+runway,
+      downwind:"read back extend downwind Runway "+runway,
       crosswind:"read back Tower calling your crosswind",
       base:before==="patternBaseReadback"?"read back "+side+" base":"read back Tower calling your base",extend:before==="patternUpwindReadback"?"read back extend upwind":"read back extend downwind",
       goAround:"read back going around",landing:"read back the issued "+(landingType==="option"?"option":landingType==="touchgo"?"touch-and-go":"landing")+" clearance",frequency:before==="patternTowerHandoffReadback"?"read back Tower frequency "+airportFrequency(airport,"tower"):"read back Ground frequency "+groundFreq,
@@ -11880,7 +11880,7 @@ function ifrLoadLastSetup(){
     }
     ifr$("otherAircraftTypeLabel")?.classList.toggle("hidden",ifr$("aircraftType")?.value!=="Other");
 
-    if(saved.callsign && ifr$("callsign")) ifr$("callsign").value=saved.callsign;
+    if(ifr$("callsign")) ifr$("callsign").value="172SP"; // Use the default on each launch, matching VFR.
 
     if(saved.runway && [...ifr$("runway").options].some(o=>o.value===saved.runway)){
       ifr$("runway").value=saved.runway;
@@ -12182,6 +12182,7 @@ function ifrATC(visual,spoken=null){
    ========================================================= */
 function ifrNormalizeAviationTranscript(text){
   return String(text||"")
+    .replace(/\binformation\s+([a-z])\b/gi,(_,letter)=>"information "+ATIS_CODES.find(code=>code[0].toLowerCase()===letter.toLowerCase()))
     /* Keep normal phraseology such as "for IFR departure" unchanged.
        Callsign-only for/fore -> four normalization is handled below. */
     .replace(/\bas\s+file\b/gi,"as filed")
