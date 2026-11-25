@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.84 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.86 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -8400,6 +8400,7 @@ function containsDirection(text){
 
 function fkNormalizeRecognition(text){
   let s=normalizeRunwayTwo(text).trim()
+    .replace(/\bclear for take[ -]?off\b/gi,"cleared for takeoff")
     .replace(/(\brunway\s+)([0-3])\s*\/\s*([0-9])(?=\s|[LRC]\b|$)/gi,"$1$2$3")
     .replace(/\b([0-3])\s*\/\s*([0-9])(?=\s*(?:left|right|center|[LRC])\b)/gi,"$1$2");
   if(window.XP_STATE?.pttTestActive && s) xpPttTestCaptureText?.(s);
@@ -8803,6 +8804,7 @@ const UNEXPECTED_EVENT_LABELS={
   standby:"Stand by",
   unable:"Unable",
   extendDownwind:"Extend downwind",
+  extendUpwind:"Extend upwind",
   goAround:"Go around"
 };
 
@@ -8832,7 +8834,7 @@ function configureUnexpectedEvents(){
   /* Keep the departure runway consistent with the current ATIS.
      Random Ground-issued runway changes are disabled; the selected/ATIS runway
      remains authoritative for the departure sequence. */
-  const pool=Object.keys(UNEXPECTED_EVENT_LABELS).filter(key=>key!=="runwayChange");
+  const pool=Object.keys(UNEXPECTED_EVENT_LABELS).filter(key=>key!=="runwayChange" && (key!=="extendUpwind" || app.config.flightType==="pattern"));
 
   /* Shuffle once per training flight, then activate a level-based subset. */
   const shuffled=[...pool];
@@ -9635,23 +9637,35 @@ function evaluatePatternTransmission(text){
     }else if(before==="patternTakeoffReadback"){
       Object.assign(checks,{runway:containsRunway(text,runway),takeoff:/cleared.*take[ -]?off/.test(n),pattern:n.includes(side)&&!/\bright\b/.test(side==="left"?n:"")&&!/\bleft\b/.test(side==="right"?n:"")&&/traffic|pattern/.test(n)});
       if(Object.values(checks).every(Boolean)){
-        say("report airborne.");
-        app.phase="patternAirborne";accepted=true;
+        if(unexpectedEnabled("extendUpwind")&&!unexpectedTriggered("extendUpwind")){
+          markUnexpected("extendUpwind");
+          say("extend your upwind, I will call your crosswind.");
+          app.phase="patternUpwindReadback";
+        }else{
+          say("turn "+side+" crosswind.");
+          app.phase="patternCrosswindReadback";
+        }
+        accepted=true;
       }
-    }else if(before==="patternAirborne"){
-      checks.position=/airborne|off the ground/.test(n);
+    }else if(before==="patternUpwindReadback"){
+      Object.assign(checks,{extend:/extend(?:ing|ed)?(?: your| my| the)? upwind/.test(n),crosswind:/call.*cross[ -]?wind/.test(n)});
       if(Object.values(checks).every(Boolean)){
-        say("turn "+side+" crosswind.");
-        app.phase="patternCrosswindReadback";accepted=true;
+        app.phase="patternAwaitCrosswind";
+        $("feedback").textContent="Continue upwind and wait for Tower to call crosswind.";
+        const visual=app.config.aircraft+", turn "+side+" crosswind.";
+        scheduleATCFollowup({stageId:"tower",phase:"patternAwaitCrosswind",visual,
+          spoken:fkPrepareTextForSpeech(visual.split(app.config.aircraft).join(callsignSpoken())),
+          feedback:"Read back the "+side+" crosswind turn with your callsign.",nextPhase:"patternCrosswindReadback",role:"tower"});
+        accepted=true;
       }
     }else if(before==="patternCrosswindReadback"){
       checks.pattern=n.includes(side)&&/\bcross[ -]?wind\b/.test(n);
       if(Object.values(checks).every(Boolean)){
-        say("turn "+side+" downwind, report downwind Runway "+runway+".");
+        say("report mid downwind Runway "+runway+".");
         app.phase="patternDownwind";accepted=true;
       }
     }else if(before==="patternDownwind"){
-      Object.assign(checks,{runway:containsRunway(text,runway),downwind:containsDownwind(text,side)});
+      Object.assign(checks,{runway:containsRunway(text,runway),downwind:/\bdown[ -]?wind\b/.test(n)&&!new RegExp("\\b"+(side==="left"?"right":"left")+"\\b").test(n)});
       if(Object.values(checks).every(Boolean)){
         if(unexpectedEnabled("extendDownwind")&&!unexpectedTriggered("extendDownwind")){
           markUnexpected("extendDownwind");
@@ -9677,14 +9691,25 @@ function evaluatePatternTransmission(text){
     }else if(before==="patternBaseReadback"){
       checks.base=n.includes(side)&&/\bbase\b/.test(n);
       if(Object.values(checks).every(Boolean)){
-        say("report final Runway "+runway+".");
-        app.phase="patternFinal";accepted=true;
+        if(unexpectedEnabled("goAround")&&!unexpectedTriggered("goAround")){
+          markUnexpected("goAround");
+          say("go around, make "+side+" traffic.");
+          app.phase="patternGoAroundReadback";
+        }else{
+          say("Runway "+runway+", cleared to land, full stop.");
+          app.phase="patternLandingReadback";
+        }
+        accepted=true;
       }
-    }else if(before==="patternFinal"){
-      Object.assign(checks,{position:/\bfinal\b/.test(n),runway:containsRunway(text,runway)});
+    }else if(before==="patternGoAroundReadback"){
+      Object.assign(checks,{
+        goAround:/go(?:ing)?[ -]?around/.test(n),
+        pattern:n.includes(side)&&/traffic|pattern/.test(n)&&
+          !new RegExp("\\b"+(side==="left"?"right":"left")+"\\b").test(n)
+      });
       if(Object.values(checks).every(Boolean)){
-        say("Runway "+runway+", cleared to land, full stop.");
-        app.phase="patternLandingReadback";accepted=true;
+        say("turn "+side+" crosswind.");
+        app.phase="patternCrosswindReadback";accepted=true;
       }
     }else if(before==="patternLandingReadback"){
       Object.assign(checks,{runway:containsRunway(text,runway),landing:/cleared to land/.test(n)});
@@ -9718,9 +9743,10 @@ function evaluatePatternTransmission(text){
       holdshort:"read back hold short Runway "+hold,
       atis:"include information "+app.config.atis,location:"include your starting location",
       takeoff:"read back cleared for takeoff",pattern:before==="patternCrosswindReadback"?"read back "+side+" crosswind":before==="patternBaseReadback"?"read back "+side+" base":"read back "+side+" traffic",
-      downwind:"report "+side+" downwind Runway "+runway,
-      base:before==="patternBaseReadback"?"read back "+side+" base":"read back Tower calling your base",extend:"read back extend downwind",
-      landing:"read back cleared to land",frequency:"read back Ground frequency "+groundFreq,
+      downwind:"report mid downwind Runway "+runway,
+      crosswind:"read back Tower calling your crosswind",
+      base:before==="patternBaseReadback"?"read back "+side+" base":"read back Tower calling your base",extend:before==="patternUpwindReadback"?"read back extend upwind":"read back extend downwind",
+      goAround:"read back going around",landing:"read back cleared to land",frequency:"read back Ground frequency "+groundFreq,
       request:stage.id==="parking"?"request taxi to parking":stage.id==="ground"?
         (stage.circuit>1?"request taxi back for another circuit":"request taxi to Runway "+runway):"request closed traffic",
       position:before==="patternAirborne"?"report airborne":before==="patternFinal"?
