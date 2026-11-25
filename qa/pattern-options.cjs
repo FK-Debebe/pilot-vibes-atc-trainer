@@ -73,8 +73,29 @@ for(const exit of [0,1]){
   p.takeoff();p.land();p.e('STAGES[app.stageIndex].exitStyle='+exit);
   p.call('Runway 26L cleared to land');
   if(exit===1){p.phase('patternExitHandoffReadback');p.call('Ground 133.0');}
-  if(exit===1)p.e('$("patternRunwayClear").click()');
+  if(exit===1){
+    assert.equal(p.e('STAGES[app.stageIndex].id'),'ground');
+    assert.equal(p.e('app.session.circuits'),1);
+    assert.equal(p.e('tuned()'),false);
+    p.e('$("frequency").value=STAGES[app.stageIndex].freq');
+    p.call('Long Beach Ground, clear 26L at F3, request taxi 26L');
+    p.phase('patternTaxiReadback');
+    p.call('Runway 26L via Foxtrot');
+    p.phase('patternTowerHandoffReadback');
+    p.call('Tower 119.4');
+  }
   else{p.call('Clear of runway');p.call('Ground 133.0');}
   assert.equal(p.e('app.stageComplete'),true);
 }
 console.log('Traffic sequencing, negative contact, landing clearances, continuous circuits, final full stop, exits and reports passed');
+{
+  const p=pattern('fullstop');p.takeoff();p.land();
+  p.e('STAGES[app.stageIndex].exitStyle=1');p.call('Runway 26L cleared to land');
+  p.call('Ground 133.0');
+  assert.equal(p.e('STAGES[app.stageIndex].id'),'ground');
+  p.e('$("frequency").value=STAGES[app.stageIndex].freq');
+  p.call('Long Beach Ground, clear 26L at F3, request taxi to parking');
+  p.phase('patternParkingReadback');p.call('Parking via Foxtrot');
+  assert.equal(p.e('app.stageComplete'),true);
+  assert.equal(p.e('STAGES.length'),4);
+}

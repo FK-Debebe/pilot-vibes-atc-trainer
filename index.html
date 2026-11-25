@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.91 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.94 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5472,7 +5472,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button id="patternOptionTouchGo" class="btn primary" type="button">Touch-and-go</button>
       <button id="patternOptionFullStop" class="btn" type="button">Full stop</button>
     </div>
-    <div id="patternChoice" class="hidden" style="margin:12px 0">
+    <div id="patternChoice" class="hidden" style="margin:12px 0;text-align:center">
       <button id="morePattern" class="btn primary" type="button">More Pattern Work</button>
       <button id="endPattern" class="btn" type="button">End Practice</button>
     </div>
@@ -7590,6 +7590,7 @@ function instructionFor(stage,showExample=false){
     if(stage.airborneStart) return stage.fullStop
       ? "Continue closed traffic for a final full-stop landing. Follow Tower instructions, then contact Ground after vacating."
       : "Continue closed traffic. Follow Tower instructions for the next circuit.";
+    if(stage.id==="ground" && stage.circuit>1) return `When clear of the runway, tune Ground. Include your callsign and position, then request taxi to Runway ${app.config.runway} for another circuit${stage.afterLanding ? ", or request taxi to parking" : ""}.`;
     return stage.id==="ground" ? `Contact Ground with your callsign, position, ATIS and request taxi to Runway ${app.config.runway}.` :
       stage.id==="parking" ? "Contact Ground, report clear of the runway and request taxi to parking. Read back the instructions." :
       "Contact Tower holding short for closed traffic. Read back the takeoff clearance.";
@@ -9480,6 +9481,7 @@ function stageBest(stage){
 }
 
 function renderFinalReport(){
+  $("transcript").innerHTML=""; // Keep vfrRadioExchange intact for saved reports.
   activeReportMode="vfr";
   const stageStats=STAGES.filter(stage=>!app.session.practiceStage || stage.id===app.session.practiceStage).map(stage=>{
     const stat=app.session.stages[stage.statKey||stage.id] || {
@@ -9679,18 +9681,19 @@ function evaluatePatternTransmission(text){
       app.phase="patternLandingReadback";
     }
   }
-  let accepted=false, complete=false;
+  let accepted=false, complete=false, autoGround=false;
   if(stage.id==="ground" || stage.id==="parking"){
-    const parking=stage.id==="parking";
+    const parking=stage.id==="parking" || (stage.afterLanding && (readback ? stage.parkingIntent : /(?:request|taxi).*(?:parking|ramp|fbo)/.test(n)));
     if(!readback){
-      Object.assign(checks,{facility:n.includes("ground"),request:parking ? /(?:request|taxi).*(?:parking|ramp|fbo)/.test(n) && !/taxi[ -]?back|another circuit/.test(n) : stage.circuit>1 ? /taxi[ -]?back|taxi.*(?:back|another|circuit)|another.*circuit/.test(n) && !/parking|ramp|fbo/.test(n) : /taxi/.test(n)});
-      if(parking || stage.circuit>1) checks.position=/clear of (?:the )?runway|runway (?:is )?clear|vacated/.test(n);
+      Object.assign(checks,{facility:n.includes("ground"),request:parking ? /(?:request|taxi).*(?:parking|ramp|fbo)/.test(n) && !/taxi[ -]?back|another circuit/.test(n) : stage.circuit>1 ? (/taxi[ -]?back|taxi.*(?:back|another|circuit)|another.*circuit/.test(n) || (/taxi/.test(n) && containsRunway(text,runway))) && !/parking|ramp|fbo/.test(n) : /taxi/.test(n)});
+      if(parking || stage.circuit>1) checks.position=/clear of (?:the )?runway|runway (?:is )?clear|vacated/.test(n) || (/clear/.test(n) && containsRunway(text,runway));
       if(!parking && !(app.session.circuits>0)){
         checks.atis=containsAtisCode(n,app.config.atis);
         checks.location=containsStartingLocation(text);
         checks.runway=containsRunway(text,runway);
       }
       if(Object.values(checks).every(Boolean)){
+        if(stage.afterLanding) stage.parkingIntent=parking;
         say(parking ? "taxi to "+arrivalParkingLabel(app.config.arrivalParking)+" via "+taxi+"." :
           "Runway "+runway+", taxi via "+taxi+(hold?", hold short Runway "+hold:"."));
         app.phase=parking?"patternParkingReadback":"patternTaxiReadback";accepted=true;
@@ -9707,7 +9710,13 @@ function evaluatePatternTransmission(text){
         if(!parking){
           say("contact "+airportFacility(airport,"tower")+" "+airportFrequency(airport,"tower")+".");
           app.phase="patternTowerHandoffReadback";
-        }else complete=true;
+        }else {
+          if(stage.afterLanding){
+            stage.id="parking";
+            for(const removed of STAGES.splice(app.stageIndex+1)) delete app.session.stages[removed.statKey||removed.id];
+          }
+          complete=true;
+        }
         accepted=true;
       }
     }
@@ -9858,9 +9867,8 @@ function evaluatePatternTransmission(text){
     }else if(before==="patternExitHandoffReadback"){
       Object.assign(checks,{frequency:containsFrequency(text,groundFreq),facility:n.includes("ground")});
       if(Object.values(checks).every(Boolean)){
-        say("report clear of the runway.");
-        app.phase="patternExitClearReport";
-        $("patternRunwayClear").classList.remove("hidden");accepted=true;
+        app.session.circuits=Math.max(app.session.circuits||0,stage.circuit||1);
+        complete=true;accepted=true;autoGround=true;
       }
     }else if(before==="patternExitClearReport"){
       checks.position=/clear of (?:the )?runway|runway (?:is )?clear|vacated/.test(n);
@@ -9937,7 +9945,13 @@ function evaluatePatternTransmission(text){
   if(complete){
     $("patternRunwayClear").classList.add("hidden");
     completeStage();
-    if(stage.id==="tower"){
+    if(stage.id==="tower" && autoGround){
+      $("transcript").innerHTML="";
+      choosePatternContinuation(true);
+      STAGES[app.stageIndex].afterLanding=true;
+      $("instruction").textContent=instructionFor(STAGES[app.stageIndex]);
+      $("feedback").textContent="When clear of the runway, tune "+ground+" "+groundFreq+". Report your position and request taxi to Runway "+runway+" for another circuit, or taxi to parking.";
+    }else if(stage.id==="tower"){
       $("patternChoice").classList.remove("hidden");
       $("next").disabled=true;
       $("next").textContent="NEXT →";
@@ -9950,6 +9964,7 @@ function evaluatePatternTransmission(text){
 
 function choosePatternContinuation(more){
   if(app.config.flightType!=="pattern" || !app.stageComplete || STAGES[app.stageIndex].id!=="tower") return;
+  $("transcript").innerHTML=""; // Clear the screen, preserving the complete report transcript.
   const current=STAGES[app.stageIndex];
   app.session.circuits=current.circuit||1;
   const nextCircuit=(current.circuit||1)+1;
@@ -10960,6 +10975,7 @@ function completeStage(){
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
 
+  if(!nextStage && !(app.config.flightType==="pattern" && stage.id==="tower")) $("transcript").innerHTML="";
   scrollToCompletedStageRadio("");
   /* Flash NEXT twice before making the button available. */
   requestAnimationFrame(()=>{
