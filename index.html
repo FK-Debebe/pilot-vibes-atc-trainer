@@ -5081,7 +5081,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.77 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.78 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -7560,7 +7560,7 @@ function renderNav(){
 
 function instructionFor(stage,showExample=false){
   if(app.config.flightType==="pattern" && stage.type!=="atis"){
-    return stage.id==="ground" ? "Contact Ground with your callsign, position, ATIS and request taxi for closed traffic." :
+    return stage.id==="ground" ? `Contact Ground with your callsign, position, ATIS and request taxi to Runway ${app.config.runway}.` :
       stage.id==="parking" ? "Contact Ground, report clear of the runway and request taxi to parking. Read back the instructions." :
       "Contact Tower holding short for closed traffic. Read back takeoff and pattern instructions, report downwind, then read back landing and Ground handoff instructions.";
   }
@@ -9585,6 +9585,7 @@ function evaluatePatternTransmission(text){
       if(!parking && !(app.session.circuits>0)){
         checks.atis=containsAtisCode(n,app.config.atis);
         checks.location=containsStartingLocation(text);
+        checks.runway=containsRunway(text,runway);
       }
       if(Object.values(checks).every(Boolean)){
         say(parking ? "taxi to "+arrivalParkingLabel(app.config.arrivalParking)+" via "+taxi+"." :
