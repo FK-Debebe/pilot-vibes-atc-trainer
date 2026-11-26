@@ -32,11 +32,13 @@ for(const options of [{choice:'denied'},{choice:'granted',privacy:true}]){
  const q=fixture(options);assert.equal(q.head.children.length,0);assert.equal(q.g.FKAnalytics.status().enabled,false);
 }
 {
- const q=fixture();assert.equal(q.head.children.length,0);
- q.g.FKAnalytics.start('vfr','on','atis');assert.equal(q.events().length,0);
- q.button('Allow usage analytics');const a=q.g.FKAnalytics;
- assert.equal(q.head.children.length,1);assert.equal(a.status().enabled,true);
- assert.equal(q.store['fk-atc-analytics-consent-v1'],'granted');
+ const q=fixture();const a=q.g.FKAnalytics;
+ assert.equal(q.document.getElementById('fk-analytics-panel'),undefined,'No automatic popup');
+ assert.equal(q.head.children.length,1,'Google tag starts automatically');
+ assert.equal(a.status().enabled,true);
+ assert.equal(q.store['fk-atc-analytics-consent-v1'],undefined,'Do not fabricate consent');
+ q.button('Analytics privacy');
+ assert.ok(q.document.getElementById('fk-analytics-panel'),'Footer opens preferences');
  a.page('ifr-trainer');a.page('ifr-trainer');assert.equal(q.events().filter(x=>x[1]==='page_view').length,2);
  a.start('ifr','ifr','clearance');a.start('ifr','ifr','clearance');
  a.stageComplete('ifr','clearance');a.stageComplete('ifr','clearance');

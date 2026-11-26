@@ -1,8 +1,8 @@
-# FK ATC COM Trainer — usage analytics setup (V6.02)
+# FK ATC COM Trainer — usage analytics setup (V6.04)
 
 ## Status
 
-The trainer is configured with Measurement ID **G-BSZSTV58Y4**. Publish this build to activate optional collection for visitors who allow analytics. Live delivery to your GA4 property has not been verified. There is no central dashboard stored in this ZIP. Reports are private in your Google Analytics account. No account password or API secret is required in the app.
+The trainer is configured with Measurement ID **G-BSZSTV58Y4**. Publish this build to activate automatic collection except for opted-out or privacy-blocked visitors. Live delivery to your GA4 property has not been verified. There is no central dashboard stored in this ZIP. Reports are private in your Google Analytics account. No account password or API secret is required in the app.
 
 You already have Google Analytics for your website. Use that account and create a separate Web data stream for the trainer. If you prefer a fully separate reporting property, create that property in the same account instead. When using the existing property, filter reports by the trainer's Stream name/Stream ID to exclude your website's other traffic.
 
@@ -26,11 +26,11 @@ The Measurement ID is already entered. If this is the trainer's intended Web str
 7. Publish all app files, including `analytics.js`, `analytics-config.js`, `analytics.css`, `analytics-privacy.html` and the updated service worker. Keep these files beside `index.html`; do not upload only the index file. The same applies to the `404.html` fallback.
 8. Keep Google signals, advertising personalization, advertising sharing and user-provided data collection off for this trainer stream. In the property's data-retention settings, choose the shortest period that meets your needs; 2 months is a reasonable initial setting. This is separate from the 180-day browser-cookie lifetime in the integration.
 
-Only opted-in, unblocked, online visitors can be counted. Analytics blockers, declined consent and browser privacy signals reduce counts. Training works when analytics is unavailable. The integration makes no location-provider requests itself: geographic reporting comes from GA4's IP-based location.
+Only unblocked, online visitors who have not opted out can be counted. Analytics blockers, opt-outs and browser privacy signals reduce counts. Training works when analytics is unavailable. The integration makes no location-provider requests itself: geographic reporting comes from GA4's IP-based location.
 
 ## Test the connected build
 
-1. Open the published trainer in a fresh browser profile, then choose **Allow usage analytics** in its privacy panel.
+1. Open the published trainer in a fresh browser profile, verify that analytics starts without opening a popup. Use **Analytics privacy** at the bottom of the trainer to disable or re-enable it.
 2. In GA4 open **Reports → Realtime**. Look for the trainer stream's `page_view`.
 3. Open VFR and IFR, tune to ATIS and select Monitor ATIS. Switch among app sections and practice for at least 30 seconds. Look for the events in the table below. Applying Setup alone is not counted as beginning training.
 4. Complete a stage, then finish a training flight. Verify one stage-complete event for that stage and one training-complete event for the run. Previous/Next revisits should not duplicate completions.
@@ -87,7 +87,7 @@ Use **Explore → Free form**, select the last 7 or 30 days, and filter to your 
 
 Country, Region and City are built-in dimensions; do not add custom location fields. Do not sum Total users across city/section rows to infer the overall unique-user total. To obtain average active practice time, divide the filtered active seconds by the matching training starts (same dates, stream, mode and flight type); the provider's standard engagement-time metric uses a different definition. General section time includes setup/reading. Filter Activity Kind = `practice` on `trainer_active_time` to isolate time during a started, unfinished training run. Activity Kind = `browsing` covers setup, reading and completed-run review.
 
-Privacy note: these are pseudonymous browser/session measurements, not verified identities. They are not precise GPS or a list of named pilots. The privacy panel offers Allow and No thanks before loading Google's tag. It preserves the entire training experience when declined. This integration does not alter flight-report storage.
+Privacy note: these are pseudonymous browser/session measurements, not verified identities. They are not precise GPS or a list of named pilots. The footer privacy link opens enable/disable choices. No analytics popup opens automatically. First-time visitors are measured automatically unless their browser sends a supported privacy signal. Previously granted or declined preferences are preserved. It preserves the entire training experience when declined. This integration does not alter flight-report storage.
 
 ## Official references
 

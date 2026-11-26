@@ -1,4 +1,4 @@
-/* FK ATC usage analytics. Optional GA4, loaded only after visitor consent.
+/* FK ATC usage analytics. GA4 loads automatically unless opted out or blocked by a browser privacy signal.
    Deliberately never reads inputs, transcripts, audio, callsigns or flight reports. */
 (() => {
   "use strict";
@@ -23,7 +23,7 @@
   function send(name,parameters={}){
     if(!enabled||!allowedEvents.has(name)) return;
     // Only enumerated app states and numeric counts may leave this module.
-    const out={section,app_version:"6.02",page_location:url(),page_title:"FK ATC COM Trainer",...parameters};
+    const out={section,app_version:"6.04",page_location:url(),page_title:"FK ATC COM Trainer",...parameters};
     window.gtag("event",name,out);
   }
   function account(){
@@ -85,7 +85,7 @@
     send("trainer_pattern_choice",{...contexts.vfr,pattern_action:more?"more_pattern":"end_practice"});
   }
   function load(){
-    if(!configured||blocked()||choice!=="granted")return;
+    if(!configured||blocked()||choice==="denied")return;
     enabled=true;lastTick=lastActivity=Date.now();pendingMs=0;
     window["ga-disable-"+id]=false;
     window.dataLayer=window.dataLayer||[];
@@ -126,7 +126,7 @@
     panel.setAttribute("aria-label","Usage analytics preferences");
     const text=document.createElement("p");
     text.textContent=!configured?"Usage analytics is not connected yet. No analytics data is being sent.":blocked()?"Usage analytics is off because your browser requests privacy protection.":
-      "Help improve FK ATC COM Trainer? Optional Google Analytics measures visits, active time, sections used, and approximate country, region and city. It uses cookies and IP-based location. We do not send your callsign, audio, typed transmissions or flight reports. You can change your choice in Analytics privacy.";
+      "Google Analytics measures visits, active time, sections used, and approximate country, region and city. It uses cookies and IP-based location. We do not send your callsign, audio, typed transmissions or flight reports. You can turn usage analytics off here without limiting training.";
     panel.appendChild(text);
     const actions=document.createElement("div");actions.className="fk-analytics-actions";
     function button(label,fn){const b=document.createElement("button");b.type="button";b.textContent=label;b.addEventListener("click",fn);actions.appendChild(b);}
@@ -148,6 +148,6 @@
   window.addEventListener("pagehide",flush);
   window.addEventListener("pageshow",()=>{lastTick=lastActivity=Date.now();});
   setInterval(flush,30000);
-  if(choice==="granted")load();
-  else if(configured&&choice==="unset"&&!blocked())preferences();
+  if(choice!=="denied")load();
+  // Preferences open only from the footer link; never interrupt app startup.
 })();
