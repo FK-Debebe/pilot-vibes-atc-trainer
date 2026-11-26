@@ -5083,7 +5083,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V5.98 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.00 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -8285,6 +8285,15 @@ function containsAtisCode(normalizedText, code){
   return normalizedText.includes(expected);
 }
 
+function groundAtisSatisfied(text,code,session){
+  const n=norm(text);
+  if(containsAtisCode(n,code)) return true;
+  // An explicitly different information code must still be corrected.
+  const explicitLetter=/\binformation\s+[a-z]\b/.test(n);
+  const explicitWord=ATIS_CODES.some(word=>new RegExp("\\b"+word.toLowerCase()+"\\b").test(n));
+  return !explicitLetter && !explicitWord && session.clearanceAtis===code;
+}
+
 function randomAtisCode(exclude=""){
   const choices=ATIS_CODES.filter(x=>x!==exclude);
   return choices[Math.floor(Math.random()*choices.length)];
@@ -10064,6 +10073,7 @@ function evaluateTransmission(text){
         checks.altitude;
 
       if(essential){
+        app.session.clearanceAtis=app.config.atis;
         if(clearanceOnGround){
           replyVisual=`${app.config.aircraft}, ${groundDepartureClearance}`;
           replySpoken=`${callsignSpoken()}, ${groundDepartureSpoken}`;
@@ -10152,7 +10162,7 @@ function evaluateTransmission(text){
         location:app.config.location===GA_PARKING_OPTION
           ? containsStartingLocation(text)
           : n.includes(app.config.location.toLowerCase()),
-        atis:containsAtisCode(n,app.config.atis),
+        atis:groundAtisSatisfied(n,app.config.atis,app.session),
         request:n.includes("taxi")||n.includes("departure"),
         runway:!wrongRunway
       };
@@ -12618,6 +12628,7 @@ function ifrEvaluateTransmission(text){
       };
       score=ifrScoreChecks(stage,checks);
       if((!clearanceOnGround||checks.facility)&&ifrMeetsLevel(checks,["callsign","location","atis","destination","ifr"],["facility"])){
+        IFR_APP.session.clearanceAtis=IFR_APP.config.atis;
         const initial=ifrClearanceInitialAltitude();
         const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
         const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${altitudeSpoken(initial)}, expect ${altitudeSpoken(ifrAltitudeNumber())} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
@@ -12648,7 +12659,7 @@ function ifrEvaluateTransmission(text){
           ? "remain on this frequency and call when ready to taxi."
           : `contact ${ifrFacility(IFR_APP.config.departureAirport,"ground")} ${ifrFreq(IFR_APP.config.departureAirport,"ground")} when ready to taxi.`;
         ifrATC(`${ifrCallsignVisual()}, readback correct. ${taxiPrompt}`);
-        ifr$("feedback").textContent="IFR Clearance complete.";
+        ifr$("feedback").textContent="IFR Clearance complete. Click Next and tune in to Ground.";
         ifrCompleteStage(score);
       }else{
         const missing=[];
@@ -12668,7 +12679,7 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="ground"){
     if(IFR_APP.phase==="groundInitial"){
-      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:containsLocationAlias(text,IFR_APP.config.location),atis:containsAtisCode(n,IFR_APP.config.atis),request:n.includes("taxi")};
+      checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),location:containsLocationAlias(text,IFR_APP.config.location),atis:groundAtisSatisfied(n,IFR_APP.config.atis,IFR_APP.session),request:n.includes("taxi")};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","location","atis","request"],["facility"])){
         const taxi=(ifrAirport(IFR_APP.config.departureAirport).taxiwaysByRunway||{})[IFR_APP.config.runway]||"Alpha";
