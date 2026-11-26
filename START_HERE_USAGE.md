@@ -70,7 +70,7 @@ You can connect guest tracking before configuring optional Google sign-in by lea
 
 Upload the trainer files to the GitHub Pages publishing folder. Include the new `usage-config.js`, `usage-client.js`, `usage-dashboard.html`, `usage-dashboard.js` and updated privacy page and service worker. Keep the included `CNAME` file. Backend source files do not need to be published on GitHub Pages; deploy them to Cloudflare instead. None of these files contains owner secrets.
 
-## Startup sign-in and private dashboard (V6.13)
+## Startup sign-in and private dashboard (V6.14)
 
 Mobile: welcome popup, then entry page. Other devices: entry page immediately. Valid returning Google sessions continue directly to Flight Setup. Google sign-in and Continue as Guest open Flight Setup. Guest remains available when sign-in or usage tracking is unavailable.
 
@@ -85,7 +85,7 @@ Sign in using the Gmail address stored privately in OWNER_EMAILS, then select Ow
 - Guest credentials are stored in that browser for up to 90 days. Signed-in credentials stay in that tab's session storage for one day; owner sessions last one hour. Clearing browser storage, expiry, or using another browser produces a different guest ID. Cross-device member usage joins after sign-in.
 - A heartbeat is a browser estimate, not proof a human practiced. The server limits credited seconds to elapsed server time and deduplicates batch IDs. Two tabs sharing a guest credential cannot credit time faster than wall-clock time. Separate signed-in device sessions can accumulate concurrently.
 - During a short network problem, up to 20 usage batches are held in memory. Reconnect delivery is best-effort; server elapsed-time caps can undercount offline bursts. Nothing is queued persistently across reloads. Old GA4 usage is not imported or linked to named profiles.
-- The Analytics privacy opt-out and browser Do Not Track/GPC settings apply to the new system. They are not bypassed. Signing in is unavailable while this profile/usage system is off; training remains fully available.
+- The Analytics privacy opt-out and browser Do Not Track/GPC settings apply to the new system. They are not bypassed. Google sign-in remains available while usage is off. Authentication-only requests carry X-FK-Usage: off: they create a short-lived sign-in challenge session and store no new location or usage time. Signed-in profile identity and sign-in timestamps are still used to provide account access. Existing location and usage totals are retained, not updated by a privacy-disabled login. Guest entry without tracking makes no usage-session requests.
 - The public deletion button is removed in V6.13; authenticated backend deletion remains available for data deletion requests.
 - Daily cleanup removes expired sessions, usage batch rows older than two days, and guest profiles inactive for 180 days. Member profiles and their accumulated totals remain until deleted. Platform backups may follow separate retention policies.
 
@@ -118,3 +118,7 @@ Local tests use a real in-memory SQLite database and generated RSA keys, with mo
 - Rate-limit binding: https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
 - Google Web client ID setup: https://developers.google.com/identity/gsi/web/guides/get-google-api-clientid
 - Google ID token validation: https://developers.google.com/identity/gsi/web/guides/verify-google-id-token
+
+## V6.14 deployment
+
+Replace the deployed Worker code with FK_ATC_Usage_Worker_V6_14.txt and deploy. Keep DB, API_RATE_LIMITER, ALLOWED_ORIGINS, GOOGLE_CLIENT_ID and the secret OWNER_EMAILS. No database schema change is required. Then publish the V6.14 app files to GitHub Pages. Test real Google sign-in with tracking enabled and disabled, plus owner dashboard access. Local tests mock Google UI; they verify real token validation separately but cannot confirm browser/provider settings.

@@ -4,7 +4,7 @@
  async function load(reset=true){
   if(!/^https:\/\//.test(base)){message('Usage backend has not been connected yet.');return;}
   let token='';try{token=sessionStorage.getItem('fk-usage-member-v1')||localStorage.getItem('fk-usage-guest-v1')||'';}catch{}
-  if(!token){message('Sign in as the owner through Profile and usage in the trainer first.');return;}
+  if(!token){message('Sign in as the owner on the trainer start page first.');return;}
   if(reset){offset=0;$('people').replaceChildren();$('summary').replaceChildren();}
   $('refresh').disabled=true;$('more').disabled=true;
   try{

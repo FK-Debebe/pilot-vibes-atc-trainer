@@ -9,13 +9,23 @@ const DB={prepare,async batch(statements){sqlite.exec('BEGIN');try{const results
 let claims={sub:'pilot-123',name:'Test Pilot',email:'pilot@gmail.com',email_verified:true};
 const worker=createWorker(async credential=>{if(credential!=='valid')throw Error('invalid');return claims;});
 const env={DB,GOOGLE_CLIENT_ID:'test-client',OWNER_EMAILS:'owner@gmail.com',ALLOWED_ORIGINS:'https://atc.fwdskillzone.com',API_RATE_LIMITER:{limit:async()=>({success:true})}};
-async function request(path,method='GET',data,token,origin='https://atc.fwdskillzone.com'){
- const req=new Request('https://usage.example'+path,{method,headers:{Origin:origin,'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(data?{body:JSON.stringify(data)}:{})});
+async function request(path,method='GET',data,token,origin='https://atc.fwdskillzone.com',usageOff=false){
+ const req=new Request('https://usage.example'+path,{method,headers:{Origin:origin,...(usageOff?{'X-FK-Usage':'off'}:{}),'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},...(data?{body:JSON.stringify(data)}:{})});
  Object.defineProperty(req,'cf',{value:{country:'US',region:'California',city:'Long Beach',latitude:'DO NOT STORE',longitude:'DO NOT STORE'}});
  const res=await worker.fetch(req,env);return {status:res.status,data:res.status===204?null:await res.json()};
 }
 const realNow=Date.now;let now=realNow();Date.now=()=>now;
 try{
+ // Authentication-only traffic must not collect location or usage.
+ const authRequest=(path,method='GET',data,token)=>request(path,method,data,token,'https://atc.fwdskillzone.com',true);
+ const authGuest=(await authRequest('/session','POST',{})).data;
+ assert.equal(authGuest.profile.city,'');assert.equal(authGuest.profile.country,'');
+ assert.equal(sqlite.prepare('SELECT expires_at FROM sessions WHERE person_id=?').get(authGuest.profile.id).expires_at,now+300000);
+ const authNonce=(await authRequest('/challenge','POST',{},authGuest.token)).data.nonce;
+ const authLogin=await authRequest('/login','POST',{credential:'valid',nonce:authNonce},authGuest.token);
+ assert.equal(authLogin.status,200);assert.equal(authLogin.data.profile.city,'');assert.equal(authLogin.data.profile.active_seconds,0);
+ assert.equal((await authRequest('/usage','POST',{id:crypto.randomUUID(),seconds:30},authLogin.data.token)).status,403);
+ await authRequest('/me','DELETE',undefined,authLogin.data.token);
  assert.equal((await request('/session','POST',{},null,'https://evil.example')).status,403);
  assert.equal((await request('/admin/people')).status,401);
  let guest=await request('/session','POST',{});assert.equal(guest.status,201);let token=guest.data.token,id=guest.data.profile.id;

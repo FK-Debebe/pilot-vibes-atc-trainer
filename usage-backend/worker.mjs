@@ -4,7 +4,7 @@ export const digest=async text=>Array.from(new Uint8Array(await crypto.subtle.di
 const secret=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),b=>b.toString(16).padStart(2,'0')).join('');
 const clean=(v,n=100)=>typeof v==='string'?v.replace(/[\u0000-\u001f]/g,'').slice(0,n):'';
 const uuid=v=>typeof v==='string'&&/^[0-9a-f-]{36}$/i.test(v);
-const geo=req=>({country:clean(req.cf?.country,2),region:clean(req.cf?.region,80),city:clean(req.cf?.city,80)});
+const geo=req=>req.headers.get('X-FK-Usage')==='off'?{country:'',region:'',city:''}:({country:clean(req.cf?.country,2),region:clean(req.cf?.region,80),city:clean(req.cf?.city,80)});
 const origins=env=>String(env.ALLOWED_ORIGINS||'').split(',').map(x=>x.trim()).filter(Boolean);
 function response(data,status=200,origin=''){
  return new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...(origin?{'Access-Control-Allow-Origin':origin,'Vary':'Origin'}:{})}});
@@ -27,7 +27,7 @@ export function createWorker(verify=verifyGoogleToken){return {
   if(new URL(req.url).protocol!=='https:')return response({error:'HTTPS required'},400);
   const origin=req.headers.get('Origin')||'';
   if(!origins(env).includes(origin))return response({error:'Origin not allowed'},403);
-  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS','Access-Control-Allow-Headers':'Authorization,Content-Type','Access-Control-Max-Age':'600','Vary':'Origin'}});
+  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Methods':'GET,POST,DELETE,OPTIONS','Access-Control-Allow-Headers':'Authorization,Content-Type,X-FK-Usage','Access-Control-Max-Age':'600','Vary':'Origin'}});
   if(!env.DB)return response({error:'Usage service not configured'},503,origin);
   try{
    if(!env.API_RATE_LIMITER)return response({error:'Rate limiter not configured'},503,origin);
@@ -39,7 +39,7 @@ export function createWorker(verify=verifyGoogleToken){return {
     const id=crypto.randomUUID(),token=secret(),hash=await digest(token),now=Date.now(),g=geo(req);
     await env.DB.batch([
      env.DB.prepare('INSERT INTO people(id,display_name,kind,country,region,city,created_at,last_seen) VALUES(?,?,?,?,?,?,?,?)').bind(id,'Guest '+id.slice(0,8),'guest',g.country,g.region,g.city,now,now),
-     env.DB.prepare('INSERT INTO sessions(token_hash,person_id,expires_at,last_credit_ms) VALUES(?,?,?,?)').bind(hash,id,now+90*86400000,now)
+     env.DB.prepare('INSERT INTO sessions(token_hash,person_id,expires_at,last_credit_ms) VALUES(?,?,?,?)').bind(hash,id,now+(req.headers.get('X-FK-Usage')==='off'?300000:90*86400000),now)
     ]);
     return response({token,profile:await profile(env,id),owner:false},201,origin);
    }
@@ -79,13 +79,15 @@ export function createWorker(verify=verifyGoogleToken){return {
      statements.push(env.DB.prepare('UPDATE people SET active_seconds=active_seconds+(SELECT active_seconds FROM people WHERE id=?) WHERE id=?').bind(s.person_id,id));
      statements.push(env.DB.prepare('DELETE FROM people WHERE id=?').bind(s.person_id));
     }
-    statements.push(env.DB.prepare('UPDATE people SET display_name=?,country=?,region=?,city=?,last_seen=? WHERE id=?').bind(name,g.country,g.region,g.city,now,id));
+    if(req.headers.get('X-FK-Usage')==='off')statements.push(env.DB.prepare('UPDATE people SET display_name=?,last_seen=? WHERE id=?').bind(name,now,id));
+    else statements.push(env.DB.prepare('UPDATE people SET display_name=?,country=?,region=?,city=?,last_seen=? WHERE id=?').bind(name,g.country,g.region,g.city,now,id));
     statements.push(env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(s.hash));
     statements.push(env.DB.prepare('INSERT INTO sessions(token_hash,person_id,expires_at,last_credit_ms,owner) VALUES(?,?,?,?,?)').bind(hash,id,now+(owner?3600000:86400000),now,owner?1:0));
     await env.DB.batch(statements);
     return response({token,profile:await profile(env,id),owner},200,origin);
    }
    if(path==='/usage'&&req.method==='POST'){
+    if(req.headers.get('X-FK-Usage')==='off')return response({error:'Usage tracking is off'},403,origin);
     const data=await body(req);
     if(Object.keys(data).some(k=>!['id','seconds'].includes(k))||!uuid(data.id)||!Number.isInteger(data.seconds)||data.seconds<1||data.seconds>90)return response({error:'Invalid usage batch'},400,origin);
     const now=Date.now(),g=geo(req);

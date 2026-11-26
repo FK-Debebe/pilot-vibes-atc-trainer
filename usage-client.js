@@ -11,21 +11,21 @@
  const permitted=()=>enabled && !navigator.globalPrivacyControl && navigator.doNotTrack!=='1' && window.doNotTrack!=='1' && (()=>{try{return localStorage.getItem('fk-atc-analytics-consent-v1')!=='denied';}catch{return true;}})();
  const panelId='fk-usage-profile';
  async function api(path,method='GET',body){
-  const resp=await fetch(base+path,{method,headers:{...(token?{Authorization:'Bearer '+token}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',credentials:'omit',keepalive:method==='POST'});
+  const resp=await fetch(base+path,{method,headers:{...(!permitted()?{'X-FK-Usage':'off'}:{}),...(token?{Authorization:'Bearer '+token}:{}),...(body?{'Content-Type':'application/json'}:{})},...(body?{body:JSON.stringify(body)}:{}),cache:'no-store',credentials:'omit',keepalive:method==='POST'});
   const data=await resp.json();if(!resp.ok){const error=Error(data.error||'Connection unavailable');error.status=resp.status;throw error;}return data;
  }
  function save(result){
   token=result.token||token;person=result.profile;owner=!!result.owner;
-  try{localStorage.removeItem(localKey);sessionStorage.removeItem(memberKey);(person.kind==='guest'?localStorage:sessionStorage).setItem(person.kind==='guest'?localKey:memberKey,token);}catch{}
+  try{localStorage.removeItem(localKey);sessionStorage.removeItem(memberKey);(person.kind==='guest'&&permitted()?localStorage:sessionStorage).setItem(person.kind==='guest'?localKey:memberKey,token);}catch{}
  }
- async function ensure(){
-  if(!permitted())return false;
+ async function ensure(authentication=false){
+  if(!permitted()&&!authentication)return false;
   if(person&&token)return true;
   if(opening)return opening;
   const started=generation;
   opening=(async()=>{
-   if(token){try{const result=await api('/me');if(!permitted()||started!==generation)return false;save(result);return true;}catch(e){if(e.status!==401)throw e;token='';}}
-   const result=await api('/session','POST',{});if(!permitted()||started!==generation)return false;save(result);return true;
+   if(token){try{const result=await api('/me');if((!permitted()&&!authentication)||started!==generation)return false;save(result);return true;}catch(e){if(e.status!==401)throw e;token='';}}
+   const result=await api('/session','POST',{});if((!permitted()&&!authentication)||started!==generation)return false;save(result);return true;
   })().catch(()=>false).finally(()=>opening=null);return opening;
  }
  async function drain(){
@@ -42,12 +42,10 @@
   const seconds=Math.min(90,Math.floor(Number(data.active_seconds)||0));if(seconds<1)return;
   pending.push({id:crypto.randomUUID(),seconds});if(pending.length>20)pending.shift();drain();
  }
- function stop(){
-  enabled=false;generation++;pending.length=0;token='';person=null;owner=false;
-  try{localStorage.removeItem(localKey);sessionStorage.removeItem(memberKey);}catch{}
-  document.getElementById(panelId)?.remove();
+ function preference(granted){
+  enabled=!!granted;pending.length=0;
+  if(granted&&entered)ensure();
  }
- function preference(granted){if(granted){enabled=true;ensure();}else stop();}
  function element(tag,text){const e=document.createElement(tag);if(text)e.textContent=text;return e;}
  async function loadGoogle(){
   if(window.google?.accounts?.id)return;
@@ -91,23 +89,27 @@
   guest.addEventListener('click',()=>{enter();ensure();});guestSection.appendChild(guest);
   const privacy=element('a','Analytics privacy');privacy.href='./analytics-privacy.html';card.appendChild(privacy);
   document.body.appendChild(page);title.focus?.();
-  (async()=>{
-   if(!permitted()){status.textContent='Google sign-in is unavailable with your current privacy settings. Continue as Guest to practice.';return;}
-   if(!cfg.googleClientId||!await ensure())throw Error('Sign-in is temporarily unavailable. You can continue as Guest.');
-   await loadGoogle();if(screen!==page)return;
-   const {nonce}=await api('/challenge','POST',{});if(screen!==page)return;
-   window.google.accounts.id.initialize({client_id:cfg.googleClientId,nonce,auto_select:false,callback:async result=>{
-    try{if(!permitted())return;status.textContent='Signing in…';await drain();
-     const signed=await api('/login','POST',{credential:result.credential,nonce});if(!permitted())return;
-     save(signed);enter();
-    }catch(e){status.textContent=e.message;}
-   }});
-   window.google.accounts.id.renderButton(host,{type:'standard',theme:'outline',size:'large',text:'signin_with',width:240});
-  })().catch(e=>{if(screen===page)status.textContent=e.message;});
+  const launch=element('button','Sign in with Google');launch.type='button';launch.className='fk-guest-button';host.appendChild(launch);
+  launch.addEventListener('click',async()=>{
+   launch.disabled=true;
+   try{
+    if(!cfg.googleClientId||!await ensure(true))throw Error('Sign-in is temporarily unavailable. You can continue as Guest.');
+    await loadGoogle();if(screen!==page)return;
+    const {nonce}=await api('/challenge','POST',{});if(screen!==page)return;
+    window.google.accounts.id.initialize({client_id:cfg.googleClientId,nonce,auto_select:false,callback:async result=>{
+     try{status.textContent='Signing in…';await drain();
+      const signed=await api('/login','POST',{credential:result.credential,nonce});save(signed);enter();
+     }catch(e){status.textContent=e.message;launch.disabled=false;launch.hidden=false;}
+    }});
+    launch.hidden=true;
+    window.google.accounts.id.renderButton(host,{type:'standard',theme:'outline',size:'large',text:'signin_with',width:240});
+   }catch(e){if(screen===page){status.textContent=e.message;launch.disabled=false;}}
+  });
+
  }
  async function start(){
   if(entered||screen)return;
-  if(permitted()&&token&&await ensure()&&person?.kind==='member'){enter();return;}
+  if(token&&(permitted()||(()=>{try{return !!sessionStorage.getItem(memberKey);}catch{return false;}})())&&await ensure(true)&&person?.kind==='member'){enter();return;}
   showEntry();
  }
  window.FKUsage=Object.freeze({record,preference,start});
