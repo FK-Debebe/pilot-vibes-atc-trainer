@@ -1,4 +1,4 @@
-# FK ATC COM Trainer — usage analytics setup (V6.05)
+# FK ATC COM Trainer — usage analytics setup (V6.06)
 
 ## Status
 
@@ -98,7 +98,7 @@ Privacy note: these are pseudonymous browser/session measurements, not verified 
 - Google Analytics privacy: https://support.google.com/analytics/answer/6004245
 
 
-## V6.05 delivery reliability
+## V6.06 delivery reliability
 
 The integration retries a failed Google tag load up to three times, with a short increasing delay. Reconnecting to the network triggers recovery. During initial tag loading or a detected offline period, up to 200 usage events are held in memory for up to 30 minutes and handed to the tag once available. They are not saved across page reloads. Delayed events may appear at reconnect time. Disabling analytics discards this queue and cancels scheduled retries.
 

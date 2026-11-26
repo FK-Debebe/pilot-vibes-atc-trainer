@@ -5086,7 +5086,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.05 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.06 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -11688,6 +11688,12 @@ function ifrClearanceInitialAltitudeText(){
   return `${ifrClearanceInitialAltitude().toLocaleString("en-US")} ft`;
 }
 
+function ifrDepartureFacilityMentioned(text){
+  const n=norm(fkNormalizeRecognition(text));
+  const facility=norm(ifrFacility(IFR_APP.config.departureAirport,"departure"));
+  return /\b(?:departure|approach)\b/.test(n) ||
+    (/\bso\s*cal\b/.test(n) && /\bso\s*cal\b/.test(facility));
+}
 function ifrDepartureCheckinAltitudeStatus(text){
   const assigned=ifrClearanceInitialAltitude();
   const normalized=ifrNormalizeAviationTranscript(text);
@@ -12522,6 +12528,19 @@ function ifrCompleteStage(score=100){
   ifr$("stageState").className="small good";
   ifrRecordStageComplete(score);
   ifr$("next").disabled=false;
+  const completedStage=IFR_STAGES[IFR_APP.stageIndex];
+  const nextStage=IFR_STAGES[IFR_APP.stageIndex+1];
+  if(nextStage && !IFR_APP.session.practiceStage){
+    const actions={
+      atis:ifrAirport(IFR_APP.config.departureAirport).clearanceOnGround
+        ? "ATIS complete. Click Next to tune in to Ground for clearance."
+        : "ATIS complete. Click Next to tune in to Clearance Delivery.",
+      clearance:"IFR Clearance complete. Click Next and tune in to Ground frequency.",
+      ground:"Ground session complete. Click Next to tune to Tower frequency.",
+      tower:`Tower session complete. Click Next to tune in to ${nextStage.facility} ${nextStage.freq}.`
+    };
+    ifr$("feedback").textContent=actions[completedStage.id] || `${completedStage.title} complete. Click Next to tune in to ${nextStage.facility} ${nextStage.freq}.`;
+  }
 
   if(IFR_APP.session.practiceStage || IFR_APP.stageIndex===IFR_STAGES.length-1){
     ifr$("next").classList.remove("hidden");
@@ -12681,7 +12700,7 @@ function ifrEvaluateTransmission(text){
           ? "remain on this frequency and call when ready to taxi."
           : `contact ${ifrFacility(IFR_APP.config.departureAirport,"ground")} ${ifrFreq(IFR_APP.config.departureAirport,"ground")} when ready to taxi.`;
         ifrATC(`${ifrCallsignVisual()}, readback correct. ${taxiPrompt}`);
-        ifr$("feedback").textContent="IFR Clearance complete. Click Next and tune in to Ground.";
+        ifr$("feedback").textContent="IFR Clearance complete. Click Next and tune in to Ground frequency.";
         ifrCompleteStage(score);
       }else{
         const missing=[];
@@ -12722,7 +12741,7 @@ function ifrEvaluateTransmission(text){
       score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.taxiway){
         ifrAppend("system","TRAINER","Taxi readback accepted.");
-        ifr$("feedback").textContent="Ground taxi readback accepted.";
+        ifr$("feedback").textContent="Ground session complete. Click Next to tune to Tower frequency.";
         ifrCompleteStage(score);
       }else{
         ifrATC(`${ifrCallsignVisual()}, verify Runway ${IFR_APP.config.runway}, taxi via ${IFR_APP.taxiway}.`);
@@ -12736,16 +12755,30 @@ function ifrEvaluateTransmission(text){
       checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),ready:n.includes("ready"),ifr:n.includes("ifr")||n.includes("departure"),runway:ifrContainsRunway(text,IFR_APP.config.runway)};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","ready","runway"],["facility","ifr"])){
-        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. Fly runway heading. Contact Departure.`);
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. Fly runway heading.`);
         IFR_APP.phase="towerReadback";
         ifr$("feedback").textContent="Read back runway, takeoff clearance, and runway heading.";
       }else ifrATC(`${ifrCallsignVisual()}, say again ready for IFR departure.`);
-    }else{
+    }else if(IFR_APP.phase==="towerHandoffReadback"){
+      const departureFrequency=ifrFreq(IFR_APP.config.departureAirport,"departure");
+      checks={callsign:ifrContainsCallsign(text),facility:ifrDepartureFacilityMentioned(text),frequency:containsFrequency(text,departureFrequency)};
+      score=ifrScoreChecks(stage,checks);
+      if(checks.callsign&&checks.facility&&checks.frequency){
+        ifrCompleteStage(score);
+      }else{
+        const missing=[];
+        if(!checks.facility)missing.push("Departure");
+        if(!checks.frequency)missing.push("frequency "+departureFrequency);
+        ifrATC(`${ifrCallsignVisual()}, say again ${missing.join(" and ")} readback.`);
+        ifr$("feedback").textContent=`Read back ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${departureFrequency} and your callsign.`;
+      }
+    }else if(IFR_APP.phase==="towerReadback"){
       checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:ifrTakeoffReadbackOK(text),heading:n.includes("runway heading")||n.includes("heading")};
       score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.takeoff&&checks.heading){
-        ifrATC(`${ifrCallsignVisual()}, contact ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
-        ifrCompleteStage(score);
+        ifrATC(`${ifrCallsignVisual()}, frequency change approved. Contact ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
+        IFR_APP.phase="towerHandoffReadback";
+        ifr$("feedback").textContent=`Read back ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${ifrFreq(IFR_APP.config.departureAirport,"departure")} and your callsign.`;
       }else ifrATC(`${ifrCallsignVisual()}, verify cleared for takeoff Runway ${IFR_APP.config.runway}, fly runway heading.`);
     }
     return;
@@ -12755,7 +12788,7 @@ function ifrEvaluateTransmission(text){
     if(IFR_APP.phase==="departureInitial"){
       const altitudeStatus=ifrDepartureCheckinAltitudeStatus(text);
       checks={
-        facility:n.includes("departure")||n.includes("approach"),
+        facility:ifrDepartureFacilityMentioned(text),
         callsign:ifrContainsCallsign(text),
         passingAltitude:altitudeStatus.passing,
         assignedAltitude:altitudeStatus.assigned,
@@ -12778,7 +12811,7 @@ function ifrEvaluateTransmission(text){
         if(!checks.assignedAltitude) missing.push(`assigned altitude ${ifrClearanceInitialAltitude().toLocaleString("en-US")}`);
         if(IFR_APP.config.level!=="beginner" && !checks.facility) missing.push("facility");
         if(IFR_APP.config.level==="advanced" && !checks.climb) missing.push("climbing phrase");
-        ifrATC(`${ifrCallsignVisual()}, say altitude.`);
+        ifrATC(`${ifrCallsignVisual()}, say again ${missing.map(item=>item==="callsign"?"your callsign":item).join(", ")}.`);
         ifr$("feedback").textContent=`Departure check-in incomplete: ${missing.join(", ")}.`;
       }
     }else{
