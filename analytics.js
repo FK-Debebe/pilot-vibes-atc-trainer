@@ -25,7 +25,7 @@
   function send(name,parameters={}){
     if(!enabled||!allowedEvents.has(name)) return;
     // Only enumerated app states and numeric counts may leave this module.
-    const out={section,app_version:"6.06",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
+    const out={section,app_version:"6.09",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
     if(!tagReady || navigator.onLine===false){
       pendingEvents.push({name,parameters:out,created:Date.now()});
       if(pendingEvents.length>maxQueue)pendingEvents.shift();

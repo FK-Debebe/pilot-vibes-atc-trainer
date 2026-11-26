@@ -5034,6 +5034,19 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 .vfr-departure-options.pattern-only, .runway-pair.pattern-only{grid-template-columns:minmax(0,1fr)!important}
 
 #page-trainer #vfrFlightSetupDetails:not([open]){display:none!important}
+
+/* Desktop IFR arrival: narrower runway, more room for approach, aligned controls. */
+@media(min-width:701px){
+  #page-ifr-trainer .ifr-setup-pair.ifr-arrival-fields{
+    grid-template-columns:minmax(96px,.8fr) minmax(0,1.2fr);
+    align-items:start;
+  }
+  #page-ifr-trainer .ifr-arrival-fields > label{
+    align-self:start;
+    align-content:start;
+  }
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5086,7 +5099,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.06 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.09 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5797,7 +5810,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       </div>
 
       <div class="setup-section-label">ARRIVAL</div>
-      <div class="ifr-setup-pair">
+      <div class="ifr-setup-pair ifr-arrival-fields">
         <div class="runway-setup">
           <label>Destination Runway
             <select id="ifr-destRunway">
@@ -12860,15 +12873,31 @@ function ifrEvaluateTransmission(text){
   if(stage.id==="approach"){
     if(IFR_APP.phase==="approachInitial"){
       const reportedApproachAltitude=reportedAltitudeFeet(text);
-      checks={facility:n.includes("approach"),callsign:ifrContainsCallsign(text),atis:containsAtisCode(n,IFR_APP.config.arrivalAtis),approach:ifrApproachPhraseOK(text),altitude:reportedApproachAltitude>0};
+      const approachFacility=norm(ifrFacility(IFR_APP.config.destinationAirport,"approach"));
+      checks={
+        facility:/\bapproach\b/.test(n) || (/\bso\s*cal\b/.test(n) && /\bso\s*cal\b/.test(approachFacility)),
+        callsign:ifrContainsCallsign(text),
+        atis:containsAtisCode(n,IFR_APP.config.arrivalAtis),
+        approach:ifrApproachPhraseOK(text),
+        positionOrAltitude:reportedApproachAltitude>0 || containsArrivalPosition(text)
+      };
       score=ifrScoreChecks(stage,checks);
-      if(ifrMeetsLevel(checks,["callsign","atis","approach","altitude"],["facility"])){
+      if(ifrMeetsLevel(checks,["callsign","atis","approach","positionOrAltitude"],["facility"])){
         IFR_APP.vectorHeading="240";
         IFR_APP.approachAltitude=Math.min(3000,IFR_APP.arrivalAltitude||3000);
         ifrATC(`${ifrCallsignVisual()}, fly heading ${IFR_APP.vectorHeading}. Maintain ${IFR_APP.approachAltitude.toLocaleString("en-US")} until established. Cleared ${ifrApproachName()}.`);
         IFR_APP.phase="approachReadback";
         ifr$("feedback").textContent="Read back heading, altitude restriction, and approach clearance.";
-      }else ifrATC(`${ifrCallsignVisual()}, say approach request and ATIS.`);
+      }else{
+        const missing=[];
+        if(!checks.callsign)missing.push("your callsign");
+        if(!checks.atis)missing.push("information "+IFR_APP.config.arrivalAtis);
+        if(!checks.approach)missing.push("approach request");
+        if(!checks.positionOrAltitude)missing.push("position or altitude");
+        if(IFR_APP.config.level!=="beginner"&&!checks.facility)missing.push("approach facility");
+        ifrATC(`${ifrCallsignVisual()}, say again ${missing.join(", ")}.`);
+        ifr$("feedback").textContent=`Approach check-in incomplete: ${missing.join(", ")}.`;
+      }
     }else{
       checks={heading:textDigits(text).includes(IFR_APP.vectorHeading),altitude:ifrContainsAltitude(text,IFR_APP.approachAltitude),approach:n.includes("cleared")||ifrApproachPhraseOK(text),runway:ifrContainsRunway(text,IFR_APP.config.destRunway),callsign:ifrContainsCallsign(text)};
       score=ifrScoreChecks(stage,checks);
@@ -12884,13 +12913,25 @@ function ifrEvaluateTransmission(text){
 
   if(stage.id==="destTower"){
     if(IFR_APP.phase==="destTowerInitial"){
-      checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),runway:ifrContainsRunway(text,IFR_APP.config.destRunway),approach:n.includes("approach")||n.includes("established")||n.includes("final")};
+      checks={
+        facility:n.includes("tower"),callsign:ifrContainsCallsign(text),
+        runway:ifrContainsRunway(text,IFR_APP.config.destRunway),
+        position:containsArrivalPosition(text)||n.includes("approach")||n.includes("established")||n.includes("final")
+      };
       score=ifrScoreChecks(stage,checks);
-      if(ifrMeetsLevel(checks,["callsign","runway","approach"],["facility"])){
+      if(ifrMeetsLevel(checks,["callsign","runway","position"],["facility"])){
         ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.destRunway}, cleared to land.`);
         IFR_APP.phase="destTowerReadback";
         ifr$("feedback").textContent="Read back runway and landing clearance.";
-      }else ifrATC(`${ifrCallsignVisual()}, say position and runway.`);
+      }else{
+        const missing=[];
+        if(!checks.callsign)missing.push("your callsign");
+        if(!checks.position)missing.push("position or approach status");
+        if(!checks.runway)missing.push("runway "+IFR_APP.config.destRunway);
+        if(IFR_APP.config.level!=="beginner"&&!checks.facility)missing.push("Tower facility");
+        ifrATC(`${ifrCallsignVisual()}, say again ${missing.join(", ")}.`);
+        ifr$("feedback").textContent=`Tower check-in incomplete: ${missing.join(", ")}.`;
+      }
     }else{
       checks={runway:ifrContainsRunway(text,IFR_APP.config.destRunway),landing:n.includes("land")||n.includes("cleared to land"),callsign:ifrContainsCallsign(text)};
       score=ifrScoreChecks(stage,checks);
