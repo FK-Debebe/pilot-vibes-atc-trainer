@@ -70,17 +70,13 @@ You can connect guest tracking before configuring optional Google sign-in by lea
 
 Upload the trainer files to the GitHub Pages publishing folder. Include the new `usage-config.js`, `usage-client.js`, `usage-dashboard.html`, `usage-dashboard.js` and updated privacy page and service worker. Keep the included `CNAME` file. Backend source files do not need to be published on GitHub Pages; deploy them to Cloudflare instead. None of these files contains owner secrets.
 
-## Use the private dashboard
+## Startup sign-in and private dashboard (V6.13)
 
-1. Open the published trainer.
-2. Select **Profile and usage** at the bottom. This is not an automatic popup.
-3. Select **Show Google sign-in**, then sign in with the Gmail address in `OWNER_EMAILS`.
-4. Select **Owner usage dashboard**. It opens in the **same tab**, preserving the short-lived sign-in session.
-5. You will see profile/display name, guest/member status, last approximate location, active hours and last seen, plus aggregate totals. Use Load more for the next 100 profiles.
+Mobile: welcome popup, then entry page. Other devices: entry page immediately. Valid returning Google sessions continue directly to Flight Setup. Google sign-in and Continue as Guest open Flight Setup. Guest remains available when sign-in or usage tracking is unavailable.
 
-Guests and non-owner members receive a 403 if they try the owner API, even if they know the dashboard URL. The dashboard HTML is public but contains no profiles without backend authorization. Anyone with access to your Cloudflare database account may still read database contents, so keep that account's access private as well.
+Signed-in users have Sign out; authorized owners also have Owner dashboard. Profile and usage, Close and Delete my usage data controls have been removed. Backend deletion remains supported. Analytics privacy and browser privacy protections remain in effect.
 
-Regular pilots can continue as guests without signing in. Sign-in associates their verified Google account identifier and display name with the current guest's accumulated time. It does not upload or change their existing local training reports. Signing out revokes the current member session and starts a new guest profile. Switching to a different Google account requires signing out first.
+Sign in using the Gmail address stored privately in OWNER_EMAILS, then select Owner dashboard. Other users cannot read the owner API. Upload this version to GitHub Pages before testing real Google sign-in and mobile rendering.
 
 ## Measurement and privacy details
 
@@ -90,7 +86,7 @@ Regular pilots can continue as guests without signing in. Sign-in associates the
 - A heartbeat is a browser estimate, not proof a human practiced. The server limits credited seconds to elapsed server time and deduplicates batch IDs. Two tabs sharing a guest credential cannot credit time faster than wall-clock time. Separate signed-in device sessions can accumulate concurrently.
 - During a short network problem, up to 20 usage batches are held in memory. Reconnect delivery is best-effort; server elapsed-time caps can undercount offline bursts. Nothing is queued persistently across reloads. Old GA4 usage is not imported or linked to named profiles.
 - The Analytics privacy opt-out and browser Do Not Track/GPC settings apply to the new system. They are not bypassed. Signing in is unavailable while this profile/usage system is off; training remains fully available.
-- Profile and usage includes Delete my usage data. That deletes this usage profile, associated sessions and usage batches; it does not delete local flight reports or historical Google Analytics data. This tab stops tracking afterward; a later visit can create a fresh guest ID.
+- The public deletion button is removed in V6.13; authenticated backend deletion remains available for data deletion requests.
 - Daily cleanup removes expired sessions, usage batch rows older than two days, and guest profiles inactive for 180 days. Member profiles and their accumulated totals remain until deleted. Platform backups may follow separate retention policies.
 
 ## Verification before calling it live

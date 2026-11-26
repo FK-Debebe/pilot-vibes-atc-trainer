@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="fk-entry-pending">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -5101,7 +5101,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.12 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.13 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -15023,6 +15023,8 @@ function showMobileIntroduction(){
     showAppPage("trainer",{noScroll:true});
     const setup=$("vfrFlightSetupDetails");
     setup.open=true;
+    window.dispatchEvent(new Event("fk-welcome-complete"));
+    if(window.FKUsage)return;
     requestAnimationFrame(()=>{
       setup.scrollIntoView({behavior:"smooth",block:"start"});
       $("level").focus({preventScroll:true});

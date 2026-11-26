@@ -2,9 +2,10 @@
 (() => {
  'use strict';
  const cfg=window.FK_USAGE_CONFIG||{},base=String(cfg.apiBase||'').replace(/\/$/,'');
- if(!/^https:\/\/[^/?#]+(?:\/[a-z0-9_-]+)*$/i.test(base))return;
+ if(!/^https:\/\/[^/?#]+(?:\/[a-z0-9_-]+)*$/i.test(base)){document.documentElement.classList.remove('fk-entry-pending');return;}
  const localKey='fk-usage-guest-v1',memberKey='fk-usage-member-v1';
  let token='',person=null,owner=false,opening=null,sending=false,enabled=true,gis=null,generation=0;
+ let entered=false,screen=null;
  const pending=[];
  try{token=sessionStorage.getItem(memberKey)||localStorage.getItem(localKey)||'';}catch{}
  const permitted=()=>enabled && !navigator.globalPrivacyControl && navigator.doNotTrack!=='1' && window.doNotTrack!=='1' && (()=>{try{return localStorage.getItem('fk-atc-analytics-consent-v1')!=='denied';}catch{return true;}})();
@@ -37,7 +38,7 @@
   }}finally{sending=false;}
  }
  function record(name,data){
-  if(name!=='trainer_active_time'||!permitted())return;
+  if(!entered||name!=='trainer_active_time'||!permitted())return;
   const seconds=Math.min(90,Math.floor(Number(data.active_seconds)||0));if(seconds<1)return;
   pending.push({id:crypto.randomUUID(),seconds});if(pending.length>20)pending.shift();drain();
  }
@@ -53,34 +54,66 @@
   if(!gis)gis=new Promise((resolve,reject)=>{const s=element('script');s.src='https://accounts.google.com/gsi/client';s.async=true;s.onload=resolve;s.onerror=()=>{gis=null;reject(Error('Google sign-in could not load. You can continue as a guest.'));};document.head.appendChild(s);});
   return gis;
  }
- async function preferences(){
-  document.getElementById(panelId)?.remove();
-  const panel=element('section');panel.id=panelId;panel.className='fk-analytics-panel';panel.setAttribute('aria-label','Optional profile and usage');
-  panel.appendChild(element('h3','Profile and usage'));
-  panel.appendChild(element('p','Optional Google sign-in attaches your display name to your approximate location and active usage hours, visible to the trainer owner. Guests use a random browser ID. Reports, radio text and audio are not uploaded.'));
-  const status=element('p',permitted()?'Connecting…':'Usage tracking is off. You can still practice.');status.setAttribute('aria-live','polite');panel.appendChild(status);
-  const controls=element('div');controls.className='fk-analytics-actions';panel.appendChild(controls);
-  const button=(name,fn)=>{const b=element('button',name);b.type='button';b.addEventListener('click',()=>Promise.resolve(fn()).catch(e=>status.textContent=e.message));controls.appendChild(b);return b;};
-  button('Close',()=>panel.remove());document.body.appendChild(panel);
-  if(!await ensure()){if(permitted())status.textContent='The usage service is unavailable. You can continue practicing.';return;}
-  if(!panel.isConnected)return;
-  status.textContent=(person.kind==='guest'?person.display_name:'Signed in as '+person.display_name)+'. Location: '+[person.city,person.region,person.country].filter(Boolean).join(', ')+'.';
-  if(person.kind==='guest'&&cfg.googleClientId){
-   const host=element('div');panel.appendChild(host);
-   button('Show Google sign-in',async()=>{
-    await loadGoogle();const {nonce}=await api('/challenge','POST',{});
-    window.google.accounts.id.initialize({client_id:cfg.googleClientId,nonce,auto_select:false,callback:async result=>{
-     try{if(!permitted())return;await drain();const signed=await api('/login','POST',{credential:result.credential,nonce});if(!permitted())return;save(signed);preferences();}
-     catch(e){status.textContent=e.message;}
-    }});
-    window.google.accounts.id.renderButton(host,{type:'standard',theme:'outline',size:'large',text:'signin_with',width:240});
-   });
-  }else if(person.kind==='member')button('Sign out',async()=>{await drain();await api('/logout','POST',{});token='';person=null;owner=false;try{sessionStorage.removeItem(memberKey);}catch{}await ensure();preferences();});
-  if(owner){const a=element('a','Owner usage dashboard');a.href='./usage-dashboard.html';controls.appendChild(a);}
-  button('Delete my usage data',async()=>{if(!window.confirm('Delete your profile and usage history from the trainer usage database?'))return;await api('/me','DELETE');stop();footer.appendChild(element('p','Usage data deleted. No new usage session will start in this tab.'));});
+ function signedControls(){
+  document.getElementById('fk-account-controls')?.remove();
+  if(person?.kind!=='member')return;
+  const bar=element('footer');bar.id='fk-account-controls';bar.className='fk-analytics-footer';
+  bar.appendChild(element('span','Signed in as '+person.display_name+' '));
+  const out=element('button','Sign out');out.type='button';out.addEventListener('click',async()=>{
+   out.disabled=true;
+   try{await drain();await api('/logout','POST',{});}catch{} 
+   token='';person=null;owner=false;pending.length=0;try{sessionStorage.removeItem(memberKey);}catch{}
+   bar.remove();entered=false;showEntry();
+  });bar.appendChild(out);
+  if(owner){const link=element('a','Owner dashboard');link.href='./usage-dashboard.html';bar.appendChild(link);}
+  document.body.appendChild(bar);
  }
- window.FKUsage=Object.freeze({record,preference,preferences});
- const footer=element('footer');footer.className='fk-analytics-footer';const link=element('button','Profile and usage');link.type='button';link.addEventListener('click',preferences);footer.appendChild(link);document.body.appendChild(footer);
+ function enter(){
+  entered=true;screen?.remove();screen=null;document.documentElement.classList.remove('fk-entry-pending');
+  for(const id of ['vfrFlightSetupDetails','ifrFlightSetupDetails']){const setup=document.getElementById(id);if(setup)setup.open=true;}
+  signedControls();
+  const setup=document.getElementById('vfrFlightSetupDetails');
+  setup?.scrollIntoView?.({block:'start'});document.getElementById('level')?.focus?.({preventScroll:true});
+ }
+ function showEntry(){
+  if(screen)return;
+  document.documentElement.classList.add('fk-entry-pending');
+  const page=element('main');page.id='fk-entry';screen=page;
+  const card=element('div');card.className='fk-entry-card';page.appendChild(card);
+  const title=element('h1','Start practicing');title.tabIndex=-1;card.appendChild(title);
+  const login=element('section');card.appendChild(login);login.appendChild(element('h2','Sign in with Google'));
+  login.appendChild(element('p','Sign in to associate your profile name with your practice time across visits.'));
+  const host=element('div');host.className='fk-google-button';login.appendChild(host);
+  const status=element('p');status.setAttribute('aria-live','polite');login.appendChild(status);
+  const guestSection=element('section');card.appendChild(guestSection);guestSection.appendChild(element('h2','Continue as Guest'));
+  guestSection.appendChild(element('p','Practice without signing in.'));
+  const guest=element('button','Continue as Guest');guest.type='button';guest.className='fk-guest-button';
+  guest.addEventListener('click',()=>{enter();ensure();});guestSection.appendChild(guest);
+  const privacy=element('a','Analytics privacy');privacy.href='./analytics-privacy.html';card.appendChild(privacy);
+  document.body.appendChild(page);title.focus?.();
+  (async()=>{
+   if(!permitted()){status.textContent='Google sign-in is unavailable with your current privacy settings. Continue as Guest to practice.';return;}
+   if(!cfg.googleClientId||!await ensure())throw Error('Sign-in is temporarily unavailable. You can continue as Guest.');
+   await loadGoogle();if(screen!==page)return;
+   const {nonce}=await api('/challenge','POST',{});if(screen!==page)return;
+   window.google.accounts.id.initialize({client_id:cfg.googleClientId,nonce,auto_select:false,callback:async result=>{
+    try{if(!permitted())return;status.textContent='Signing in…';await drain();
+     const signed=await api('/login','POST',{credential:result.credential,nonce});if(!permitted())return;
+     save(signed);enter();
+    }catch(e){status.textContent=e.message;}
+   }});
+   window.google.accounts.id.renderButton(host,{type:'standard',theme:'outline',size:'large',text:'signin_with',width:240});
+  })().catch(e=>{if(screen===page)status.textContent=e.message;});
+ }
+ async function start(){
+  if(entered||screen)return;
+  if(permitted()&&token&&await ensure()&&person?.kind==='member'){enter();return;}
+  showEntry();
+ }
+ window.FKUsage=Object.freeze({record,preference,start});
+ window.addEventListener('fk-welcome-complete',start);
+ document.addEventListener('DOMContentLoaded',()=>{
+  if(!document.getElementById('mobileIntroduction')?.open)start();
+ });
  window.addEventListener('online',drain);window.addEventListener('pagehide',drain);setInterval(drain,30000);
- ensure();
 })();
