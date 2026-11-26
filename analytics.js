@@ -24,8 +24,9 @@
   const allowedEvents=new Set(["page_view","trainer_active_time","trainer_training_start","trainer_stage_start","trainer_stage_complete","trainer_training_complete","trainer_training_abandon","trainer_pattern_choice"]);
   function send(name,parameters={}){
     if(!enabled||!allowedEvents.has(name)) return;
+    try{window.FKUsage?.record(name,parameters);}catch{}
     // Only enumerated app states and numeric counts may leave this module.
-    const out={section,app_version:"6.09",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
+    const out={section,app_version:"6.10",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
     if(!tagReady || navigator.onLine===false){
       pendingEvents.push({name,parameters:out,created:Date.now()});
       if(pendingEvents.length>maxQueue)pendingEvents.shift();
@@ -132,6 +133,7 @@
   function consent(granted){
     if(enabled)flush();
     choice=granted?"granted":"denied";
+    try{window.FKUsage?.preference(granted);}catch{}
     try {localStorage.setItem(preferenceKey,choice);} catch {}
     if(!granted){
       enabled=false;pendingMs=0;runs.vfr=runs.ifr=null;

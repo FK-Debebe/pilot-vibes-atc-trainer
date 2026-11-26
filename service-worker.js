@@ -1,4 +1,4 @@
-const CACHE_NAME = "fk-atc-com-trainer-v6-09-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v6-10-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -9,7 +9,11 @@ const APP_SHELL = [
   "./analytics-config.js",
   "./analytics.js",
   "./analytics.css",
-  "./analytics-privacy.html"
+  "./analytics-privacy.html",
+  "./usage-config.js",
+  "./usage-client.js",
+  "./usage-dashboard.html",
+  "./usage-dashboard.js"
 ];
 
 self.addEventListener("install", event => {
