@@ -5101,7 +5101,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.10 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.12 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6510,7 +6510,7 @@ const AIRPORTS = {
     facilities:{clearance:"Camarillo Clearance",ground:"Camarillo Ground",tower:"Camarillo Tower",departure:"Point Mugu Departure",approach:"Point Mugu Approach"},
     vfrClearanceLimit:"4000",
     runways:["8","26"], preferredRunway:"26",
-    taxiwaysByRunway:{"8":"Alpha","26":"Alpha"}, parkingTaxiway:"Alpha",
+    taxiwaysByRunway:{"8":"Alpha","26":"Alpha"}, parkingTaxiway:"Foxtrot",
     locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
   },
   KOXR:{
@@ -6883,7 +6883,7 @@ function updateDepartureChoices(preserve=true){
 function updateArrivalParking(id,airportCode,preferred=$(id).value){
   const select=$(id);
   const transient=[...select.options].find(option=>option.value==="transient");
-  transient.hidden=transient.disabled=airportCode!=="KCRQ";
+  transient.hidden=transient.disabled=!["KCRQ","KCMA"].includes(airportCode);
   select.value=preferred==="ga" || (preferred==="transient" && !transient.disabled) ? preferred : "";
 }
 

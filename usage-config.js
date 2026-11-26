@@ -1,6 +1,5 @@
-/* Public configuration. Keep blank until the backend is deployed.
-   Never put the owner email, Google client secret, Cloudflare token or database credentials here. */
+/* Public client configuration. Owner authorization remains private in Cloudflare. */
 window.FK_USAGE_CONFIG=Object.freeze({
-  apiBase: "",
-  googleClientId: ""
+  apiBase: "https://fk-atc-usage-api.fwdskillzone.workers.dev",
+  googleClientId: "899290626924-a3rjbpp429cf68lentrdvhk4hbfqocj4.apps.googleusercontent.com"
 });
