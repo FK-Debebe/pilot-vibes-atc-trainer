@@ -78,7 +78,7 @@
   document.documentElement.classList.add('fk-entry-pending');
   const page=element('main');page.id='fk-entry';screen=page;
   const card=element('div');card.className='fk-entry-card';page.appendChild(card);
-  const title=element('h1','Start practicing');title.tabIndex=-1;card.appendChild(title);
+  const title=element('h1','Welcome to FK ATC Com Trainer');title.tabIndex=-1;card.appendChild(title);
   const login=element('section');card.appendChild(login);login.appendChild(element('h2','Sign in with Google'));
   login.appendChild(element('p','Sign in to associate your profile name with your practice time across visits.'));
   const host=element('div');host.className='fk-google-button';login.appendChild(host);
