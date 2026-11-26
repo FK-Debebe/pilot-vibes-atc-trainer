@@ -1,10 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-function fixture({id='G-TEST123',choice,privacy=false}={}){
- let now=1000000;const events={},windowEvents={},intervals=[],store={},cookies={};
+function fixture({id='G-TEST123',choice,privacy=false,autoTagLoad=true,offline=false}={}){
+ let now=1000000;const events={},windowEvents={},intervals=[],store={},cookies={},timeouts=[];
  if(choice)store['fk-atc-analytics-consent-v1']=choice;
  class E{
   constructor(tag){this.tagName=tag;this.children=[];this.events={};this.id='';}
-  appendChild(e){e.parent=this;this.children.push(e);return e;}
+  appendChild(e){e.parent=this;this.children.push(e);if(this.tagName==='head' && e.tagName==='script' && autoTagLoad)e.onload?.();return e;}
   remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);}
   setAttribute(k,v){this[k]=v;}
   addEventListener(k,f){this.events[k]=f;}
@@ -13,16 +13,16 @@ function fixture({id='G-TEST123',choice,privacy=false}={}){
  const body=new E('body'),head=new E('head');
  const document={body,head,visibilityState:'visible',querySelector:()=>null,getElementById:id=>body.all().find(x=>x.id===id),createElement:t=>new E(t),addEventListener:(k,f)=>{(events[k]??=[]).push(f);}};
  Object.defineProperty(document,'cookie',{get:()=>Object.entries(cookies).map(([k,v])=>k+'='+v).join('; '),set:s=>{const [k,v]=s.split(';')[0].split('=');if(s.includes('Max-Age=0'))delete cookies[k];else cookies[k]=v;}});
- const g={document,navigator:{globalPrivacyControl:privacy},location:{origin:'https://trainer.example',pathname:'/app/index.html',search:'?callsign=PRIVATE'},
+ const g={document,navigator:{globalPrivacyControl:privacy,onLine:!offline},location:{origin:'https://trainer.example',pathname:'/app/index.html',search:'?callsign=PRIVATE'},
   localStorage:{getItem:k=>store[k]||null,setItem:(k,v)=>store[k]=v},FK_ANALYTICS_CONFIG:{measurementId:id,debug:false},
   Date:class extends Date{constructor(...args){super(...(args.length?args:[now]));}static now(){return now;}},
-  setInterval:f=>intervals.push(f),addEventListener:(k,f)=>{(windowEvents[k]??=[]).push(f);}};
+  setInterval:f=>intervals.push(f),setTimeout:f=>{timeouts.push(f);return timeouts.length-1;},clearTimeout:i=>timeouts[i]=null,addEventListener:(k,f)=>{(windowEvents[k]??=[]).push(f);}};
  g.window=g;vm.createContext(g);vm.runInContext(fs.readFileSync(__dirname+'/../analytics.js','utf8'),g);
  const button=label=>body.all().find(x=>x.textContent===label)?.events.click();
  const ev=()=>Array.from(g.dataLayer||[]).map(a=>Array.from(a)).filter(a=>a[0]==='event');
  const tick=ms=>{now+=ms;intervals.forEach(f=>f());};
  const dispatch=type=>events[type]?.forEach(f=>f());
- return {g,document,body,head,button,events:ev,tick,dispatch,store,cookies,now:()=>now};
+ return {g,document,body,head,button,events:ev,tick,dispatch,store,cookies,now:()=>now,online:()=>{g.navigator.onLine=true;windowEvents.online?.forEach(f=>f());},retry:()=>{const f=timeouts.findIndex(Boolean);if(f>=0){const fn=timeouts[f];timeouts[f]=null;fn();}}};
 }
 {
  const q=fixture({id:''});assert.equal(q.head.children.length,0);assert.equal(q.g.FKAnalytics.status().configured,false);
@@ -76,3 +76,32 @@ for(const options of [{choice:'denied'},{choice:'granted',privacy:true}]){
  assert.ok(!e('JSON.stringify(telemetry)').includes('172SP'));
 }
 console.log('Analytics checks passed: consent/off states, privacy signals, active/idle/background time, section/flight types, completion deduplication, cookie withdrawal and VFR/IFR hooks');
+
+// Delivery recovery: preserve order, avoid duplicates, and respect opt-outs.
+{
+ const q=fixture({autoTagLoad:false}),a=q.g.FKAnalytics;
+ a.start('vfr','on','atis');assert.equal(q.events().length,0);
+ assert.equal(a.status().queuedEvents,3);
+ q.head.children[0].onerror();q.retry();assert.equal(q.head.children.length,1);
+ q.head.children[0].onload();assert.equal(a.status().queuedEvents,0);
+ assert.equal(q.events().filter(x=>x[1]==='trainer_training_start').length,1);
+ q.g.navigator.onLine=false;a.page('ifr-trainer');a.start('ifr','ifr','atis');
+ const count=q.events().length;assert.ok(a.status().queuedEvents>0);
+ q.online();assert.ok(q.events().length>count);const delivered=q.events().length;q.online();assert.equal(q.events().length,delivered);
+}
+{
+ const q=fixture({offline:true,autoTagLoad:false}),a=q.g.FKAnalytics;
+ assert.equal(q.head.children.length,0);
+ for(let i=0;i<250;i++)a.page(i%2?'trainer':'ifr-trainer');
+ assert.equal(a.status().queuedEvents,200);
+ q.tick(31*60*1000);q.online();q.head.children[0].onload();
+ assert.equal(a.status().queuedEvents,0);
+ assert.equal(q.events().filter(x=>x[1]==='page_view').length,0,'Expired pageviews must be discarded');
+}
+{
+ const q=fixture({autoTagLoad:false}),a=q.g.FKAnalytics;
+ q.head.children[0].onerror();
+ q.button('Analytics privacy');q.button('No thanks');q.retry();q.online();
+ assert.equal(q.head.children.length,0);assert.equal(a.status().queuedEvents,0);assert.equal(q.events().length,0);
+}
+console.log('Recovery checks passed: retry, offline buffering, bounded queue/expiry, no duplicate drain, opt-out cancels recovery');

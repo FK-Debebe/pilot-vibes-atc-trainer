@@ -7,7 +7,9 @@
   const configured=/^G-[A-Z0-9]+$/.test(id);
   const preferenceKey="fk-atc-analytics-consent-v1";
   const blocked=()=>navigator.globalPrivacyControl===true || navigator.doNotTrack==="1" || window.doNotTrack==="1";
-  let choice="unset",enabled=false,loaded=false;
+  let choice="unset",enabled=false,loaded=false,tagReady=false,loading=false,attempts=0,retryTimer=null;
+  const pendingEvents=[];
+  const maxQueue=200,maxAgeMs=30*60*1000;
   try { choice=localStorage.getItem(preferenceKey)||"unset"; } catch {}
   const pages={trainer:"vfr_trainer","ifr-trainer":"ifr_trainer","training-log":"training_log",report:"flight_reports","how-to":"how_to"};
   const modes=["vfr","ifr"];
@@ -23,7 +25,12 @@
   function send(name,parameters={}){
     if(!enabled||!allowedEvents.has(name)) return;
     // Only enumerated app states and numeric counts may leave this module.
-    const out={section,app_version:"6.04",page_location:url(),page_title:"FK ATC COM Trainer",...parameters};
+    const out={section,app_version:"6.05",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
+    if(!tagReady || navigator.onLine===false){
+      pendingEvents.push({name,parameters:out,created:Date.now()});
+      if(pendingEvents.length>maxQueue)pendingEvents.shift();
+      return;
+    }
     window.gtag("event",name,out);
   }
   function account(){
@@ -84,6 +91,26 @@
     if(!runs.vfr||runs.vfr.completed)return;
     send("trainer_pattern_choice",{...contexts.vfr,pattern_action:more?"more_pattern":"end_practice"});
   }
+  function drain(){
+    if(!enabled||blocked()||choice==="denied"||!tagReady||navigator.onLine===false)return;
+    while(pendingEvents.length){
+      const event=pendingEvents.shift();
+      if(Date.now()-event.created<=maxAgeMs)window.gtag("event",event.name,event.parameters);
+    }
+  }
+  function connect(){
+    if(!enabled||blocked()||choice==="denied"||tagReady||loading||navigator.onLine===false||attempts>=3)return;
+    attempts++;loading=true;
+    const script=document.createElement("script");script.async=true;
+    script.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(id);
+    script.referrerPolicy="no-referrer";
+    script.onload=()=>{loading=false;tagReady=true;drain();};
+    script.onerror=()=>{
+      loading=false;script.remove();
+      if(enabled&&attempts<3)retryTimer=setTimeout(()=>{retryTimer=null;connect();},attempts*3000);
+    };
+    document.head.appendChild(script);
+  }
   function load(){
     if(!configured||blocked()||choice==="denied")return;
     enabled=true;lastTick=lastActivity=Date.now();pendingMs=0;
@@ -96,11 +123,11 @@
       window.gtag("config",id,{send_page_view:false,allow_google_signals:false,allow_ad_personalization_signals:false,
         cookie_domain:"none",cookie_expires:60*60*24*180,cookie_update:false,
         page_location:url(),page_referrer:"",page_title:"FK ATC COM Trainer",debug_mode:config.debug===true});
-      const script=document.createElement("script");script.async=true;
-      script.src="https://www.googletagmanager.com/gtag/js?id="+encodeURIComponent(id);
-      script.referrerPolicy="no-referrer";document.head.appendChild(script);loaded=true;
+      loaded=true;
     }else window.gtag("consent","update",{analytics_storage:"granted"});
+    connect();
     send("page_view");
+    drain();
   }
   function consent(granted){
     if(enabled)flush();
@@ -108,6 +135,8 @@
     try {localStorage.setItem(preferenceKey,choice);} catch {}
     if(!granted){
       enabled=false;pendingMs=0;runs.vfr=runs.ifr=null;
+      pendingEvents.length=0;
+      if(retryTimer!==null){clearTimeout(retryTimer);retryTimer=null;}
       if(configured)window["ga-disable-"+id]=true;
       if(loaded)window.gtag("consent","update",{analytics_storage:"denied"});
       // Host-only cookies configured above; remove root and ancestor-path variants.
@@ -137,7 +166,7 @@
     panel.appendChild(actions);document.body.appendChild(panel);
   }
   const api={page,setContext,start,stageStart,stageComplete,complete,abandon,patternChoice,preferences,
-    status:()=>({configured,enabled,choice,privacySignal:blocked()})};
+    status:()=>({configured,enabled,choice,privacySignal:blocked(),tagReady,queuedEvents:pendingEvents.length})};
   window.FKAnalytics=Object.freeze(Object.fromEntries(Object.entries(api).map(([key,fn])=>[key,(...args)=>{try{return fn(...args);}catch{return undefined;}}])));
   const active=document.querySelector(".app-page.active");
   if(active&&pages[active.id.replace("page-","")])section=pages[active.id.replace("page-","")];
@@ -145,7 +174,12 @@
   const link=document.createElement("button");link.type="button";link.textContent="Analytics privacy";link.addEventListener("click",preferences);footer.appendChild(link);document.body.appendChild(footer);
   ["pointerdown","keydown","touchstart","scroll"].forEach(event=>document.addEventListener(event,()=>{account();lastActivity=Date.now();},{passive:true,capture:true}));
   document.addEventListener("visibilitychange",()=>{flush();lastTick=Date.now();pendingMs=0;if(document.visibilityState!=="hidden")lastActivity=Date.now();});
-  window.addEventListener("pagehide",flush);
+  window.addEventListener("online",()=>{
+    if(!enabled||blocked()||choice==="denied")return;
+    if(!tagReady&&!loading){attempts=0;connect();}
+    drain();
+  });
+  window.addEventListener("pagehide",()=>{flush();drain();});
   window.addEventListener("pageshow",()=>{lastTick=lastActivity=Date.now();});
   setInterval(flush,30000);
   if(choice!=="denied")load();
