@@ -1,11 +1,15 @@
-const CACHE_NAME = "fk-atc-com-trainer-v6-00-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v6-02-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./404.html",
   "./manifest.webmanifest",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./analytics-config.js",
+  "./analytics.js",
+  "./analytics.css",
+  "./analytics-privacy.html"
 ];
 
 self.addEventListener("install", event => {
@@ -30,6 +34,8 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
+  // Never proxy or cache external analytics scripts or collection requests.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   if (event.request.mode === "navigate") {
     event.respondWith(

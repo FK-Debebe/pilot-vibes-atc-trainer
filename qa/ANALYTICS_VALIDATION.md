@@ -1,0 +1,24 @@
+# V6.02 validation
+
+Automated local checks passed:
+
+- Disabled/unconfigured analytics makes no provider-script requests.
+- Consent and browser privacy signals control loading; withdrawal stops event generation and clears analytics cookies.
+- Active time excludes hidden tabs and caps idle time at 60 seconds after the last interaction.
+- Section navigation, VFR/IFR modes and flight types produce enumerated parameters.
+- Training starts, stages, circuit choices and completions are deduplicated within a run.
+- Event payloads exclude callsigns, audio, transcripts, report contents and URL query strings.
+- VFR and IFR evaluator hooks were exercised using a telemetry spy.
+- Existing flight-following, no-flight-following, traffic-pattern and Ground ATIS flows still pass.
+- Inline app JavaScript, analytics module and service-worker syntax checks passed.
+
+Run from the parent of this app folder:
+
+```sh
+node standalone-v602/qa/analytics.cjs
+node standalone-v602/qa/session-flows.cjs
+node standalone-v602/qa/ground-atis.cjs
+node standalone-v602/qa/pattern-options.cjs
+```
+
+Limitations: Measurement ID G-BSZSTV58Y4 is configured. Delivery to Google Analytics and owner dashboard reports have not been verified; no test traffic was sent to the live property. Browser-level/mobile visual verification remains to be performed on the published app; the local browser executable was unavailable. Local tests mock the Google tag and send no analytics data externally. Follow ANALYTICS_SETUP.md to connect and verify the deployed stream.

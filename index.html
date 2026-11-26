@@ -11,6 +11,9 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <title>FK ATC COM Trainer</title>
+<link rel="stylesheet" href="./analytics.css">
+<script src="./analytics-config.js"></script>
+<script defer src="./analytics.js"></script>
 <style>
 :root{
   --navy:#0a2f57; --blue:#1767b1; --blue2:#2d82cf; --bg:#edf4f9; --card:#fff;
@@ -5083,7 +5086,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.00 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.02 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6178,6 +6181,7 @@ function showAppPage(page,options={}){
   updateApplicationStatus();
   if(page==="report" && typeof renderFlightReportHistory==="function") renderFlightReportHistory();
   if(page==="xp-diagnostics" && typeof xpRenderDiagnostics==="function") xpRenderDiagnostics();
+  window.FKAnalytics?.page(page);
   if(!options.noScroll) window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -7657,6 +7661,8 @@ function renderStage(resetFrequency=true){
   clearVoiceReview("",app);
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=STAGES[app.stageIndex];
+  window.FKAnalytics?.setContext("vfr",app.config.flightType||"on",stage.id);
+  window.FKAnalytics?.stageStart("vfr",stage.id,stage.statKey||stage.id);
   if(app.config.flightType==="pattern" && stage.id==="tower") stage.airborneCompletion=false;
   const phaseMap={
     clearance:"clearanceInitial",
@@ -9351,6 +9357,7 @@ function renderFlightReportHistory(){
 }
 
 function resetSessionStats(){
+  window.FKAnalytics?.abandon("vfr");
   app.session={
     attempts:0,
     tuningErrors:0,
@@ -9483,6 +9490,7 @@ function recordStageComplete(scoreOverride=null){
   stat.best=Math.max(stat.best,score);
   stat.completed=true;
   app.session.stages[stage.statKey||stage.id]=stat;
+  window.FKAnalytics?.stageComplete("vfr",stage.id,stage.statKey||stage.id);
 }
 
 function stageBest(stage){
@@ -9647,6 +9655,7 @@ function evaluatePatternTransmission(text){
   if(!text || app.stageComplete || app.awaitingATC) return;
   const stage=STAGES[app.stageIndex], airport=depAirport(), runway=app.config.runway;
   if(!tuned()){ app.session.tuningErrors++; $("feedback").textContent="Tune "+stage.freq+" before transmitting."; return; }
+  window.FKAnalytics?.start("vfr",app.config.flightType||"on",stage.id,stage.statKey||stage.id);
   append("pilot","PILOT",text);
   const n=norm(fkNormalizeRecognition(text));
   const before=app.phase;
@@ -9974,6 +9983,7 @@ function evaluatePatternTransmission(text){
 function choosePatternContinuation(more){
   if(app.config.flightType!=="pattern" || !app.stageComplete || STAGES[app.stageIndex].id!=="tower") return;
   $("transcript").innerHTML=""; // Clear the screen, preserving the complete report transcript.
+  window.FKAnalytics?.patternChoice(more);
   const current=STAGES[app.stageIndex];
   app.session.circuits=current.circuit||1;
   const nextCircuit=(current.circuit||1)+1;
@@ -10028,6 +10038,7 @@ function evaluateTransmission(text){
 
   const stage=STAGES[app.stageIndex];
   const phaseAtStart=app.phase;
+  window.FKAnalytics?.start("vfr",app.config.flightType||"on",stage.id,stage.statKey||stage.id);
   append("pilot","PILOT",text);
   const n=norm(fkNormalizeRecognition(text));
   if(phaseAtStart.endsWith("Readback") && !hasCallsign(text)){
@@ -10985,7 +10996,10 @@ function completeStage(){
     $("feedback").textContent=`${stageDisplayName(stage)} stage complete. Training flight complete.`;
   }
 
-  if(!nextStage && !(app.config.flightType==="pattern" && stage.id==="tower")) $("transcript").innerHTML="";
+  if(!nextStage && !(app.config.flightType==="pattern" && stage.id==="tower")){
+    $("transcript").innerHTML="";
+    window.FKAnalytics?.complete("vfr");
+  }
   scrollToCompletedStageRadio("");
   /* Flash NEXT twice before making the button available. */
   requestAnimationFrame(()=>{
@@ -11027,6 +11041,7 @@ function monitorAtis(){
     return;
   }
 
+  window.FKAnalytics?.start("vfr",app.config.flightType||"on",stage.id,stage.statKey||stage.id);
   const c=app.config;
   const dep=depAirport();
   const dest=destAirport();
@@ -11923,6 +11938,7 @@ function ifrLoadLastSetup(){
 
 function ifrReadSetup(generateCodes=true){
   if(generateCodes){
+    window.FKAnalytics?.abandon("ifr");
     ifr$("transcript").innerHTML="";
     ifrRadioExchange.length=0;
   }
@@ -12096,6 +12112,8 @@ function ifrRenderStage(resetFrequency=true){
   if(window.XP_STATE?.connected) window.XP_STATE.lastAutoAtisKey=null;
   const stage=IFR_STAGES[IFR_APP.stageIndex];
   if(!stage) return;
+  window.FKAnalytics?.setContext("ifr","ifr",stage.id);
+  window.FKAnalytics?.stageStart("ifr",stage.id);
   IFR_APP.phase=ifrStagePhase(stage);
   IFR_APP.stageComplete=false;
   ifr$("stageTitle").textContent=stage.title;
@@ -12376,6 +12394,7 @@ function ifrRecordAttempt(stage,checks,score){
     IFR_APP.session.missing[item]=(IFR_APP.session.missing[item]||0)+1;
   }
   IFR_APP.session.stages[stage.id]=stat;
+  window.FKAnalytics?.stageComplete("ifr",stage.id);
 }
 
 function ifrScoreChecks(stage,checks){
@@ -12509,6 +12528,7 @@ function ifrCompleteStage(score=100){
     ifr$("next").textContent="FINISH";
     ifr$("reset").classList.remove("hidden");
     if(!IFR_APP.session.practiceStage) ifrRecordCompletedTraining();
+    window.FKAnalytics?.complete("ifr");
     ifr$("feedback").textContent="IFR training stages complete. Select FINISH for the End-of-Flight Report.";
   }
 
@@ -12525,6 +12545,7 @@ function ifrMonitorAtis(){
     ifr$("feedback").textContent=`Tune ${stage.freq} before monitoring ATIS.`;
     return;
   }
+  window.FKAnalytics?.start("ifr","ifr",stage.id);
   const dep=stage.id==="atis";
   const code=dep?IFR_APP.config.atis:IFR_APP.config.arrivalAtis;
   const runway=dep?IFR_APP.config.runway:IFR_APP.config.destRunway;
@@ -12596,6 +12617,7 @@ function ifrEvaluateTransmission(text){
     return;
   }
 
+  window.FKAnalytics?.start("ifr","ifr",stage.id);
   IFR_APP.session.attempts++;
   ifrAppend("pilot","PILOT",text);
   const n=norm(fkNormalizeRecognition(text));
