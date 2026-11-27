@@ -35,20 +35,22 @@ for(const type of ['touchgo','option']){
   takeoff();land();
   call('Runway 26L cleared to land');
   phase('patternLandingReadback');
+  e('evaluateTransmission('+JSON.stringify(type==='option'?'Runway 26L cleared for the option':'Runway 26L cleared for touch and go')+')');
+  phase('patternLandingReadback');
   call(type==='option'?'Runway 26L cleared for the option':'Runway 26L cleared for touch and go');
   if(type==='option'){
     phase('patternOptionDecision');
     e('$("patternOptionTouchGo").click()');
   }
-  phase('patternTouchGoReport');
-  call('Airborne');
+  assert.equal(e('app.stageComplete'),true);
+  assert.doesNotMatch(e('app.lastATC.visual'),/report airborne/i);
   assert.equal(e('app.session.circuits'),1);
   e('choosePatternContinuation(true)');
   phase('patternCrosswindReadback');
   call('Left crosswind');land();
   call(type==='option'?'Runway 26L cleared for the option':'Runway 26L cleared for touch and go');
   if(type==='option') e('$("patternOptionTouchGo").click()');
-  call('Airborne');
+  assert.equal(e('app.stageComplete'),true);
   assert.equal(e('app.session.circuits'),2);
   e('choosePatternContinuation(false)');
   assert.equal(e('STAGES[app.stageIndex].fullStop'),true);
