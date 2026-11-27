@@ -14,7 +14,7 @@ html.fk-entry-pending body > :not(#fk-entry):not(#mobileIntroduction):not(script
 .fk-entry-card h2{font-size:19px;margin:0 0 8px;color:#0a2f57}
 .fk-entry-card section{padding:20px 0;border-top:1px solid #d8e2ec}
 .fk-entry-card p{margin:0 0 16px;line-height:1.5}
-.fk-guest-button{min-height:46px;width:100%;border:1px solid #1767b1;background:#1767b1;color:white;border-radius:9px;font:600 16px Arial,sans-serif;padding:12px;cursor:pointer}
+.fk-signin-button{min-height:46px;width:100%;border:1px solid #1767b1;background:#1767b1;color:white;border-radius:9px;font:600 16px Arial,sans-serif;padding:12px;cursor:pointer}
 .fk-entry-card a{color:#315c85;font-size:13px}
 .fk-google-button{min-height:44px;max-width:100%;overflow:hidden}
 @media(max-width:400px){.fk-entry-card{padding:20px}#fk-entry{padding:12px}.fk-entry-card h1{font-size:23px}}

@@ -5021,6 +5021,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 }
 #mobileIntroduction li{font-size:14px;line-height:1.4;margin:0 0 10px}
 #mobileIntroduction li:last-child{margin-bottom:0}
+#mobileIntroduction ul{padding-left:18px;margin:8px 0 0}
+#mobileIntroduction ul li{margin-bottom:7px}
 #confirmMobileIntroduction{flex-shrink:0;width:100%;min-height:46px;font-size:14px;white-space:normal}
 
 @media(max-width:700px){
@@ -5072,11 +5074,19 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <dialog id="mobileIntroduction" aria-labelledby="mobileIntroductionTitle">
   <h2 id="mobileIntroductionTitle">Welcome to FK ATC COM Trainer</h2>
   <ol tabindex="0" aria-label="How to use the trainer">
-    <li><strong>Review Flight Setup.</strong> After closing this popup, customize your flight.</li>
-    <li><strong>Choose Flight Type.</strong> Select Flight Following, No Flight Following, or Traffic Pattern. Tap Apply Setup to reveal the trainer.</li>
-    <li><strong>Tune and listen.</strong> Match the target frequency using + and −. When READY, tap Monitor ATIS and listen to the broadcast.</li>
-    <li><strong>Make your call.</strong> Tap to talk. Beginner: tap to end, review, then Send transmission. Intermediate / Advanced: Tap to End &amp; Send. You can also type.</li>
-    <li><strong>Follow Next Action.</strong> Include your callsign in readbacks. Tap Next after each stage. For pattern work, choose another circuit or taxi to parking. Tap Finish to review your report.</li>
+    <li><strong>Sign in with Google.</strong></li>
+    <li><strong>Flight Setup.</strong> Customize your flight.</li>
+    <li><strong>Select your aircraft and route.</strong> Choose Aircraft Type, Call Sign, and departure and destination airports.</li>
+    <li><strong>Select Flight Type.</strong>
+      <ul>
+        <li><strong>Flight Following:</strong> Choose departure direction and arrival information.</li>
+        <li><strong>No Flight Following:</strong> Choose departure direction and arrival information.</li>
+        <li><strong>Traffic Pattern:</strong> Practice circuits at your departure airport.</li>
+      </ul>
+    </li>
+    <li><strong>Review runways and altitude.</strong> Select the takeoff runway and, when applicable, destination runway and requested altitude.</li>
+    <li><strong>Tap Apply Setup.</strong></li>
+    <li><strong>Note your callsign and starting location.</strong> Use these details during your radio calls.</li>
   </ol>
   <button id="confirmMobileIntroduction" class="btn primary" type="button">Got it — start practicing</button>
 </dialog>
@@ -5117,7 +5127,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.23 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.25 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6145,7 +6155,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.23 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.25 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -15048,7 +15058,6 @@ function finishMobileSetup(prefix){
 }
 
 function showMobileIntroduction(){
-  if(!window.matchMedia("(max-width:700px) and (pointer:coarse)").matches) return;
   const dialog=$("mobileIntroduction");
   if(!dialog || dialog.open) return;
   for(const prefix of ["","ifr-"]){

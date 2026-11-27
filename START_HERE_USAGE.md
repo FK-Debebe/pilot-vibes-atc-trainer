@@ -1,3 +1,13 @@
+# V6.24 — Google sign-in required
+
+Guest access has been removed from the public trainer interface. Mobile phones show the welcome popup and then Google sign-in. Desktop users see Google sign-in immediately. Only a server-verified member session opens the trainer. Saved Google sessions remain valid for up to 30 days on the same browser; sign-out removes them. Analytics opt-out, GPC and Do Not Track do not block sign-in or enable usage tracking.
+
+Publish the V6.24 app files to GitHub Pages, keeping CNAME. No Worker or SQL change is needed. Old guest browser credentials are discarded. The backend still uses a short-lived, location-free pre-login session to issue and verify the Google nonce; this is not guest training access. Historical guest records are retained. Training code is still distributed as a static web app: this sign-in requirement is interface-level gating, not backend protection of the training source.
+
+Automated tests cover mandatory entry, Google verification, returning login, mobile order, privacy settings, sign-out, network/login failure and expiry. Real Google UI/provider availability should be checked after deployment.
+
+---
+
 # FK ATC COM Trainer V6.10 — profile and guest usage system
 
 ## What is built, and what is not live yet
