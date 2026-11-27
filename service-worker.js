@@ -1,9 +1,11 @@
-const CACHE_NAME = "fk-atc-com-trainer-v6-25-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v6-26-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./404.html",
   "./manifest.webmanifest",
+  "./charts/KLGB_ANAHEIM_TWO_2612.pdf",
+  "./charts/KLGB_ANAHEIM_TWO_CONT_2612.pdf",
   "./icon-192.png",
   "./icon-512.png",
   "./analytics-config.js",

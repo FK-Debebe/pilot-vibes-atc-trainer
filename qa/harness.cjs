@@ -17,7 +17,7 @@ function run(mobile=false,stored={},patch=false) {
   querySelector(s){return this.querySelectorAll(s)[0]||null;}
   addEventListener(k,fn){(this.events[k]??=[]).push(fn);}
   click(){if(!this.disabled)this.events.click?.forEach(fn=>fn({target:this,preventDefault(){},stopPropagation(){}}));}
-  scrollIntoView(){} focus(){}
+  showModal(){this.open=true;} close(){this.open=false;} scrollIntoView(){} focus(){}
  }
  const root=new E(require('./qa-dom-v590.json')),body=root.querySelector('body');
  const document={body,getElementById:id=>root.querySelector('#'+id),querySelector:s=>root.querySelector(s),querySelectorAll:s=>root.querySelectorAll(s),createElement:tag=>new E([tag]),addEventListener:(k,f)=>(events[k]??=[]).push(f)};

@@ -5127,7 +5127,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.25 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.26 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5804,6 +5804,11 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </label>
       </div>
 
+      <div class="setup-section-label">DEPARTURE PROCEDURE</div>
+      <label>Departure Procedure
+        <select id="ifr-departureProcedure"><option value="none">No published SID — existing training flow</option><option value="anaheim2">KLGB — ANAHEIM TWO (assigned-route practice)</option></select>
+      </label>
+      <div id="ifr-sidBrief" class="small" style="line-height:1.5;margin:8px 0 16px"></div>
       <div class="setup-section-label">ROUTE</div>
       <div class="ifr-setup-stack">
         <label>IFR Route
@@ -6132,6 +6137,14 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <p><a href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer">View Aircraft Editable eChecklist on Google Play ↗</a></p>
         </section>
 
+        <section class="card howto-reference">
+          <div class="eyebrow">IFR DEPARTURE PROCEDURE PRACTICE</div>
+          <h3>Practice ANAHEIM TWO from Long Beach</h3>
+          <p>In IFR Flight Setup, select KLGB and choose <strong>ANAHEIM TWO</strong> under Departure Procedure. Open both linked FAA chart pages and brief the runway heading, 800-foot initial segment, assigned altitude, and applicable climb requirements before Apply Setup.</p>
+          <p>This first module uses the assigned-route portion with radar vectors to Seal Beach; no named transition is assigned. Read back Anaheim Two, vectors Seal Beach, the onward route, altitude, frequency, squawk and callsign. Tower issues the runway-specific heading, followed by a separate Departure handoff. The trainer checks communication, not aircraft navigation or climb capability.</p>
+          <p>Charts are FAA cycle 2612 snapshots, effective November 26–December 24, 2026. Select <strong>No published SID</strong> to keep the previous flow. Other airports retain their existing scenarios. Obstacle departures and RNAV “climb via” training are not part of this initial module.</p>
+        </section>
+
         <section class="card howto-reference howto-warning">
           <div class="eyebrow">IMPORTANT</div>
           <h3>Training Use Only</h3>
@@ -6155,7 +6168,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.25 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.26 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -11695,6 +11708,7 @@ function ifrRandomSquawk(){
 
 function ifrAirport(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
 function ifrFreq(code,key){
+  if(code==="KLGB" && key==="departure" && ifrSelectedSID())return ["8L","8R","12"].includes(IFR_APP.config.runway)?"125.350":"127.200";
   const ap=ifrAirport(code);
   return String(ap?.frequencies?.[key] || ap?.frequencies?.approach || "121.500");
 }
@@ -11785,6 +11799,34 @@ function ifrDepartureCheckinAltitudeStatus(text){
     passingFeet:passing
   };
 }
+
+// First published SID module: FAA cycle 2612, 26 Nov–24 Dec 2026.
+// Communication practice only; no aircraft position, climb performance or NOTAM validation.
+const IFR_SID_HEADINGS={"8L":76,"8R":76,"12":121,"26L":256,"26R":256,"30":301};
+function ifrSelectedSID(){
+ return IFR_APP.config.departureAirport==="KLGB" && IFR_APP.config.departureProcedure==="anaheim2" && IFR_SID_HEADINGS[IFR_APP.config.runway] ? {name:"ANAHEIM TWO",heading:IFR_SID_HEADINGS[IFR_APP.config.runway]} : null;
+}
+function ifrUpdateSIDChoices(){
+ const select=ifr$("departureProcedure"),brief=ifr$("sidBrief");if(!select||!brief)return;
+ const available=ifr$("departureAirport").value==="KLGB";
+ for(const option of select.options)if(option.value==="anaheim2")option.disabled=!available;
+ if(!available)select.value="none";
+ brief.innerHTML=select.value==="anaheim2" && available
+ ? '<strong>ANAHEIM TWO briefing:</strong> RADAR required; conventional procedure, no RNAV-only SID selected. Initial headings: 8L/R 076°, 12 121°, 26L/R 256°, 30 301° to 800, then vectors to Seal Beach for this assigned-route exercise. Maintain the ATC-assigned altitude; expect filed altitude 10 minutes after departure. Rwy 26L requires 225 ft/NM to 2,300; 26R requires 230 ft/NM to 2,300. Aircraft capability is not assessed by this radio trainer.<br><a href="./charts/KLGB_ANAHEIM_TWO_2612.pdf" target="_blank" rel="noopener noreferrer">FAA chart ↗</a> · <a href="./charts/KLGB_ANAHEIM_TWO_CONT_2612.pdf" target="_blank" rel="noopener noreferrer">Route description ↗</a><br>Training chart snapshot: FAA cycle 2612, effective Nov 26–Dec 24, 2026. No named transition is assigned in this first module. Read both pages before practicing. This selection is a SID, not an obstacle departure procedure.'
+ : 'The existing heading/altitude exercise remains available at all airports. Published SID practice currently supports Long Beach only.';
+}
+function ifrSIDReadbackOK(text){
+ if(!ifrSelectedSID())return true;
+ const n=norm(fkNormalizeRecognition(text));
+ return /\banaheim\s+(?:two|2)\b/.test(n) && (/\bseal beach\b/.test(n)||/\bsli\b/.test(n)||/\bsierra lima india\b/.test(n));
+}
+function ifrSIDClearance(){return ifrSelectedSID()?"Anaheim Two departure, radar vectors Seal Beach, then ":"";}
+function ifrSIDHeadingInstruction(){const sid=ifrSelectedSID();return sid?"Fly heading "+String(sid.heading).padStart(3,"0"):"Fly runway heading";}
+function ifrSIDHeadingReadbackOK(text){
+ const sid=ifrSelectedSID();if(!sid)return /heading/.test(norm(text));
+ const n=norm(fkNormalizeRecognition(text));const digits=String(sid.heading).padStart(3,"0");
+ return /heading/.test(n) && (n.replace(/[^0-9]/g,"").includes(digits)||n.includes([...digits].map(d=>DIGIT[d]).join(" ")));
+}
 function ifrRouteClearance(){
   const route=IFR_APP.config.route;
   if(route==="Direct") return `direct ${IFR_APP.config.destinationAirport}`;
@@ -11855,6 +11897,7 @@ function ifrSetOptions(id,values,preferred){
   el.value=values.includes(preferred)?preferred:values[0];
 }
 function ifrUpdateDepartureChoices(preserve=true){
+  ifrUpdateSIDChoices();
   const code=ifr$("departureAirport").value;
   const ap=ifrAirport(code);
   const oldRunway=preserve?ifr$("runway").value:"";
@@ -11934,6 +11977,7 @@ function ifrSaveLastSetup(){
       arrivalTraffic:selectedTrafficPattern("ifr-arrivalTraffic"),
       departureTraffic:selectedTrafficPattern("ifr-departureTraffic"),
       route:ifr$("direction")?.value,
+      departureProcedure:ifr$("departureProcedure")?.value||"none",
       userRoute:ifr$("userRoute")?.value,
       altitude:ifr$("altitude")?.value,
       destRunway:ifr$("destRunway")?.value,
@@ -11984,6 +12028,8 @@ function ifrLoadLastSetup(){
       ifr$("location").value=saved.location;
     }
     if(saved.route && ifr$("direction")) ifr$("direction").value=saved.route;
+    if(ifr$("departureProcedure"))ifr$("departureProcedure").value=saved.departureProcedure==="anaheim2"?"anaheim2":"none";
+    ifrUpdateSIDChoices();
     if(saved.userRoute && ifr$("userRoute")) ifr$("userRoute").value=saved.userRoute;
     if(saved.altitude && ifr$("altitude")) ifr$("altitude").value=saved.altitude;
 
@@ -12024,6 +12070,7 @@ function ifrReadSetup(generateCodes=true){
     runway:ifr$("runway").value,
     destRunway:ifr$("destRunway").value,
     route:ifr$("direction").value||"As Filed",
+    departureProcedure:ifr$("departureAirport").value==="KLGB"?(ifr$("departureProcedure")?.value||"none"):"none",
     userRoute:(ifr$("userRoute")?.value||"").trim(),
     altitude:ifrFormatAltitude(ifr$("altitude").value),
     approachType:ifr$("approachType").value||"RNAV (GPS)",
@@ -12734,8 +12781,8 @@ function ifrEvaluateTransmission(text){
       if((!clearanceOnGround||checks.facility)&&ifrMeetsLevel(checks,["callsign","location","atis","destination","ifr"],["facility"])){
         IFR_APP.session.clearanceAtis=IFR_APP.config.atis;
         const initial=ifrClearanceInitialAltitude();
-        const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
-        const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrRouteClearance()}, maintain ${altitudeSpoken(initial)}, expect ${altitudeSpoken(ifrAltitudeNumber())} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
+        const visual=`${ifrCallsignVisual()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrSIDClearance()}${ifrRouteClearance()}, maintain ${initial.toLocaleString("en-US")}, expect ${ifrAltitudeNumber().toLocaleString("en-US")} ten minutes after departure, departure frequency ${ifrFreq(IFR_APP.config.departureAirport,"departure")}, squawk ${IFR_APP.squawk}.`;
+        const spoken=`${ifrCallsignSpoken()}, cleared to ${ifrAirport(IFR_APP.config.destinationAirport).name} Airport, ${ifrSIDClearance()}${ifrRouteClearance()}, maintain ${altitudeSpoken(initial)}, expect ${altitudeSpoken(ifrAltitudeNumber())} one zero minutes after departure, departure frequency ${frequencySpoken(ifrFreq(IFR_APP.config.departureAirport,"departure"))}, squawk ${[...IFR_APP.squawk].map(d=>DIGIT[d]).join(" ")}.`;
         ifrATC(visual,spoken);
         IFR_APP.phase="clearanceReadback";
         ifr$("feedback").textContent="Read back the IFR clearance: clearance limit/route, altitude, departure frequency, and squawk.";
@@ -12748,6 +12795,7 @@ function ifrEvaluateTransmission(text){
       checks={
         destination:ifrContainsAirport(clearanceText,IFR_APP.config.destinationAirport),
         route:ifrRouteReadbackOK(clearanceText),
+        departureProcedure:ifrSIDReadbackOK(clearanceText),
         altitude:ifrContainsAltitude(clearanceText,ifrClearanceInitialAltitude()),
         expectedAltitude:ifrClearanceExpectedAltitudeOK(clearanceText),
         frequency:ifrContainsFrequency(clearanceText,ifrFreq(IFR_APP.config.departureAirport,"departure")),
@@ -12755,7 +12803,7 @@ function ifrEvaluateTransmission(text){
         callsign:ifrContainsCallsign(clearanceText)
       };
       score=ifrScoreChecks(stage,checks);
-      const clearanceRequired=["destination","route","altitude","frequency","squawk"];
+      const clearanceRequired=["destination","route","altitude","frequency","squawk","departureProcedure"];
       if(IFR_APP.config.level!=="beginner") clearanceRequired.push("expectedAltitude");
       if(IFR_APP.config.level==="advanced") clearanceRequired.push("callsign");
       if(clearanceRequired.every(k=>checks[k])){
@@ -12769,6 +12817,7 @@ function ifrEvaluateTransmission(text){
         const missing=[];
         if(!checks.destination) missing.push("clearance limit");
         if(!checks.route) missing.push("route");
+        if(!checks.departureProcedure) missing.push("Anaheim Two departure and vectors Seal Beach");
         if(!checks.altitude) missing.push("initial altitude");
         if(!checks.frequency) missing.push("departure frequency");
         if(!checks.squawk) missing.push("squawk");
@@ -12818,9 +12867,9 @@ function ifrEvaluateTransmission(text){
       checks={facility:n.includes("tower"),callsign:ifrContainsCallsign(text),ready:n.includes("ready"),ifr:n.includes("ifr")||n.includes("departure"),runway:ifrContainsRunway(text,IFR_APP.config.runway)};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","ready","runway"],["facility","ifr"])){
-        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. Fly runway heading.`);
+        ifrATC(`${ifrCallsignVisual()}, Runway ${IFR_APP.config.runway}, cleared for takeoff. ${ifrSIDHeadingInstruction()}.`);
         IFR_APP.phase="towerReadback";
-        ifr$("feedback").textContent="Read back runway, takeoff clearance, and runway heading.";
+        ifr$("feedback").textContent="Read back runway, takeoff clearance, and "+ifrSIDHeadingInstruction()+".";
       }else ifrATC(`${ifrCallsignVisual()}, say again ready for IFR departure.`);
     }else if(IFR_APP.phase==="towerHandoffReadback"){
       const departureFrequency=ifrFreq(IFR_APP.config.departureAirport,"departure");
@@ -12836,13 +12885,13 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent=`Read back ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${departureFrequency} and your callsign.`;
       }
     }else if(IFR_APP.phase==="towerReadback"){
-      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:ifrTakeoffReadbackOK(text),heading:n.includes("runway heading")||n.includes("heading")};
+      checks={runway:ifrContainsRunway(text,IFR_APP.config.runway),takeoff:ifrTakeoffReadbackOK(text),heading:ifrSIDHeadingReadbackOK(text)};
       score=ifrScoreChecks(stage,checks);
       if(checks.runway&&checks.takeoff&&checks.heading){
         ifrATC(`${ifrCallsignVisual()}, frequency change approved. Contact ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${ifrFreq(IFR_APP.config.departureAirport,"departure")}.`);
         IFR_APP.phase="towerHandoffReadback";
         ifr$("feedback").textContent=`Read back ${ifrFacility(IFR_APP.config.departureAirport,"departure")} ${ifrFreq(IFR_APP.config.departureAirport,"departure")} and your callsign.`;
-      }else ifrATC(`${ifrCallsignVisual()}, verify cleared for takeoff Runway ${IFR_APP.config.runway}, fly runway heading.`);
+      }else ifrATC(`${ifrCallsignVisual()}, verify cleared for takeoff Runway ${IFR_APP.config.runway}, ${ifrSIDHeadingInstruction()}.`);
     }
     return;
   }
@@ -13348,6 +13397,8 @@ function ifrInit(){
   if(!ifr$("departureAirport")) return;
 
   ifr$("departureAirport").addEventListener("change",()=>ifrUpdateDepartureChoices(false));
+  ifr$("departureProcedure")?.addEventListener("change",ifrUpdateSIDChoices);
+  ifrUpdateSIDChoices();
   ifr$("destinationAirport").addEventListener("change",()=>ifrUpdateDestinationChoices(false));
   ifr$("destRunway").addEventListener("change",()=>setTrafficPattern("ifr-arrivalTraffic",airportData(ifr$("destinationAirport").value),ifr$("destRunway").value));
   ifr$("runway").addEventListener("change",()=>setTrafficPattern("ifr-departureTraffic",airportData(ifr$("departureAirport").value),ifr$("runway").value));
