@@ -1,10 +1,11 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const ids={};for(const id of ['contactForm','contactStatus','contact-name','contact-email','contact-message'])ids[id]={value:'',events:{},addEventListener(k,f){this.events[k]=f},focus(){this.focused=true},reportValidity(){return this.valid!==false}};
-const events={},g={window:null,document:{addEventListener:(k,f)=>events[k]=f,getElementById:id=>ids[id]},location:{href:''}};g.window=g;vm.createContext(g);vm.runInContext(fs.readFileSync(__dirname+'/../contact.js','utf8'),g);events.DOMContentLoaded();
-const submit=()=>ids.contactForm.events.submit({preventDefault(){}});
-ids['contact-name'].value='Test Pilot';ids['contact-email'].value='pilot@example.com';ids['contact-message'].value='Question & feedback';submit();
-const u=new URL(g.location.href);assert.equal(u.pathname,'fwdskillzone@gmail.com');assert.match(u.searchParams.get('body'),/Name: Test Pilot/);assert.match(u.searchParams.get('body'),/Email: pilot@example.com/);assert.match(u.searchParams.get('body'),/Question & feedback/);assert.match(u.searchParams.get('body'),/V6.21/);assert.match(ids.contactStatus.textContent,/has not been sent/);
-for(const key of ['name','email','message']){const f=ids['contact-'+key],v=f.value;f.value='   ';g.location.href='';submit();assert.equal(g.location.href,'');assert(f.focused);f.value=v;}
-ids.contactForm.valid=false;g.location.href='';submit();assert.equal(g.location.href,'');
-const html=fs.readFileSync(__dirname+'/../index.html','utf8'),form=html.split('<form id="contactForm">')[1].split('</form>')[0];assert.equal((form.match(/ required/g)||[]).length,3);assert.match(form,/type="email"/);assert.match(form,/>Submit</);assert(!/Radio call|Open email draft|Copy email draft|contact-topic|contact-mode/.test(form));assert.match(html,/data-page="contact".*Contact us/);
-console.log('Contact form verified: required Name/Email/Message, native validity, whitespace checks, encoded email content and single Submit button.');
+const html=fs.readFileSync(__dirname+'/../index.html','utf8'),formHTML=html.split('<form id="contactForm"')[1].split('</form>')[0];
+assert.match(formHTML,/action="https:\/\/formsubmit.co\/fwdskillzone@gmail.com" method="POST"/);assert.equal((formHTML.match(/ required/g)||[]).length,3);assert.match(formHTML,/type="email"/);assert.match(formHTML,/name="_next" value="https:\/\/atc.fwdskillzone.com\/contact-thanks.html"/);assert(!formHTML.includes('name="_captcha"'));assert(!formHTML.includes('contact-call'));assert(!/Open email draft|Copy email draft/.test(formHTML));
+const ids={};for(const id of ['contactForm','contactStatus','contact-name','contact-email','contact-message'])ids[id]={value:'test',events:{},addEventListener(k,f){this.events[k]=f},focus(){this.focused=true},reportValidity(){return this.valid!==false}};
+let ready;const g={document:{addEventListener:(k,f)=>ready=f,getElementById:id=>ids[id]}};vm.createContext(g);const source=fs.readFileSync(__dirname+'/../contact.js','utf8');assert(!source.includes('mailto:'));vm.runInContext(source,g);ready();
+let prevented=false;const submit=()=>{prevented=false;ids.contactForm.events.submit({preventDefault(){prevented=true}})};
+submit();assert.equal(prevented,false,'valid form must use native HTTPS POST');assert.match(ids.contactStatus.textContent,/Submitting/);
+for(const key of ['name','email','message']){const f=ids['contact-'+key],v=f.value;f.value=' ';submit();assert(prevented);assert(f.focused);f.value=v;}
+ids.contactForm.valid=false;submit();assert(prevented);
+assert(fs.existsSync(__dirname+'/../contact-thanks.html'));
+console.log('Direct contact checks passed: HTTPS POST, required inputs, verification preserved, validation and return page. Live activation/delivery still requires owner test.');

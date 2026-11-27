@@ -5117,7 +5117,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.21 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.22 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6140,8 +6140,12 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </section>
         <section class="card contact-form-card">
           <h3>Write your feedback</h3>
-          <p class="muted">All fields are required. Submit opens your email app so you can review and send your message to fwdskillzone@gmail.com.</p>
-          <form id="contactForm">
+          <p class="muted">All fields are required. Your message will be sent to fwdskillzone@gmail.com using FormSubmit.</p>
+          <form id="contactForm" action="https://formsubmit.co/fwdskillzone@gmail.com" method="POST">
+            <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
+            <input type="hidden" name="Trainer version" value="V6.22 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
