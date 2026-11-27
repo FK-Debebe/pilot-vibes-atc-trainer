@@ -53,7 +53,7 @@ Publish:
 npx wrangler deploy
 ```
 
-The Worker configuration includes a rate limiter, one-hour owner sessions, daily cleanup and disabled application request logging. Keep the rate-limiter binding enabled; the service deliberately fails closed without it. Rate limiting is per Cloudflare location and does not guarantee protection from all automated traffic. Review Cloudflare's current service quotas/pricing in your own account before deployment.
+The Worker configuration includes a rate limiter, 30-day signed-in sessions with one-hour owner-report authorization, daily cleanup and disabled application request logging. Keep the rate-limiter binding enabled; the service deliberately fails closed without it. Rate limiting is per Cloudflare location and does not guarantee protection from all automated traffic. Review Cloudflare's current service quotas/pricing in your own account before deployment.
 
 ## Connect the trainer
 
@@ -82,7 +82,7 @@ Sign in using the Gmail address stored privately in OWNER_EMAILS, then select Ow
 
 - Active time reuses the existing analytics timer: visible app time, capped after 60 seconds without interaction. The separate database receives only seconds, not training events or text.
 - Location is read by the backend from Cloudflare's request metadata, not GPS or a client-supplied city. Only country, region and city are retained, with the last location replacing the previous one. Country/region/city can be empty or inaccurate, especially with VPNs or mobile connections. No raw IP, precise coordinates, postal code or device fingerprint is stored by this code. Cloudflare/Google still process requests under their own service policies.
-- Guest credentials are stored in that browser for up to 90 days. Signed-in credentials stay in that tab's session storage for one day; owner sessions last one hour. Clearing browser storage, expiry, or using another browser produces a different guest ID. Cross-device member usage joins after sign-in.
+- Guest credentials are stored in that browser for up to 90 days. Signed-in credentials are saved in this browser's local storage for up to 30 days, with a session-storage fallback. Returning visits validate the credential with the server before entering the trainer. Sign out revokes and clears it. Owner report authorization expires after one hour; sign out and sign in again to reverify owner access. Clearing browser storage, expiry, or using another browser produces a different guest ID. Cross-device member usage joins after sign-in.
 - A heartbeat is a browser estimate, not proof a human practiced. The server limits credited seconds to elapsed server time and deduplicates batch IDs. Two tabs sharing a guest credential cannot credit time faster than wall-clock time. Separate signed-in device sessions can accumulate concurrently.
 - During a short network problem, up to 20 usage batches are held in memory. Reconnect delivery is best-effort; server elapsed-time caps can undercount offline bursts. Nothing is queued persistently across reloads. Old GA4 usage is not imported or linked to named profiles.
 - The Analytics privacy opt-out and browser Do Not Track/GPC settings apply to the new system. They are not bypassed. Google sign-in remains available while usage is off. Authentication-only requests carry X-FK-Usage: off: they create a short-lived sign-in challenge session and store no new location or usage time. Signed-in profile identity and sign-in timestamps are still used to provide account access. Existing location and usage totals are retained, not updated by a privacy-disabled login. Guest entry without tracking makes no usage-session requests.
@@ -122,3 +122,7 @@ Local tests use a real in-memory SQLite database and generated RSA keys, with mo
 ## V6.14 deployment
 
 Replace the deployed Worker code with FK_ATC_Usage_Worker_V6_14.txt and deploy. Keep DB, API_RATE_LIMITER, ALLOWED_ORIGINS, GOOGLE_CLIENT_ID and the secret OWNER_EMAILS. No database schema change is required. Then publish the V6.14 app files to GitHub Pages. Test real Google sign-in with tracking enabled and disabled, plus owner dashboard access. Local tests mock Google UI; they verify real token validation separately but cannot confirm browser/provider settings.
+
+## V6.19 deployment and remembered login
+
+Replace worker.js with FK_ATC_Usage_Worker_V6_19.txt, then deploy. Keep the existing bindings and secret variables. No SQL migration is needed. Upload the V6.19 app files to GitHub Pages, keeping CNAME. Existing short-lived logins need a new Google sign-in to receive a 30-day session. Login persists only in the same browser/profile while its storage is retained. Private browsing, cleared site data, expired/revoked sessions or blocked storage may require sign-in again. Owner-report access requires fresh verification after an hour, independently of the remembered trainer login. Tracking privacy settings remain separate from authentication. The new eChecklist navigation and guide links open its verified Google Play listing in a new tab.

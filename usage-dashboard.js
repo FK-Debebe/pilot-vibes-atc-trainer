@@ -3,13 +3,13 @@
  const $=id=>document.getElementById(id),message=text=>$('status').textContent=text;
  async function load(reset=true){
   if(!/^https:\/\//.test(base)){message('Usage backend has not been connected yet.');return;}
-  let token='';try{token=sessionStorage.getItem('fk-usage-member-v1')||localStorage.getItem('fk-usage-guest-v1')||'';}catch{}
+  let token='';try{token=localStorage.getItem('fk-usage-member-v1')||sessionStorage.getItem('fk-usage-member-v1')||localStorage.getItem('fk-usage-guest-v1')||'';}catch{}
   if(!token){message('Sign in as the owner on the trainer start page first.');return;}
   if(reset){offset=0;$('people').replaceChildren();$('summary').replaceChildren();}
   $('refresh').disabled=true;$('more').disabled=true;
   try{
    const response=await fetch(base+'/admin/people?offset='+offset,{headers:{Authorization:'Bearer '+token},cache:'no-store',credentials:'omit'});
-   const data=await response.json();if(!response.ok)throw Error(response.status===403?'This account is not authorized to view owner reports.':response.status===401?'Your sign-in expired. Sign in again through the trainer.':data.error||'Service unavailable');
+   const data=await response.json();if(!response.ok)throw Error(response.status===403?'Owner access is unavailable or needs fresh verification. In the trainer, sign out and sign in again with your authorized owner account.':response.status===401?'Your sign-in expired. Sign in again through the trainer.':data.error||'Service unavailable');
    if(reset)for(const [label,value] of [['People/browser IDs',data.summary.people],['Guests',data.summary.guests||0],['Signed-in profiles',data.summary.members||0],['Active hours',(data.summary.active_seconds/3600).toFixed(2)]]){
     const p=document.createElement('p');p.textContent=label+': '+value;$('summary').appendChild(p);
    }

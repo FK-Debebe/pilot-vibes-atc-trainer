@@ -71,7 +71,11 @@ try{
  assert.equal((await request('/me','GET',undefined,memberToken)).status,401);
  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM usage_batches WHERE person_id=?').get(id).n,0);
  assert.equal((await request('/admin/people','GET',undefined,ownerLogin.token)).status,200);
- now+=3600001;assert.equal((await request('/admin/people','GET',undefined,ownerLogin.token)).status,401);
+ now+=3600001;assert.equal((await request('/admin/people','GET',undefined,ownerLogin.token)).status,403);
+ assert.equal((await request('/me','GET',undefined,ownerLogin.token)).status,200,'owner stays signed in after report authorization expires');
+ assert.equal((await request('/me','GET',undefined,ownerLogin.token)).data.owner,false);
+ now+=2*86400000;assert.equal((await request('/me','GET',undefined,ownerLogin.token)).status,200,'remember login across visits');
+ now+=30*86400000;assert.equal((await request('/me','GET',undefined,ownerLogin.token)).status,401,'login expires after thirty days');
  env.API_RATE_LIMITER.limit=async()=>({success:false});assert.equal((await request('/session','POST',{})).status,429);
 }finally{Date.now=realNow;}
 // Verify actual RSA signatures and claims using generated test keys, not an auth bypass.

@@ -5093,6 +5093,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
       <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Reports</span></button>
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
+      <a class="side-nav-item" style="text-decoration:none" href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer" aria-label="FK Editable eChecklist on Google Play (opens in a new tab)"><span class="side-nav-number">06</span><span>Aircraft eChecklist ↗</span></a>
       <button id="installAppButton" class="install-app-button" type="button" aria-label="Install FK ATC COM Trainer app">INSTALL APP</button>
     </nav>
     <div class="side-nav-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a><br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
@@ -5101,7 +5102,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.18 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.19 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6099,6 +6100,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <p><strong>IFR:</strong> departure ATIS, IFR clearance, Ground, Tower and a separate Departure handoff, Departure, Enroute, arrival ATIS, Approach, destination Tower, and destination Ground. Follow the current stage display for your scenario.</p>
         </section>
 
+        <section class="card howto-reference">
+          <div class="eyebrow">COMPANION APP</div>
+          <h3>FK Editable eChecklist</h3>
+          <p>Create and use aircraft-specific, editable Normal and Emergency checklists with voice-guided challenge-and-response support in the Android companion app.</p>
+          <p><a href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer">View Aircraft Editable eChecklist on Google Play ↗</a></p>
+        </section>
+
         <section class="card howto-reference howto-warning">
           <div class="eyebrow">IMPORTANT</div>
           <h3>Training Use Only</h3>
@@ -6204,7 +6212,7 @@ function showTrainerWithSetup(mode="vfr"){
 }
 
 function initSideNavigation(){
-  document.querySelectorAll(".side-nav-item").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.page)));
+  document.querySelectorAll(".side-nav-item[data-page]").forEach(btn=>btn.addEventListener("click",()=>showAppPage(btn.dataset.page)));
 
   $("reportNewFlight")?.addEventListener("click",()=>showTrainerWithSetup(activeReportMode));
   $("repeatSameRoute")?.addEventListener("click",()=>{

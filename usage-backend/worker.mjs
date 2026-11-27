@@ -19,7 +19,8 @@ async function session(req,env){
  const token=req.headers.get('Authorization')?.match(/^Bearer ([0-9a-f]{64})$/)?.[1];if(!token)return null;
  const hash=await digest(token);
  const row=await env.DB.prepare('SELECT s.*,p.kind,p.display_name FROM sessions s JOIN people p ON p.id=s.person_id WHERE token_hash=? AND expires_at>?').bind(hash,Date.now()).first();
- return row?{...row,hash}:null;
+ // Remember sign-in for 30 days; require fresh Google verification for owner reports after one hour.
+ return row?{...row,owner:row.owner && row.expires_at-30*86400000+3600000>Date.now()?1:0,hash}:null;
 }
 const profile=async(env,id)=>env.DB.prepare('SELECT id,display_name,kind,active_seconds,country,region,city FROM people WHERE id=?').bind(id).first();
 export function createWorker(verify=verifyGoogleToken){return {
@@ -82,7 +83,7 @@ export function createWorker(verify=verifyGoogleToken){return {
     if(req.headers.get('X-FK-Usage')==='off')statements.push(env.DB.prepare('UPDATE people SET display_name=?,last_seen=? WHERE id=?').bind(name,now,id));
     else statements.push(env.DB.prepare('UPDATE people SET display_name=?,country=?,region=?,city=?,last_seen=? WHERE id=?').bind(name,g.country,g.region,g.city,now,id));
     statements.push(env.DB.prepare('DELETE FROM sessions WHERE token_hash=?').bind(s.hash));
-    statements.push(env.DB.prepare('INSERT INTO sessions(token_hash,person_id,expires_at,last_credit_ms,owner) VALUES(?,?,?,?,?)').bind(hash,id,now+(owner?3600000:86400000),now,owner?1:0));
+    statements.push(env.DB.prepare('INSERT INTO sessions(token_hash,person_id,expires_at,last_credit_ms,owner) VALUES(?,?,?,?,?)').bind(hash,id,now+30*86400000,now,owner?1:0));
     await env.DB.batch(statements);
     return response({token,profile:await profile(env,id),owner},200,origin);
    }

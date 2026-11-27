@@ -7,7 +7,7 @@
  let token='',person=null,owner=false,opening=null,sending=false,enabled=true,gis=null,generation=0;
  let entered=false,screen=null;
  const pending=[];
- try{token=sessionStorage.getItem(memberKey)||localStorage.getItem(localKey)||'';}catch{}
+ try{token=localStorage.getItem(memberKey)||sessionStorage.getItem(memberKey)||localStorage.getItem(localKey)||'';}catch{}
  const permitted=()=>enabled && !navigator.globalPrivacyControl && navigator.doNotTrack!=='1' && window.doNotTrack!=='1' && (()=>{try{return localStorage.getItem('fk-atc-analytics-consent-v1')!=='denied';}catch{return true;}})();
  const panelId='fk-usage-profile';
  async function api(path,method='GET',body){
@@ -16,7 +16,7 @@
  }
  function save(result){
   token=result.token||token;person=result.profile;owner=!!result.owner;
-  try{localStorage.removeItem(localKey);sessionStorage.removeItem(memberKey);(person.kind==='guest'&&permitted()?localStorage:sessionStorage).setItem(person.kind==='guest'?localKey:memberKey,token);}catch{}
+  try{localStorage.removeItem(localKey);localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);(person.kind==='member'||permitted()?localStorage:sessionStorage).setItem(person.kind==='guest'?localKey:memberKey,token);if(person.kind==='member')sessionStorage.setItem(memberKey,token);}catch{}
  }
  async function ensure(authentication=false){
   if(!permitted()&&!authentication)return false;
@@ -34,7 +34,7 @@
   try{while(pending.length&&permitted()){
    const item=pending[0];
    try{await api('/usage','POST',item);pending.shift();}
-   catch(e){if(e.status===401){token='';person=null;pending.length=0;try{localStorage.removeItem(localKey);sessionStorage.removeItem(memberKey);}catch{}}break;}
+   catch(e){if(e.status===401){token='';person=null;pending.length=0;try{localStorage.removeItem(localKey);localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);}catch{}}break;}
   }}finally{sending=false;}
  }
  function record(name,data){
@@ -60,7 +60,7 @@
   const out=element('button','Sign out');out.type='button';out.addEventListener('click',async()=>{
    out.disabled=true;
    try{await drain();await api('/logout','POST',{});}catch{} 
-   token='';person=null;owner=false;pending.length=0;try{sessionStorage.removeItem(memberKey);}catch{}
+   token='';person=null;owner=false;pending.length=0;try{localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);}catch{}
    bar.remove();entered=false;showEntry();
   });bar.appendChild(out);
   if(owner){const link=element('a','Owner dashboard');link.href='./usage-dashboard.html';bar.appendChild(link);}
@@ -109,7 +109,7 @@
  }
  async function start(){
   if(entered||screen)return;
-  if(token&&(permitted()||(()=>{try{return !!sessionStorage.getItem(memberKey);}catch{return false;}})())&&await ensure(true)&&person?.kind==='member'){enter();return;}
+  if(token&&(permitted()||(()=>{try{return !!(localStorage.getItem(memberKey)||sessionStorage.getItem(memberKey));}catch{return false;}})())&&await ensure(true)&&person?.kind==='member'){enter();return;}
   showEntry();
  }
  window.FKUsage=Object.freeze({record,preference,start});
