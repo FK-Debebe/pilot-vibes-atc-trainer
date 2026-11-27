@@ -1,4 +1,4 @@
-const CACHE_NAME = "fk-atc-com-trainer-v6-19-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v6-20-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const APP_SHELL = [
   "./analytics-privacy.html",
   "./usage-config.js",
   "./usage-client.js",
+  "./contact.js",
   "./usage-dashboard.html",
   "./usage-dashboard.js"
 ];

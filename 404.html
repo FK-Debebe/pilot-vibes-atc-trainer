@@ -16,6 +16,7 @@
 <script defer src="./analytics.js"></script>
 <script src="./usage-config.js"></script>
 <script defer src="./usage-client.js"></script>
+<script defer src="./contact.js"></script>
 <style>
 :root{
   --navy:#0a2f57; --blue:#1767b1; --blue2:#2d82cf; --bg:#edf4f9; --card:#fff;
@@ -5049,6 +5050,19 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   }
 }
 
+
+/* Contact form: labels above controls and a single-column layout on phones. */
+.contact-shell{max-width:900px;margin:0 auto;display:grid;gap:18px}
+.contact-form-card{padding:24px}
+.contact-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+#contactForm label{display:flex;flex-direction:column;gap:7px;margin:0 0 16px;font-size:14px;font-weight:600;min-width:0}
+#contactForm input,#contactForm select,#contactForm textarea,#contactDraft{width:100%;min-width:0;box-sizing:border-box;font:16px/1.5 Arial,sans-serif;padding:12px;border:1px solid #c7d6e3;border-radius:9px;background:white;color:#182234}
+#contactForm textarea,#contactDraft{resize:vertical}
+.contact-actions{display:flex;gap:12px;flex-wrap:wrap}
+#contactStatus{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+#page-contact a{overflow-wrap:anywhere}
+@media(max-width:700px){.contact-fields{grid-template-columns:1fr;gap:0}.contact-form-card{padding:16px}.contact-actions>*{width:100%}}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5093,7 +5107,8 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button class="side-nav-item" data-page="training-log" type="button"><span class="side-nav-number">03</span><span>Training Log</span></button>
       <button class="side-nav-item" data-page="report" type="button"><span class="side-nav-number">04</span><span>Flight Reports</span></button>
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
-      <a class="side-nav-item" style="text-decoration:none" href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer" aria-label="FK Editable eChecklist on Google Play (opens in a new tab)"><span class="side-nav-number">06</span><span>Aircraft eChecklist ↗</span></a>
+      <button class="side-nav-item" data-page="contact" type="button"><span class="side-nav-number">06</span><span>Contact &amp; Feedback</span></button>
+      <a class="side-nav-item" style="text-decoration:none" href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer" aria-label="FK Editable eChecklist on Google Play (opens in a new tab)"><span class="side-nav-number">07</span><span>Aircraft eChecklist ↗</span></a>
       <button id="installAppButton" class="install-app-button" type="button" aria-label="Install FK ATC COM Trainer app">INSTALL APP</button>
     </nav>
     <div class="side-nav-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a><br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
@@ -5102,7 +5117,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.19 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.20 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6115,6 +6130,34 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       </div>
     </section>
 
+    <section id="page-contact" class="app-page" data-title="CONTACT &amp; FEEDBACK">
+      <div class="contact-shell">
+        <section class="card howto-hero">
+          <div class="eyebrow">CONTACT &amp; FEEDBACK</div>
+          <h2>Help improve FK ATC COM Trainer</h2>
+          <p>Report a problem, suggest an improvement, or ask a question. Include the radio call and what you expected when reporting a recognition or phraseology issue.</p>
+          <p>Email <a href="mailto:fwdskillzone@gmail.com">fwdskillzone@gmail.com</a> or <a href="https://www.facebook.com/groups/socalppg" target="_blank" rel="noopener noreferrer">join SoCal Private Pilots on Facebook ↗</a>.</p>
+        </section>
+        <section class="card contact-form-card">
+          <h3>Write your feedback</h3>
+          <p class="muted">This form opens a draft in your email app. Review it there before sending. Only what you enter below and the trainer version are included.</p>
+          <form id="contactForm">
+            <div class="contact-fields">
+              <label for="contact-topic">Topic<select id="contact-topic"><option>Report an issue</option><option>Suggest an improvement</option><option>General question</option></select></label>
+              <label for="contact-mode">Training mode<select id="contact-mode"><option value="">Select if relevant</option><option>VFR — Flight Following</option><option>VFR — No Flight Following</option><option>VFR — Traffic Pattern</option><option>IFR</option></select></label>
+              <label for="contact-route">Airports / route (optional)<input id="contact-route" maxlength="120" placeholder="Example: KLGB to KCRQ"></label>
+              <label for="contact-stage">Stage (optional)<input id="contact-stage" maxlength="120" placeholder="Example: Destination Tower"></label>
+            </div>
+            <label for="contact-message">Message (required)<textarea id="contact-message" required maxlength="2000" rows="6" placeholder="What happened, and what should happen instead?"></textarea></label>
+            <label for="contact-call">Radio call (optional)<textarea id="contact-call" maxlength="600" rows="3" placeholder="Type the call you want to share."></textarea></label>
+            <div class="contact-actions"><button type="submit" class="btn primary">Open email draft</button><button type="button" id="contactCopy" class="btn">Copy email draft</button></div>
+            <p id="contactStatus" role="status" aria-live="polite"></p>
+          </form>
+          <section id="contactDraftSection" hidden><h3>Your email draft</h3><label for="contactDraft">Copy and paste into your email app if needed</label><textarea id="contactDraft" readonly rows="10"></textarea></section>
+        </section>
+      </div>
+    </section>
+
     <p class="small product-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a> • <a href="https://www.fwdskillzone.com/pilot-vibes/atc-com-practice" target="_blank" rel="noopener noreferrer">Instructions &amp; Examples</a> • Training aid only — not for operational ATC use</p>
   
 <section id="xpPanel" class="xp-panel" aria-label="X-Plane connection">
@@ -6168,7 +6211,8 @@ const APP_PAGE_TITLES={
   "ifr-trainer":"IFR RADIO TRAINER",
   "training-log":"TRAINING LOG",
   "report":"FLIGHT REPORTS",
-  "how-to":"HOW TO USE"
+  "how-to":"HOW TO USE",
+  "contact":"CONTACT & FEEDBACK"
 };
 
 let activeTrainingMode="vfr";

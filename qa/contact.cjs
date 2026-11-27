@@ -1,0 +1,13 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync(__dirname+'/../contact.js','utf8');
+const ids={};for(const id of ['contactForm','contactStatus','contactDraft','contactDraftSection','contactCopy',...['topic','mode','route','stage','message','call'].map(k=>'contact-'+k)])ids[id]={value:'',events:{},addEventListener(k,f){this.events[k]=f},focus(){},select(){this.selected=true},reportValidity(){return true}};
+const events={},g={window:null,document:{addEventListener:(k,f)=>events[k]=f,getElementById:id=>ids[id]},navigator:{clipboard:{writeText:async text=>g.copied=text}},location:{href:''}};g.window=g;
+vm.createContext(g);vm.runInContext(source,g);events.DOMContentLoaded();
+ids['contact-topic'].value='Report an issue';ids['contact-mode'].value='IFR';ids['contact-route'].value='KLGB to KCRQ';ids['contact-message'].value='Call rejected & "say again"';ids['contact-call'].value='SoCal, Cessna 172SP, 1000 climbing 3000';
+ids.contactForm.events.submit({preventDefault(){}});
+const u=new URL(g.location.href);assert.equal(u.pathname,'fwdskillzone@gmail.com');assert.match(u.searchParams.get('body'),/Call rejected & "say again"/);assert.match(u.searchParams.get('body'),/V6.20 Standalone/);assert.match(u.searchParams.get('subject'),/Report an issue/);
+assert.equal(ids.contactDraftSection.hidden,false);assert.match(ids.contactStatus.textContent,/Review the draft/);
+(async()=>{await ids.contactCopy.events.click();assert.match(g.copied,/KLGB to KCRQ/);
+g.navigator.clipboard.writeText=async()=>{throw Error('blocked')};await ids.contactCopy.events.click();assert(ids.contactDraft.selected);
+const previous=g.location.href;ids['contact-message'].value='   ';ids.contactForm.events.submit({preventDefault(){}});assert.equal(g.location.href,previous);assert.equal(ids.contactStatus.textContent,'Please enter a message.');
+console.log('Contact draft checks passed: encoding, correct recipient/version, no automatic send, whitespace validation and copy fallback.');})();

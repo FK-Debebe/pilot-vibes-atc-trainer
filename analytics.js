@@ -11,7 +11,7 @@
   const pendingEvents=[];
   const maxQueue=200,maxAgeMs=30*60*1000;
   try { choice=localStorage.getItem(preferenceKey)||"unset"; } catch {}
-  const pages={trainer:"vfr_trainer","ifr-trainer":"ifr_trainer","training-log":"training_log",report:"flight_reports","how-to":"how_to"};
+  const pages={trainer:"vfr_trainer","ifr-trainer":"ifr_trainer","training-log":"training_log",report:"flight_reports","how-to":"how_to",contact:"contact_feedback"};
   const modes=["vfr","ifr"];
   const types={on:"flight_following",off:"no_flight_following",pattern:"traffic_pattern",ifr:"ifr"};
   const stages=["atis","clearance","ground","tower","departure","enroute","arrival","arrivalAtis","destTower","destGround","parking"];
@@ -26,7 +26,7 @@
     if(!enabled||!allowedEvents.has(name)) return;
     try{window.FKUsage?.record(name,parameters);}catch{}
     // Only enumerated app states and numeric counts may leave this module.
-    const out={section,app_version:"6.19",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
+    const out={section,app_version:"6.20",page_location:url(),page_title:"FK ATC COM Trainer",transport_type:"beacon",...parameters};
     if(!tagReady || navigator.onLine===false){
       pendingEvents.push({name,parameters:out,created:Date.now()});
       if(pendingEvents.length>maxQueue)pendingEvents.shift();
