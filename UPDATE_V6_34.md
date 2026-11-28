@@ -1,0 +1,1 @@
+V6.34: donation links now read Support and use PayPal-style yellow (#ffc439) with dark blue (#003087), including navigation. The original PayPal recipient URL, new-tab behavior and accessible PayPal labels remain intact. Upload website files to GitHub. No new Worker or SQL update is required.

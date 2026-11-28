@@ -1,0 +1,1 @@
+V6.35 moves Support the Trainer from How To Use to below the Contact us form. Navigation and completed-report donation links, PayPal colors and destination are preserved. Upload website files to GitHub. No new Cloudflare or SQL updates required.

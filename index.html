@@ -5067,7 +5067,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 @media(max-width:700px){.contact-fields{grid-template-columns:1fr;gap:0}.contact-form-card{padding:16px}.contact-actions>*{width:100%}}
 
 
-/* V6.33: shrink form tracks inside the setup card, including desktop zoom. */
+/* V6.35: shrink form tracks inside the setup card, including desktop zoom. */
 .trainer-setup-column{container-type:inline-size;min-width:0!important}
 .trainer-setup-column .setup,
 .trainer-setup-column .setup-content,
@@ -5102,7 +5102,10 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 
 .paypal-support{margin:18px 0;padding:16px;border:1px solid #d8e2ec;border-radius:10px;background:#f5f9fc;overflow-wrap:anywhere}
 .paypal-support h3{margin:0 0 8px}.paypal-support p{margin:0 0 12px}
-.paypal-support-link{display:inline-block;text-decoration:none;max-width:100%;white-space:normal;background:#ffc439!important;color:#142c47!important;border-color:#e6af28!important;text-align:center}
+.paypal-support-link{display:inline-block;text-decoration:none;max-width:100%;white-space:normal;background:#ffc439!important;color:#003087!important;border-color:#e6af28!important;text-align:center}
+.paypal-support-link .side-nav-number,.paypal-support-link span{color:#003087!important}
+.paypal-support-link:hover{background:#f2ba36!important}
+.paypal-support-link:focus-visible{outline:3px solid #0070ba;outline-offset:3px}
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5157,7 +5160,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       <button class="side-nav-item" data-page="how-to" type="button"><span class="side-nav-number">05</span><span>How To Use</span></button>
       <button class="side-nav-item" data-page="contact" type="button"><span class="side-nav-number">06</span><span>Contact us</span></button>
       <a class="side-nav-item" style="text-decoration:none" href="https://play.google.com/store/apps/details?id=appinventor.ai_fekwm65.FK_Aircraft_Editable_eChecklist" target="_blank" rel="noopener noreferrer" aria-label="FK Editable eChecklist on Google Play (opens in a new tab)"><span class="side-nav-number">07</span><span>Aircraft eChecklist ↗</span></a>
-      <a class="side-nav-item" style="text-decoration:none" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)"><span class="side-nav-number">08</span><span>Support via PayPal ↗</span></a>
+      <a class="side-nav-item paypal-support-link" style="text-decoration:none" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)"><span class="side-nav-number">08</span><span>Support ↗</span></a>
       <button id="installAppButton" class="install-app-button" type="button" aria-label="Install FK ATC COM Trainer app">INSTALL APP</button>
     </nav>
     <div class="side-nav-footer"><a href="https://www.fwdskillzone.com/" target="_blank" rel="noopener noreferrer">FWD Skill Zone</a> • <a href="https://www.fwdskillzone.com/pilot-vibes" target="_blank" rel="noopener noreferrer">Pilot Vibes</a><br><span class="publisher-line">Publisher: fwdskillzone.com</span></div>
@@ -5166,7 +5169,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.33 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.35 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6111,7 +6114,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <div id="reportSummary" class="report-summary"></div>
   <div id="reportStages" class="report-stages"></div>
   <div id="reportRecommendations" class="report-recommendations"></div>
-  <section class="paypal-support"><h3>Support the Trainer</h3><p>Enjoying FK ATC COM Trainer? Help keep it free and support future improvements. Contributions are optional and appreciated.</p><a class="btn paypal-support-link" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)">Support via PayPal ↗</a></section>
+  <section class="paypal-support"><h3>Support the Trainer</h3><p>Enjoying FK ATC COM Trainer? Help keep it free and support future improvements. Contributions are optional and appreciated.</p><a class="btn paypal-support-link" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)">Support ↗</a></section>
   <div class="report-action-row">
     <button id="repeatSameRoute" class="btn primary" type="button">REPEAT SAME ROUTE</button>
     <button id="reportNewFlight" class="btn" type="button">NEW FLIGHT</button>
@@ -6179,7 +6182,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
           <p><strong>IFR:</strong> departure ATIS, IFR clearance, Ground, Tower and a separate Departure handoff, Departure, Enroute, arrival ATIS, Approach, destination Tower, and destination Ground. Follow the current stage display for your scenario.</p>
         </section>
 
-        <div class="card howto-reference"><section class="paypal-support"><h3>Support the Trainer</h3><p>Enjoying FK ATC COM Trainer? Help keep it free and support future improvements. Contributions are optional and appreciated.</p><a class="btn paypal-support-link" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)">Support via PayPal ↗</a></section></div>
+
 
         <section class="card howto-reference">
           <div class="eyebrow">COMPANION APP</div>
@@ -6226,7 +6229,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.33 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.35 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -6234,6 +6237,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <p id="contactStatus" role="status" aria-live="polite"></p>
           </form>
         </section>
+        <div class="card contact-support-card"><section class="paypal-support"><h3>Support the Trainer</h3><p>Enjoying FK ATC COM Trainer? Help keep it free and support future improvements. Contributions are optional and appreciated.</p><a class="btn paypal-support-link" href="https://www.paypal.com/donate/?business=97QUWP66VWMP2&amp;no_recurring=0&amp;item_name=Help+keep+FK+ATC+COM+Trainer+free+for+student+pilots.+Support+new+features+and+improvements%E2%80%94built+by+a+pilot%2C+for+pilots%21&amp;currency_code=USD" target="_blank" rel="noopener noreferrer" aria-label="Support via PayPal (opens in a new tab)">Support ↗</a></section></div>
       </div>
     </section>
 
