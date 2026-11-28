@@ -1,0 +1,1 @@
+V6.33 adds the supplied PayPal donation URL in the navigation, How To Use, and shared completed VFR/IFR report. All open a new tab with noopener/noreferrer. Contributions are optional; no payment scripts or popups are loaded. Upload website files to GitHub. No new Worker or SQL deployment is required. V6.30 backend instructions remain applicable if that upgrade is still pending.
