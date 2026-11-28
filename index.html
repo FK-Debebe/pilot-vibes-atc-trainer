@@ -5067,7 +5067,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 @media(max-width:700px){.contact-fields{grid-template-columns:1fr;gap:0}.contact-form-card{padding:16px}.contact-actions>*{width:100%}}
 
 
-/* V6.30: shrink form tracks inside the setup card, including desktop zoom. */
+/* V6.32: shrink form tracks inside the setup card, including desktop zoom. */
 .trainer-setup-column{container-type:inline-size;min-width:0!important}
 .trainer-setup-column .setup,
 .trainer-setup-column .setup-content,
@@ -5162,7 +5162,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.30 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.32 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -6219,7 +6219,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.30 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.32 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -15238,6 +15238,19 @@ function finishMobileSetup(prefix){
   details.open=false;
 }
 
+function focusFlightSetupStart(){
+  const setup=$("vfrFlightSetupDetails");
+  const mobile=window.matchMedia("(max-width:700px)").matches;
+  // Wait until the sign-in overlay is removed and dialog focus is restored.
+  requestAnimationFrame(()=>{
+    $("level")?.focus({preventScroll:true});
+    if(mobile){setup?.scrollIntoView({behavior:"instant",block:"start"});return;}
+    window.scrollTo({top:0,left:0,behavior:"instant"});
+    // A second layout frame also handles restored/sticky-panel scroll positions.
+    requestAnimationFrame(()=>window.scrollTo({top:0,left:0,behavior:"instant"}));
+  });
+}
+
 function showMobileIntroduction(){
   const dialog=$("mobileIntroduction");
   if(!dialog || dialog.open) return;
@@ -15253,10 +15266,7 @@ function showMobileIntroduction(){
     setup.open=true;
     window.dispatchEvent(new Event("fk-welcome-complete"));
     if(window.FKUsage)return;
-    requestAnimationFrame(()=>{
-      setup.scrollIntoView({behavior:"smooth",block:"start"});
-      $("level").focus({preventScroll:true});
-    });
+    focusFlightSetupStart();
   };
   confirm.onclick=acknowledge;
   dialog.addEventListener("cancel",event=>{event.preventDefault();acknowledge();},{once:true});

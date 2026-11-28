@@ -1,3 +1,11 @@
+# V6.32
+
+See UPDATE_V6_32.md for the Total time format change. No new backend changes.
+
+# V6.31
+
+Read UPDATE_V6_31.md for the welcome scroll fix. V6.30 backend instructions still apply if that upgrade has not been completed.
+
 # V6.30 — Owner Usage Dashboard
 
 This revision has not been deployed to your website or Cloudflare account.

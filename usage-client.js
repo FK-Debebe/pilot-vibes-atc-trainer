@@ -73,8 +73,7 @@
   entered=true;screen?.remove();screen=null;document.documentElement.classList.remove('fk-entry-pending');
   for(const id of ['vfrFlightSetupDetails','ifrFlightSetupDetails']){const setup=document.getElementById(id);if(setup)setup.open=true;}
   signedControls();
-  const setup=document.getElementById('vfrFlightSetupDetails');
-  setup?.scrollIntoView?.({block:'start'});document.getElementById('level')?.focus?.({preventScroll:true});
+  if(typeof window.focusFlightSetupStart==='function')window.focusFlightSetupStart();
  }
  function showEntry(){
   if(screen)return;
