@@ -1,3 +1,9 @@
+# V6.27 startup order
+
+Login or validate a remembered Google session, show the welcome popup, then open Flight Setup. Guest access remains removed. Upload departure-procedures.js with the app. No Cloudflare changes. See V6_27_CHANGES.md for KMYF and the departure library scope.
+
+---
+
 # V6.24 — Google sign-in required
 
 Guest access has been removed from the public trainer interface. Mobile phones show the welcome popup and then Google sign-in. Desktop users see Google sign-in immediately. Only a server-verified member session opens the trainer. Saved Google sessions remain valid for up to 30 days on the same browser; sign-out removes them. Analytics opt-out, GPC and Do Not Track do not block sign-in or enable usage tracking.

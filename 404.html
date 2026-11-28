@@ -15,6 +15,7 @@
 <script src="./analytics-config.js"></script>
 <script defer src="./analytics.js"></script>
 <script src="./usage-config.js"></script>
+<script src="./departure-procedures.js"></script>
 <script defer src="./usage-client.js"></script>
 <script defer src="./contact.js"></script>
 <style>
@@ -5127,7 +5128,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.26 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.28 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5163,6 +5164,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5187,6 +5189,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5349,6 +5352,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5403,6 +5407,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB">KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5730,6 +5735,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5757,6 +5763,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB">KLGB — Long Beach</option>
+<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5804,6 +5811,9 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </label>
       </div>
 
+      <div class="setup-section-label">DEPARTURE PROCEDURE LIBRARY</div>
+      <label>Published departure charts<select id="ifr-dpReference"><option value="">Choose a chart to brief</option></select></label>
+      <div id="ifr-dpReferenceDetails" class="small" style="line-height:1.5;margin:8px 0 16px"></div>
       <div class="setup-section-label">DEPARTURE PROCEDURE</div>
       <label>Departure Procedure
         <select id="ifr-departureProcedure"><option value="none">No published SID — existing training flow</option><option value="anaheim2">KLGB — ANAHEIM TWO (assigned-route practice)</option></select>
@@ -6138,6 +6148,13 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
         </section>
 
         <section class="card howto-reference">
+          <div class="eyebrow">PUBLISHED DEPARTURE LIBRARY</div>
+          <h3>Brief departure charts for your airport</h3>
+          <p>In IFR Flight Setup, choose a departure airport and open <strong>Published departure charts</strong>. The FAA cycle 2612 library lists the airport’s SIDs with every continuation page, plus its takeoff-minimums/obstacle-departure document. RNAV procedures are labeled. Find your airport within the takeoff volume and verify equipment, runway, climb gradient, restrictions and transition before use.</p>
+          <p>Library selections are chart briefing references. The separate KLGB ANAHEIM TWO option provides a scripted radio exercise; other library entries do not change the existing ATC clearance flow. An ODP is not automatically a SID clearance or required readback. These charts are dated training references, not live NOTAM or navigation validation.</p>
+        </section>
+
+        <section class="card howto-reference">
           <div class="eyebrow">IFR DEPARTURE PROCEDURE PRACTICE</div>
           <h3>Practice ANAHEIM TWO from Long Beach</h3>
           <p>In IFR Flight Setup, select KLGB and choose <strong>ANAHEIM TWO</strong> under Departure Procedure. Open both linked FAA chart pages and brief the runway heading, 800-foot initial segment, assigned altitude, and applicable climb requirements before Apply Setup.</p>
@@ -6168,7 +6185,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.26 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.28 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -6635,6 +6652,19 @@ const AIRPORTS = {
     taxiwaysByRunway:{"1":"Alpha","19":"Alpha"}, parkingTaxiway:"Alpha",
     locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
   },
+  KMYF:{
+    name:"Montgomery-Gibbs Executive",radioName:"Montgomery",
+    aliases:["montgomery","montgomery gibbs","montgomery field","montgomery gibbs executive","myf"],
+    coords:{lat:32.8157222,lon:-117.1395556},
+    frequencies:{atis:"126.900",clearance:"123.725",ground:"118.225",tower:"119.200",departure:"119.600",approach:"124.350"},
+    towerByRunway:{"10L":"125.700","28R":"125.700","10R":"119.200","28L":"119.200","5":"119.200","23":"119.200"},
+    facilities:{clearance:"Montgomery Clearance",ground:"Montgomery Ground",tower:"Montgomery Tower",departure:"SoCal Departure",approach:"SoCal Approach"},
+    vfrClearanceLimit:"2500",runways:["28L","28R","10L","10R","5","23"],preferredRunway:"28L",
+    trafficPatternByRunway:{"28R":"right","10R":"right"},
+    taxiwaysByRunway:{"28L":"Hotel","28R":"Hotel Alpha","10L":"Hotel Foxtrot","10R":"Hotel","5":"Hotel","23":"Hotel"},parkingTaxiway:"Hotel Golf",
+    arrivalTaxiRoutes:{"28R":{parking:"transient parking",turn:"left",route:["Foxtrot"],holdShort:"28L",afterCross:["Hotel","Golf"]}},
+    locations:["Main Ramp","Transient Parking","FBO / Ramp","Hangar Area"]
+  },
   KSMO:{
     name:"Santa Monica Municipal", radioName:"Santa Monica",
     aliases:["santa monica","santa monica municipal","smo"],
@@ -6653,7 +6683,11 @@ function airportData(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
 function depAirport(){ return airportData(app.config.departureAirport); }
 function destAirport(){ return airportData(app.config.destinationAirport); }
 
-function airportFrequency(ap,key){
+function airportFrequency(ap,key,runwayOverride){
+  if(key==="tower"&&ap===AIRPORTS.KMYF){
+    const runway=runwayOverride||(app.config.departureAirport==="KMYF"?app.config.runway:app.config.destRunway);
+    return ap.towerByRunway[runway]||ap.frequencies.tower;
+  }
   return ap?.frequencies?.[key] || "";
 }
 function airportFacility(ap,key){
@@ -6884,7 +6918,7 @@ function buildStages(depCode,destCode,flightFollowing=true){
       {id:"ground", title:"GROUND", facility:airportFacility(dep,"ground"), freq:airportFrequency(dep,"ground"), type:"comm"},
       {id:"tower", title:"TOWER", facility:airportFacility(dep,"tower"), freq:airportFrequency(dep,"tower"), type:"comm"},
       {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
-      {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
+      {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower",$("destRunway")?.value||dest.preferredRunway), type:"comm"},
       {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
     ].filter(stage=>flightFollowing || stage.id!=="clearance");
   }
@@ -6910,7 +6944,7 @@ function buildStages(depCode,destCode,flightFollowing=true){
   stages.push(
     {id:"arrivalAtis", title:"ARRIVAL ATIS", facility:`${dest.radioName||dest.name} ATIS`, freq:airportFrequency(dest,"arrivalAtis")||airportFrequency(dest,"atis"), type:"atis"},
     {id:"arrival", title:"ARRIVAL / APPROACH", facility:airportFacility(dest,"approach"), freq:airportFrequency(dest,"approach"), type:"comm"},
-    {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower"), type:"comm"},
+    {id:"destTower", title:"DESTINATION TOWER", facility:airportFacility(dest,"tower"), freq:airportFrequency(dest,"tower",$("destRunway")?.value||dest.preferredRunway), type:"comm"},
     {id:"destGround", title:"DESTINATION GROUND", facility:airportFacility(dest,"ground"), freq:airportFrequency(dest,"ground"), type:"comm"}
   );
   return stages;
@@ -6949,7 +6983,7 @@ function updateDepartureChoices(preserve=true){
 function updateArrivalParking(id,airportCode,preferred=$(id).value){
   const select=$(id);
   const transient=[...select.options].find(option=>option.value==="transient");
-  transient.hidden=transient.disabled=!["KCRQ","KCMA"].includes(airportCode);
+  transient.hidden=transient.disabled=!["KCRQ","KCMA","KMYF"].includes(airportCode);
   select.value=preferred==="ga" || (preferred==="transient" && !transient.disabled) ? preferred : "";
 }
 
@@ -8219,6 +8253,8 @@ const TAXIWAY_PHONETIC={
 function containsTaxiway(text,taxiway){
   const expected=String(taxiway||"").trim();
   if(!expected) return false;
+  const routeParts=expected.split(/\s+/);
+  if(routeParts.length>1&&routeParts.every(part=>TAXIWAY_PHONETIC[part]))return routeParts.every(part=>containsTaxiway(text,part));
 
   const n=norm(fkNormalizeRecognition(text));
   const expectedWord=(TAXIWAY_PHONETIC[expected]||expected).toLowerCase();
@@ -11707,7 +11743,8 @@ function ifrRandomSquawk(){
 }
 
 function ifrAirport(code){ return AIRPORTS[code] || AIRPORTS.KLGB; }
-function ifrFreq(code,key){
+function ifrFreq(code,key,runwayOverride){
+  if(code==="KMYF"&&key==="tower")return AIRPORTS.KMYF.towerByRunway[runwayOverride||(IFR_APP.config.departureAirport===code?IFR_APP.config.runway:IFR_APP.config.destRunway)]||"119.200";
   if(code==="KLGB" && key==="departure" && ifrSelectedSID())return ["8L","8R","12"].includes(IFR_APP.config.runway)?"125.350":"127.200";
   const ap=ifrAirport(code);
   return String(ap?.frequencies?.[key] || ap?.frequencies?.approach || "121.500");
@@ -11800,6 +11837,35 @@ function ifrDepartureCheckinAltitudeStatus(text){
   };
 }
 
+
+function ifrUpdateDPReferences(){
+ const select=ifr$("dpReference");if(!select)return;
+ const airport=ifr$("departureAirport").value;
+ const data=window.FK_DP_CATALOG?.airports?.[airport];
+ select.replaceChildren();
+ const add=(value,label)=>{const option=document.createElement("option");option.value=value;option.textContent=label;select.appendChild(option);};
+ add("","Choose a chart to brief");
+ for(const [i,sid] of (data?.sids||[]).entries())add(String(i),sid.name+" — chart briefing");
+ if(data?.takeoff)add("takeoff","Takeoff minimums / published obstacle departures");
+ select.value="";ifrShowDPReference();
+}
+function ifrShowDPReference(){
+ const select=ifr$("dpReference"),box=ifr$("dpReferenceDetails");if(!select||!box)return;
+ const code=ifr$("departureAirport").value,data=window.FK_DP_CATALOG?.airports?.[code];
+ box.replaceChildren();
+ const paragraph=text=>{const p=document.createElement("p");p.textContent=text;box.appendChild(p);};
+ const link=(text,url)=>{const a=document.createElement("a");a.textContent=text+" ↗";a.href=url;a.target="_blank";a.rel="noopener noreferrer";box.appendChild(a);box.appendChild(document.createElement("br"));};
+ paragraph("FAA cycle 2612: Nov 26–Dec 24, 2026. "+(data?.sids?.length||0)+" published SIDs. Chart availability does not establish aircraft, runway or route eligibility.");
+ if(code==="KMYF")link("KMYF airport diagram", "./charts/KMYF_AIRPORT_DIAGRAM_2612.pdf");
+ if(select.value==="takeoff"&&data?.takeoff){
+  link("Open FAA takeoff/obstacle-departure document",data.takeoff);
+  paragraph("Find "+code+" in the FAA volume. Check runway-specific minimums, climb gradients and any ODP text. An ODP is not automatically part of an ATC clearance and is not scored as a SID readback.");
+ }else if(select.value!==""&&data?.sids?.[Number(select.value)]){
+  const sid=data.sids[Number(select.value)];for(const chart of sid.charts)link(chart.name,chart.url);
+  paragraph((sid.rnav?"RNAV procedure: verify required navigation equipment and capability. ":"")+"Brief every page, runway availability, restrictions, climb requirements and transition against your intended route. These library entries are chart briefing references, not scripted clearance selections.");
+ }else if(!data?.sids?.length)paragraph("No published SID is listed for this airport in this FAA cycle. Review the takeoff document for any applicable obstacle departure instructions.");
+ paragraph("The scripted ANAHEIM TWO radio exercise remains available separately for KLGB. Other scenarios retain their existing ATC-assigned heading/altitude flow.");
+}
 // First published SID module: FAA cycle 2612, 26 Nov–24 Dec 2026.
 // Communication practice only; no aircraft position, climb performance or NOTAM validation.
 const IFR_SID_HEADINGS={"8L":76,"8R":76,"12":121,"26L":256,"26R":256,"30":301};
@@ -11858,6 +11924,16 @@ function ifrRouteReadbackOK(text){
 
 
 
+// Simulated initial radar vector; never presented as a published departure procedure.
+function ifrRadarHeading(){
+  const runway=String(IFR_APP.config.runway||"26").match(/\d{1,2}/);
+  return String(runway?Number(runway[0])*10:260).padStart(3,"0");
+}
+function ifrRadarHeadingReadbackOK(text){
+  const n=norm(ifrNormalizeAviationTranscript(text));
+  const match=n.match(/\bheading\s+((?:(?:[0-9]+|zero|oh|one|two|three|four|five|six|seven|eight|nine|niner)\b[\s,-]*){1,3})/);
+  return !!match && textDigits(match[1])===ifrRadarHeading();
+}
 function ifrRouteInstructionText(){
   const route=IFR_APP.config.route;
   if(route==="User Route"){
@@ -11865,12 +11941,13 @@ function ifrRouteInstructionText(){
     return raw || "as filed";
   }
   if(route==="As Filed") return "as filed";
-  if(route==="Radar Vectors") return `radar vectors, then direct ${IFR_APP.config.destinationAirport}`;
+  if(route==="Radar Vectors") return `heading ${ifrRadarHeading()}`;
   return `direct ${IFR_APP.config.destinationAirport}`;
 }
 
 function ifrRouteInstructionReadbackOK(text){
   if(IFR_APP.config.route==="As Filed") return true;
+  if(IFR_APP.config.route==="Radar Vectors") return ifrRadarHeadingReadbackOK(text);
   return ifrRouteReadbackOK(text);
 }
 function buildIFRStages(){
@@ -11885,7 +11962,7 @@ function buildIFRStages(){
     {id:"enroute",title:"ENROUTE",facility:"Center / Approach",freq:enrouteInfo.freq,frequencySource:enrouteInfo.source,type:"comm"},
     {id:"arrivalAtis",title:"ARRIVAL ATIS",facility:`${dest.radioName||dest.name} ATIS`,freq:String(dest?.frequencies?.arrivalAtis || dest?.frequencies?.atis || "121.500"),type:"atis"},
     {id:"approach",title:"APPROACH",facility:ifrFacility(c.destinationAirport,"approach"),freq:ifrFreq(c.destinationAirport,"approach"),type:"comm"},
-    {id:"destTower",title:"DESTINATION TOWER",facility:ifrFacility(c.destinationAirport,"tower"),freq:ifrFreq(c.destinationAirport,"tower"),type:"comm"},
+    {id:"destTower",title:"DESTINATION TOWER",facility:ifrFacility(c.destinationAirport,"tower"),freq:ifrFreq(c.destinationAirport,"tower",c.destRunway),type:"comm"},
     {id:"destGround",title:"DESTINATION GROUND",facility:ifrFacility(c.destinationAirport,"ground"),freq:ifrFreq(c.destinationAirport,"ground"),type:"comm"}
   ];
 }
@@ -11898,6 +11975,7 @@ function ifrSetOptions(id,values,preferred){
 }
 function ifrUpdateDepartureChoices(preserve=true){
   ifrUpdateSIDChoices();
+  ifrUpdateDPReferences();
   const code=ifr$("departureAirport").value;
   const ap=ifrAirport(code);
   const oldRunway=preserve?ifr$("runway").value:"";
@@ -11909,6 +11987,7 @@ function ifrUpdateDepartureChoices(preserve=true){
 }
 
 const IFR_VERIFIED_APPROACHES={
+  KMYF:{"28R":["ILS","LOC","RNAV (GPS)","Visual"],"28L":["Visual"],"10L":["Visual"],"10R":["Visual"],"5":["Visual"],"23":["Visual"]},
   /* FAA d-TPP cycle 2610, effective Oct 01–Oct 28, 2026. */
   KLGB:{
     "30":["ILS","RNAV (GPS)","VOR","Visual"],
@@ -11945,7 +12024,7 @@ function ifrUpdateDestinationChoices(preserve=true){
   const ap=ifrAirport(code);
   updateArrivalParking("ifr-arrivalParking",code);
   const oldRunway=preserve?ifr$("destRunway").value:"";
-  ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:(ap.preferredRunway||ap.runways[0])));
+  ifrSetOptions("destRunway",ap.runways,(ap.runways.includes(oldRunway)?oldRunway:((code==="KMYF"?"28R":ap.preferredRunway)||ap.runways[0])));
   ifrUpdateApproachChoices(preserve);
   setTrafficPattern("ifr-arrivalTraffic",ap,ifr$("destRunway").value,preserve && oldRunway===ifr$("destRunway").value ? selectedTrafficPattern("ifr-arrivalTraffic") : "");
   ifrUpdateRouteHeading();
@@ -12341,6 +12420,8 @@ function ifrNormalizeAviationTranscript(text){
 function ifrContainsTaxiway(text,taxiway){
   const expected=String(taxiway||"").trim();
   if(!expected) return false;
+  const routeParts=expected.split(/\s+/);
+  if(routeParts.length>1&&routeParts.every(part=>TAXIWAY_PHONETIC[part]))return routeParts.every(part=>ifrContainsTaxiway(text,part));
   if(containsTaxiway(ifrNormalizeAviationTranscript(text),expected)) return true;
   const n=norm(ifrNormalizeAviationTranscript(text));
   const expectedWord=(TAXIWAY_PHONETIC[expected]||expected).toLowerCase();
@@ -12912,10 +12993,10 @@ function ifrEvaluateTransmission(text){
       if(IFR_APP.config.level==="advanced") departureInitialRequired.push("climb");
       if(departureInitialRequired.every(k=>checks[k])){
         const routeInstruction=ifrRouteInstructionText();
-        const lateral=IFR_APP.config.route==="As Filed"?"":` Proceed ${routeInstruction}.`;
+        const lateral=IFR_APP.config.route==="As Filed"?"":IFR_APP.config.route==="Radar Vectors"?` Fly ${routeInstruction}.`:` Proceed ${routeInstruction}.`;
         ifrATC(`${ifrCallsignVisual()}, radar contact. Climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}.${lateral}`);
         IFR_APP.phase="departureReadback";
-        ifr$("feedback").textContent="Read back assigned altitude and route instruction.";
+        ifr$("feedback").textContent=IFR_APP.config.route==="Radar Vectors"?"Read back assigned heading, altitude, and callsign.":"Read back assigned altitude and route instruction.";
       }else{
         const missing=[];
         if(!checks.callsign) missing.push("callsign");
@@ -12936,7 +13017,7 @@ function ifrEvaluateTransmission(text){
         ifr$("feedback").textContent="Departure readback accepted.";
         ifrCompleteStage(score);
       }else{
-        const routeVerify=IFR_APP.config.route==="As Filed"?"":`, proceed ${ifrRouteInstructionText()}`;
+        const routeVerify=IFR_APP.config.route==="As Filed"?"":IFR_APP.config.route==="Radar Vectors"?`, fly ${ifrRouteInstructionText()}`:`, proceed ${ifrRouteInstructionText()}`;
         ifrATC(`${ifrCallsignVisual()}, verify climb and maintain ${ifrAltitudeNumber().toLocaleString("en-US")}${routeVerify}.`);
       }
     }
@@ -12952,7 +13033,7 @@ function ifrEvaluateTransmission(text){
         IFR_APP.arrivalAltitude=descent;
         ifrATC(`${ifrCallsignVisual()}, continue ${ifrRouteInstructionText()}. Descend and maintain ${descent.toLocaleString("en-US")}. Expect ${ifrApproachName()}.`);
         IFR_APP.phase="enrouteReadback";
-        ifr$("feedback").textContent="Read back route, descent altitude, and expected approach.";
+        ifr$("feedback").textContent="Read back heading or route, descent altitude, expected approach, and callsign.";
       }else ifrATC(`${ifrCallsignVisual()}, say altitude.`);
     }else{
       checks={route:ifrRouteInstructionReadbackOK(text),altitude:ifrContainsAltitude(text,IFR_APP.arrivalAltitude),approach:ifrApproachPhraseOK(text),callsign:ifrContainsCallsign(text)};
@@ -13003,7 +13084,7 @@ function ifrEvaluateTransmission(text){
       const approachReadbackRequired=["heading","altitude","approach","runway"];
       if(IFR_APP.config.level==="advanced") approachReadbackRequired.push("callsign");
       if(approachReadbackRequired.every(k=>checks[k])){
-        ifrATC(`${ifrCallsignVisual()}, contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower")}.`);
+        ifrATC(`${ifrCallsignVisual()}, contact ${ifrFacility(IFR_APP.config.destinationAirport,"tower")} ${ifrFreq(IFR_APP.config.destinationAirport,"tower",IFR_APP.config.destRunway)}.`);
         ifrCompleteStage(score);
       }else ifrATC(`${ifrCallsignVisual()}, verify heading ${IFR_APP.vectorHeading}, maintain ${IFR_APP.approachAltitude} until established, cleared ${ifrApproachName()}.`);
     }
@@ -13046,10 +13127,22 @@ function ifrEvaluateTransmission(text){
   }
 
   if(stage.id==="destGround"){
+    if(IFR_APP.phase==="myfHoldShortReadback"){
+      const hold=/hold(?:ing)? short/.test(n)&&ifrContainsRunway(text,"28L");
+      if(!hold||!ifrContainsCallsign(text)){ifrATC(`${ifrCallsignVisual()}, hold short Runway 28L at Foxtrot. Read back the hold-short instruction.`);return;}
+      IFR_APP.destTaxiway="Hotel Golf";IFR_APP.myfCrossingIssued=true;
+      ifrATC(`${ifrCallsignVisual()}, cross Runway 28L at Foxtrot, then taxi to ${arrivalParkingLabel(IFR_APP.config.arrivalParking)} via Hotel, Golf.`);
+      IFR_APP.phase="destGroundReadback";ifr$("feedback").textContent="Read back cross Runway 28L, taxi via Hotel Golf, parking, and your callsign.";return;
+    }
     if(IFR_APP.phase==="destGroundInitial"){
       checks={facility:n.includes("ground"),callsign:ifrContainsCallsign(text),request:n.includes("taxi"),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")||(IFR_APP.config.arrivalParking==="ga"&&containsGAParking(text))};
       score=ifrScoreChecks(stage,checks);
       if(ifrMeetsLevel(checks,["callsign","request","parking"],["facility"])){
+        IFR_APP.myfCrossingIssued=false;
+        if(IFR_APP.config.destinationAirport==="KMYF"&&IFR_APP.config.destRunway==="28R"){
+          ifrATC(`${ifrCallsignVisual()}, at Foxtrot, hold short Runway 28L.`);IFR_APP.phase="myfHoldShortReadback";
+          ifr$("feedback").textContent="Simulated exit: Foxtrot from 28R. Read back hold short Runway 28L with your callsign; wait for crossing clearance.";return;
+        }
         const taxi=(ifrAirport(IFR_APP.config.destinationAirport).parkingTaxiway)||"Alpha";
         IFR_APP.destTaxiway=taxi;
         const parking=arrivalParkingLabel(IFR_APP.config.arrivalParking);
@@ -13061,12 +13154,13 @@ function ifrEvaluateTransmission(text){
       checks={taxiway:ifrContainsTaxiway(text,IFR_APP.destTaxiway),parking:n.includes("parking")||n.includes("ramp")||n.includes("fbo")||(IFR_APP.config.arrivalParking==="ga"&&containsGAParking(text)),callsign:ifrContainsCallsign(text)};
       score=ifrScoreChecks(stage,checks);
       const destGroundReadbackRequired=["taxiway"];
+      if(IFR_APP.config.destinationAirport==="KMYF"&&IFR_APP.myfCrossingIssued){checks.crossing=/cross(?:ing)?/.test(n)&&ifrContainsRunway(text,"28L");destGroundReadbackRequired.push("crossing");}
       if(IFR_APP.config.level==="advanced") destGroundReadbackRequired.push("parking","callsign");
       if(destGroundReadbackRequired.every(k=>checks[k])){
         ifrAppend("system","TRAINER","Destination taxi readback accepted. Good flight complete.");
         ifr$("feedback").textContent="Destination taxi readback accepted.";
         ifrCompleteStage(score);
-      }else ifrATC(`${ifrCallsignVisual()}, verify taxi via ${IFR_APP.destTaxiway}.`);
+      }else ifrATC(`${ifrCallsignVisual()}, verify ${IFR_APP.config.destinationAirport==="KMYF"&&IFR_APP.myfCrossingIssued?"cross Runway 28L, then ":""}taxi via ${IFR_APP.destTaxiway}.`);
     }
   }
   }finally{
@@ -13397,6 +13491,8 @@ function ifrInit(){
   if(!ifr$("departureAirport")) return;
 
   ifr$("departureAirport").addEventListener("change",()=>ifrUpdateDepartureChoices(false));
+  ifr$("dpReference")?.addEventListener("change",ifrShowDPReference);
+  ifrUpdateDPReferences();
   ifr$("departureProcedure")?.addEventListener("change",ifrUpdateSIDChoices);
   ifrUpdateSIDChoices();
   ifr$("destinationAirport").addEventListener("change",()=>ifrUpdateDestinationChoices(false));
@@ -15138,7 +15234,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     $("vfrFlightSetupDetails").open=true;
     $("ifrFlightSetupDetails").open=true;
   }
-  showMobileIntroduction();
 });
 </script>
 </body>

@@ -5,7 +5,7 @@
  const configured=/^https:\/\/[^/?#]+(?:\/[a-z0-9_-]+)*$/i.test(base);
  const localKey='fk-usage-guest-v1',memberKey='fk-usage-member-v1';
  let token='',person=null,owner=false,opening=null,sending=false,enabled=true,gis=null,generation=0;
- let entered=false,screen=null;
+ let entered=false,screen=null,welcomed=false,welcomePending=false;
  const pending=[];
  try{token=localStorage.getItem(memberKey)||sessionStorage.getItem(memberKey)||'';}catch{}
  try{localStorage.removeItem(localKey);sessionStorage.removeItem(localKey);}catch{}
@@ -35,7 +35,7 @@
   try{while(pending.length&&permitted()){
    const item=pending[0];
    try{await api('/usage','POST',item);pending.shift();}
-   catch(e){if(e.status===401){token='';person=null;pending.length=0;try{localStorage.removeItem(localKey);localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);}catch{}entered=false;document.getElementById('fk-account-controls')?.remove();showEntry();}break;}
+   catch(e){if(e.status===401){token='';person=null;pending.length=0;try{localStorage.removeItem(localKey);localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);}catch{}entered=false;welcomed=false;document.getElementById('fk-account-controls')?.remove();showEntry();}break;}
   }}finally{sending=false;}
  }
  function record(name,data){
@@ -62,13 +62,14 @@
    out.disabled=true;
    try{await drain();await api('/logout','POST',{});}catch{} 
    token='';person=null;owner=false;pending.length=0;try{localStorage.removeItem(memberKey);sessionStorage.removeItem(memberKey);}catch{}
-   bar.remove();entered=false;showEntry();
+   bar.remove();entered=false;welcomed=false;showEntry();
   });bar.appendChild(out);
   if(owner){const link=element('a','Owner dashboard');link.href='./usage-dashboard.html';bar.appendChild(link);}
   document.body.appendChild(bar);
  }
  function enter(){
   if(person?.kind!=='member'||!token){showEntry();return;}
+  if(!welcomed&&typeof window.showMobileIntroduction==='function'){welcomePending=true;screen?.remove();screen=null;window.showMobileIntroduction();return;}
   entered=true;screen?.remove();screen=null;document.documentElement.classList.remove('fk-entry-pending');
   for(const id of ['vfrFlightSetupDetails','ifrFlightSetupDetails']){const setup=document.getElementById(id);if(setup)setup.open=true;}
   signedControls();
@@ -80,9 +81,9 @@
   document.documentElement.classList.add('fk-entry-pending');
   const page=element('main');page.id='fk-entry';screen=page;
   const card=element('div');card.className='fk-entry-card';page.appendChild(card);
-  const title=element('h1','Welcome to FK ATC Com Trainer');title.tabIndex=-1;card.appendChild(title);
+  const title=element('h1','Sign in to FK ATC COM Trainer');title.tabIndex=-1;card.appendChild(title);
   const login=element('section');card.appendChild(login);login.appendChild(element('h2','Sign in with Google'));
-  login.appendChild(element('p','Sign in with Google to access the free VFR and IFR trainers. Your login is remembered on this browser.'));
+  login.appendChild(element('p','Sign in with Google to access the free VFR and IFR trainers.'));
   const host=element('div');host.className='fk-google-button';login.appendChild(host);
   const status=element('p');status.setAttribute('aria-live','polite');login.appendChild(status);
   const privacy=element('a','Analytics privacy');privacy.href='./analytics-privacy.html';card.appendChild(privacy);
@@ -111,9 +112,9 @@
   showEntry();
  }
  window.FKUsage=Object.freeze({record,preference,start});
- window.addEventListener('fk-welcome-complete',start);
+ window.addEventListener('fk-welcome-complete',()=>{if(welcomePending&&person?.kind==='member'){welcomePending=false;welcomed=true;enter();}});
  document.addEventListener('DOMContentLoaded',()=>{
-  if(!document.getElementById('mobileIntroduction')?.open)start();
+  start();
  });
  window.addEventListener('online',drain);window.addEventListener('pagehide',drain);setInterval(drain,30000);
 })();

@@ -1,4 +1,4 @@
-const CACHE_NAME = "fk-atc-com-trainer-v6-26-standalone";
+const CACHE_NAME = "fk-atc-com-trainer-v6-28-standalone";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -13,6 +13,9 @@ const APP_SHELL = [
   "./analytics.css",
   "./analytics-privacy.html",
   "./usage-config.js",
+  "./departure-procedures.js",
+  "./charts/KMYF_AIRPORT_DIAGRAM_2612.pdf",
+  "./charts/KMYF_ILS_LOC28R_2612.pdf",
   "./usage-client.js",
   "./contact.js",
   "./usage-dashboard.html",

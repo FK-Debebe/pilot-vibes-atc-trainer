@@ -1,15 +1,15 @@
 const assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const code=fs.readFileSync(__dirname+'/../usage-client.js','utf8');
-function run({mobile=false,privacy=false,member=false,owner=false,remembered=false}={}){
+function run({mobile=false,privacy=false,member=false,owner=false,remembered=false,withWelcome=false}={}){
  class E{constructor(tag){this.tag=tag;this.children=[];this.events={};this.open=false;}appendChild(x){x.parent=this;this.children.push(x);return x;}remove(){if(this.parent)this.parent.children=this.parent.children.filter(x=>x!==this);}setAttribute(){}addEventListener(k,f){this.events[k]=f;}all(){return [this,...this.children.flatMap(x=>x.all())];}focus(){}scrollIntoView(){}}
- const body=new E('body'),head=new E('head'),welcome=new E('dialog');welcome.id='mobileIntroduction';welcome.open=mobile;body.appendChild(welcome);
+ const body=new E('body'),head=new E('head'),welcome=new E('dialog');welcome.id='mobileIntroduction';welcome.open=false;body.appendChild(welcome);
  const classes=new Set(['fk-entry-pending']),events={},de={},calls=[],ss=member?{'fk-usage-member-v1':'membertoken'}:{},ls=remembered?{'fk-usage-member-v1':'rememberedtoken'}:{};let googleOptions;
  const profile=()=>({id:'test',kind:member||remembered?'member':'guest',display_name:'Test pilot'});
  const g={window:null,document:{body,head,documentElement:{classList:{add:x=>classes.add(x),remove:x=>classes.delete(x)}},createElement:t=>new E(t),getElementById:id=>body.all().find(x=>x.id===id),addEventListener:(k,f)=>de[k]=f},
  FK_USAGE_CONFIG:{apiBase:'https://test.example',googleClientId:'public-client'},navigator:{globalPrivacyControl:privacy,onLine:true},crypto:require('node:crypto').webcrypto,
  localStorage:{getItem:k=>ls[k],setItem:(k,v)=>ls[k]=v,removeItem:k=>delete ls[k]},sessionStorage:{getItem:k=>ss[k],setItem:(k,v)=>ss[k]=v,removeItem:k=>delete ss[k]},
  addEventListener:(k,f)=>events[k]=f,setInterval(){},google:{accounts:{id:{initialize:o=>googleOptions=o,renderButton:host=>host.appendChild(new E('google-button'))}}},
- fetch:async(url,opts)=>{calls.push({url,opts});return {ok:true,json:async()=>url.endsWith('/challenge')?{nonce:'testnonce'}:url.endsWith('/login')?{token:'signed',profile:{kind:'member',display_name:'Owner'},owner}: {token:'guest',profile:profile(),owner:(member||remembered)&&owner}};}};g.window=g;vm.createContext(g);vm.runInContext(code,g);
+ fetch:async(url,opts)=>{calls.push({url,opts});return {ok:true,json:async()=>url.endsWith('/challenge')?{nonce:'testnonce'}:url.endsWith('/login')?{token:'signed',profile:{kind:'member',display_name:'Owner'},owner}: {token:'guest',profile:profile(),owner:(member||remembered)&&owner}};}};if(withWelcome)g.showMobileIntroduction=()=>{welcome.open=true;};g.window=g;vm.createContext(g);vm.runInContext(code,g);
  return {g,body,classes,events,de,calls,local:ls,session:ss,options:()=>googleOptions};
 }
 async function settle(){for(let i=0;i<80;i++)await Promise.resolve();}
@@ -21,7 +21,12 @@ async function settle(){for(let i=0;i<80;i++)await Promise.resolve();}
  await login(q);assert(q.options());assert(q.classes.has('fk-entry-pending'));assert.equal(q.local['fk-usage-guest-v1'],undefined);
  await q.options().callback({credential:'signed-google'});await settle();assert(!q.classes.has('fk-entry-pending'));assert.equal(q.local['fk-usage-member-v1'],'signed');
  q.g.FKUsage.record('trainer_active_time',{active_seconds:30,transcript:'PRIVATE'});await settle();let u=q.calls.find(x=>x.url.endsWith('/usage'));assert.deepEqual(Object.keys(JSON.parse(u.opts.body)).sort(),['id','seconds']);
- q=run({mobile:true});q.de.DOMContentLoaded();await settle();assert(!q.body.all().some(x=>x.id==='fk-entry'));q.events['fk-welcome-complete']();await settle();assert(q.classes.has('fk-entry-pending'));assert(q.body.all().some(x=>x.id==='fk-entry'));
+ for(const remembered of [false,true]){
+  q=run({withWelcome:true,remembered});q.de.DOMContentLoaded();await settle();
+  if(!remembered){assert(!q.body.all().find(x=>x.id==='mobileIntroduction').open);assert(q.body.all().some(x=>x.id==='fk-entry'));await login(q);await q.options().callback({credential:'signed-google'});await settle();}
+  assert(q.body.all().find(x=>x.id==='mobileIntroduction').open);assert(q.classes.has('fk-entry-pending'));
+  q.events['fk-welcome-complete']();await settle();assert(!q.classes.has('fk-entry-pending'));
+ }
  for(const privacy of [false,true]){
   q=run({remembered:true,privacy,owner:true});q.de.DOMContentLoaded();await settle();assert(!q.classes.has('fk-entry-pending'));assert(q.calls[0].url.endsWith('/me'));assert(q.body.all().some(x=>x.textContent==='Owner dashboard'));
   await q.body.all().find(x=>x.textContent==='Sign out').events.click();await settle();assert.equal(q.local['fk-usage-member-v1'],undefined);assert(q.classes.has('fk-entry-pending'));
