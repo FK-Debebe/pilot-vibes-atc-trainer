@@ -20,7 +20,7 @@ async function settle(){for(let i=0;i<80;i++)await Promise.resolve();}
  q.g.FKUsage.record('trainer_active_time',{active_seconds:30});await settle();assert.equal(q.calls.length,0);
  await login(q);assert(q.options());assert(q.classes.has('fk-entry-pending'));assert.equal(q.local['fk-usage-guest-v1'],undefined);
  await q.options().callback({credential:'signed-google'});await settle();assert(!q.classes.has('fk-entry-pending'));assert.equal(q.local['fk-usage-member-v1'],'signed');
- q.g.FKUsage.record('trainer_active_time',{active_seconds:30,transcript:'PRIVATE'});await settle();let u=q.calls.find(x=>x.url.endsWith('/usage'));assert.deepEqual(Object.keys(JSON.parse(u.opts.body)).sort(),['id','seconds']);
+ q.g.FKUsage.record('trainer_active_time',{active_seconds:30,trainer_mode:'vfr',transcript:'PRIVATE'});await settle();let u=q.calls.find(x=>x.url.endsWith('/usage'));assert.deepEqual(Object.keys(JSON.parse(u.opts.body)).sort(),['id','mode','seconds']);assert.equal(JSON.parse(u.opts.body).mode,'vfr');
  for(const remembered of [false,true]){
   q=run({withWelcome:true,remembered});q.de.DOMContentLoaded();await settle();
   if(!remembered){assert(!q.body.all().find(x=>x.id==='mobileIntroduction').open);assert(q.body.all().some(x=>x.id==='fk-entry'));await login(q);await q.options().callback({credential:'signed-google'});await settle();}

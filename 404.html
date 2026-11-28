@@ -5066,6 +5066,40 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 #page-contact a{overflow-wrap:anywhere}
 @media(max-width:700px){.contact-fields{grid-template-columns:1fr;gap:0}.contact-form-card{padding:16px}.contact-actions>*{width:100%}}
 
+
+/* V6.30: shrink form tracks inside the setup card, including desktop zoom. */
+.trainer-setup-column{container-type:inline-size;min-width:0!important}
+.trainer-setup-column .setup,
+.trainer-setup-column .setup-content,
+.trainer-setup-column .setup-grid,
+.trainer-setup-column .setup-grid > *,
+.trainer-setup-column .setup-grid label{
+  min-width:0!important;max-width:100%;box-sizing:border-box;
+}
+#page-trainer .trainer-setup-column .setup-grid,
+#page-ifr-trainer .trainer-setup-column .setup-grid{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.trainer-setup-column .setup-grid select,
+.trainer-setup-column .setup-grid input:not([type="radio"]):not([type="checkbox"]),
+.trainer-setup-column .setup-grid textarea{
+  width:100%!important;min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+}
+.trainer-setup-column .training-level-description,
+.trainer-setup-column .setup-note{overflow-wrap:anywhere}
+#page-ifr-trainer .setup-title-row,
+#page-trainer .vfr-setup-title-route-row{flex-wrap:wrap}
+@container (max-width:280px){
+  #page-ifr-trainer .ifr-setup-pair:not(.aircraft-setup-pair),
+  #page-ifr-trainer .ifr-setup-pair.ifr-arrival-fields{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+/* Keep the aircraft controls together at every screen size. */
+#page-ifr-trainer .ifr-setup-pair.aircraft-setup-pair{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
 </style>
   <meta name="theme-color" content="#0d47a1">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -5128,7 +5162,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
   <main class="product-main">
     <header class="product-header">
       <button id="mobileNavToggle" class="mobile-nav-toggle" type="button" aria-label="Open navigation">☰</button>
-      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.28 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
+      <div class="app-title-block"><h1>FK ATC COM Trainer</h1><small class="app-version">V6.30 Standalone</small><div id="appTrainingMode" class="app-subtitle">VFR RADIO COMMUNICATION TRAINER</div></div>
       <div id="pageTitle" class="page-title">VFR RADIO TRAINER</div>
     </header>
 
@@ -5164,7 +5198,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5189,7 +5223,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5352,7 +5386,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5407,7 +5441,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB">KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5697,7 +5731,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
       </label>
 
       <div class="setup-section-label">AIRCRAFT</div>
-      <div class="ifr-setup-pair">
+      <div class="ifr-setup-pair aircraft-setup-pair">
         <label>Aircraft Type
           <select id="ifr-aircraftType">
             <option value="Cessna 152">Cessna 152</option>
@@ -5735,7 +5769,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB" selected>KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -5763,7 +5797,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
 <option value="KHHR">KHHR — Hawthorne</option>
 <option value="KLAX">KLAX — Los Angeles Int’l</option>
 <option value="KLGB">KLGB — Long Beach</option>
-<option value="KMYF">KMYF — Montgomery-Gibbs Executive</option>
+<option value="KMYF">KMYF — Montgomery</option>
 <option value="KONT">KONT — Ontario</option>
 <option value="KOXR">KOXR — Oxnard</option>
 <option value="KPOC">KPOC — Brackett Field</option>
@@ -6185,7 +6219,7 @@ body:not(.v492-xp-active) #xpPanel{display:none!important}body.v492-xp-active #p
             <input type="hidden" name="_subject" value="FK ATC COM Trainer — Contact us">
             <input type="hidden" name="_template" value="table">
             <input type="hidden" name="_next" value="https://atc.fwdskillzone.com/contact-thanks.html">
-            <input type="hidden" name="Trainer version" value="V6.28 Standalone">
+            <input type="hidden" name="Trainer version" value="V6.30 Standalone">
             <label for="contact-name">Name<input id="contact-name" name="name" autocomplete="name" required maxlength="100"></label>
             <label for="contact-email">Email<input id="contact-email" name="email" type="email" autocomplete="email" required maxlength="254"></label>
             <label for="contact-message">Message<textarea id="contact-message" name="message" required maxlength="2000" rows="6" placeholder="How can we help?"></textarea></label>
@@ -6653,7 +6687,7 @@ const AIRPORTS = {
     locations:["Main Ramp","FBO / Ramp","Transient Parking","Hangar Area"]
   },
   KMYF:{
-    name:"Montgomery-Gibbs Executive",radioName:"Montgomery",
+    name:"Montgomery",radioName:"Montgomery",
     aliases:["montgomery","montgomery gibbs","montgomery field","montgomery gibbs executive","myf"],
     coords:{lat:32.8157222,lon:-117.1395556},
     frequencies:{atis:"126.900",clearance:"123.725",ground:"118.225",tower:"119.200",departure:"119.600",approach:"124.350"},

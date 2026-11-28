@@ -747,7 +747,7 @@ window.FK_DP_CATALOG={
       "takeoff": "https://www.faa.gov/aero_docs/dtpp/2612/SW3TO.PDF"
     },
     "KMYF": {
-      "name": "MONTGOMERY-GIBBS EXEC",
+      "name": "Montgomery",
       "sids": [
         {
           "name": "CWARD TWO (RNAV)",

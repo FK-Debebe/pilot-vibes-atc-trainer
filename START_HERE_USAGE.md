@@ -1,3 +1,10 @@
+# V6.30 — Owner Usage Dashboard
+
+This revision has not been deployed to your website or Cloudflare account.
+Follow UPDATE_V6_30.md first. This upgrade requires a one-time database migration,
+then a Worker deployment, then the website files. Earlier instructions below are
+historical and do not replace the V6.30 deployment steps.
+
 # V6.27 startup order
 
 Login or validate a remembered Google session, show the welcome popup, then open Flight Setup. Guest access remains removed. Upload departure-procedures.js with the app. No Cloudflare changes. See V6_27_CHANGES.md for KMYF and the departure library scope.

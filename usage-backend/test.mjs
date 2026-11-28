@@ -65,11 +65,13 @@ try{
  assert.equal(ownerLogin.owner,true);
  const report=await request('/admin/people','GET',undefined,ownerLogin.token);assert.equal(report.status,200);
  assert.equal(report.data.summary.members,2);assert.equal(report.data.summary.active_seconds,50);
+ assert.equal(sqlite.prepare('SELECT SUM(active_seconds) n FROM usage_daily WHERE person_id=?').get(id).n,50,'guest daily usage merges with the member');
  assert.ok(report.data.people.every(p=>!('google_sub' in p)&&!('token_hash' in p)&&!('email' in p)));
  // Deletion removes the requesting person's sessions and usage rows only.
  assert.equal((await request('/me','DELETE',undefined,merged.data.token)).status,200);
  assert.equal((await request('/me','GET',undefined,memberToken)).status,401);
  assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM usage_batches WHERE person_id=?').get(id).n,0);
+ assert.equal(sqlite.prepare('SELECT COUNT(*) n FROM usage_daily WHERE person_id=?').get(id).n,0,'daily records cascade on profile deletion');
  assert.equal((await request('/admin/people','GET',undefined,ownerLogin.token)).status,200);
  now+=3600001;assert.equal((await request('/admin/people','GET',undefined,ownerLogin.token)).status,403);
  assert.equal((await request('/me','GET',undefined,ownerLogin.token)).status,200,'owner stays signed in after report authorization expires');

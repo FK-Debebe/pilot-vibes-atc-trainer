@@ -1,3 +1,4 @@
+import {ownerPeople} from './owner-reports.mjs';
 import {verifyGoogleToken} from './google-token.mjs';
 const enc=new TextEncoder();
 export const digest=async text=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',enc.encode(text))),b=>b.toString(16).padStart(2,'0')).join('');
@@ -78,6 +79,7 @@ export function createWorker(verify=verifyGoogleToken){return {
     }else if(s.person_id!==id){
      if(s.kind!=='guest')return response({error:'Sign out before switching accounts'},409,origin);
      statements.push(env.DB.prepare('UPDATE people SET active_seconds=active_seconds+(SELECT active_seconds FROM people WHERE id=?) WHERE id=?').bind(s.person_id,id));
+     statements.push(env.DB.prepare('INSERT INTO usage_daily(person_id,day,mode,active_seconds) SELECT ?,day,mode,active_seconds FROM usage_daily WHERE person_id=? ON CONFLICT(person_id,day,mode) DO UPDATE SET active_seconds=active_seconds+excluded.active_seconds').bind(id,s.person_id));
      statements.push(env.DB.prepare('DELETE FROM people WHERE id=?').bind(s.person_id));
     }
     if(req.headers.get('X-FK-Usage')==='off')statements.push(env.DB.prepare('UPDATE people SET display_name=?,last_seen=? WHERE id=?').bind(name,now,id));
@@ -90,24 +92,21 @@ export function createWorker(verify=verifyGoogleToken){return {
    if(path==='/usage'&&req.method==='POST'){
     if(req.headers.get('X-FK-Usage')==='off')return response({error:'Usage tracking is off'},403,origin);
     const data=await body(req);
-    if(Object.keys(data).some(k=>!['id','seconds'].includes(k))||!uuid(data.id)||!Number.isInteger(data.seconds)||data.seconds<1||data.seconds>90)return response({error:'Invalid usage batch'},400,origin);
+    if(Object.keys(data).some(k=>!['id','seconds','mode'].includes(k))||!uuid(data.id)||(data.mode!==undefined&&!['vfr','ifr','unknown'].includes(data.mode))||!Number.isInteger(data.seconds)||data.seconds<1||data.seconds>90)return response({error:'Invalid usage batch'},400,origin);
     const now=Date.now(),g=geo(req);
     // An atomic insert/trigger deduplicates retries and caps credit to server elapsed time.
     await env.DB.batch([
-     env.DB.prepare('INSERT OR IGNORE INTO usage_batches(id,person_id,session_hash,seconds,received_at) SELECT ?,person_id,token_hash,MIN(?,MAX(0,CAST((?-last_credit_ms)/1000 AS INTEGER))),? FROM sessions WHERE token_hash=? AND expires_at>?').bind(data.id,data.seconds,now,now,s.hash,now),
+     env.DB.prepare('INSERT OR IGNORE INTO usage_batches(id,person_id,session_hash,seconds,received_at,mode) SELECT ?,person_id,token_hash,MIN(?,MAX(0,CAST((?-last_credit_ms)/1000 AS INTEGER))),?,? FROM sessions WHERE token_hash=? AND expires_at>?').bind(data.id,data.seconds,now,now,data.mode||'unknown',s.hash,now),
      env.DB.prepare('UPDATE people SET country=?,region=?,city=? WHERE id=?').bind(g.country,g.region,g.city,s.person_id)
     ]);
     return response({accepted:true},200,origin);
    }
    if(path==='/admin/people'&&req.method==='GET'){
     if(!s.owner)return response({error:'Owner access only'},403,origin);
-    const url=new URL(req.url),offset=Math.max(0,Math.min(100000,Number(url.searchParams.get('offset'))||0));
-    const rows=await env.DB.prepare('SELECT id,display_name,kind,country,region,city,active_seconds,created_at,last_seen FROM people ORDER BY last_seen DESC,id LIMIT 100 OFFSET ?').bind(offset).all();
-    const summary=await env.DB.prepare('SELECT COUNT(*) people,SUM(kind=\'guest\') guests,SUM(kind=\'member\') members,COALESCE(SUM(active_seconds),0) active_seconds FROM people').first();
-    return response({people:rows.results,summary,nextOffset:rows.results.length===100?offset+100:null},200,origin);
+    return response(await ownerPeople(env,new URL(req.url).searchParams,s.person_id),200,origin);
    }
    return response({error:'Not found'},404,origin);
-  }catch{return response({error:'Usage service temporarily unavailable'},503,origin);}
+  }catch(e){return response({error:e.status===400?e.message:'Usage service temporarily unavailable'},e.status===400?400:503,origin);}
  },
  async scheduled(_event,env){
   const now=Date.now();await env.DB.batch([

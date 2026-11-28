@@ -41,7 +41,7 @@
  function record(name,data){
   if(!entered||person?.kind!=='member'||name!=='trainer_active_time'||!permitted())return;
   const seconds=Math.min(90,Math.floor(Number(data.active_seconds)||0));if(seconds<1)return;
-  pending.push({id:crypto.randomUUID(),seconds});if(pending.length>20)pending.shift();drain();
+  pending.push({id:crypto.randomUUID(),seconds,mode:['vfr','ifr'].includes(data.trainer_mode)?data.trainer_mode:'unknown'});if(pending.length>20)pending.shift();drain();
  }
  function preference(granted){
   enabled=!!granted;pending.length=0;
